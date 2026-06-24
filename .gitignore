@@ -92,7 +92,7 @@ Assets/XLua/Gen/*
 
 # --- NuGet ---
 *.nupkg
-packages/
+# packages/
 
 # --- Gradle (Android) ---
 *.gradle
