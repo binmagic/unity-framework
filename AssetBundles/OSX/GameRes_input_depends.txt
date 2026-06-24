@@ -1,0 +1,3 @@
+[textmesh_pro_all.bundle]
+  + gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle
+[gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle]

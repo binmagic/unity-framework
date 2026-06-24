@@ -1,0 +1,4 @@
+Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset Icon.psd
+ - textmesh_pro_all.bundle
+Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Sprite Asset Icon.psd
+ - textmesh_pro_all.bundle

@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec07db917d18ec94aaa94cb22a82b2a8, type: 3}
+  m_Name: Font
+  m_EditorClassIdentifier: 
+  comment: "\u5B57\u4F53\uFF0C\u6309\u7167\u6BCF\u4E2A\u6587\u4EF6\u6253\u4E2A\u5305\u5373\u53EF"
+  bundleMode: 7
+  manifest: {fileID: 11400000, guid: edcf2d90aa32b48938eeedd2f15cd600, type: 2}
+  assets:
+  - comment: 
+    bundleMode: 5
+    label: Fonts
+    dependencies: []
+    readOnly: 0
+    path: Assets/Main/Fonts
+    excludePaths: []
+    rootPath: 
+    parentGroup: {fileID: 11400000}
+    bundle: 
+    index: -1
+  - comment: 
+    bundleMode: 0
+    label: 
+    dependencies: []
+    readOnly: 0
+    path: Assets/Main/Fonts/Materials
+    excludePaths: []
+    rootPath: 
+    parentGroup: {fileID: 0}
+    bundle: 
+    index: -1
+  - comment: 
+    bundleMode: 0
+    label: 
+    dependencies: []
+    readOnly: 0
+    path: Assets/TextMesh Pro
+    excludePaths: []
+    rootPath: 
+    parentGroup: {fileID: 0}
+    bundle: 
+    index: -1
+  readOnly: 0
+  autoStrip: 0
+  resMode: 0
+  allBundleNames:
+  - textmesh_pro_all.bundle

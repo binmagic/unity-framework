@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec07db917d18ec94aaa94cb22a82b2a8, type: 3}
+  m_Name: Auto
+  m_EditorClassIdentifier: 
+  comment: 
+  bundleMode: 2
+  manifest: {fileID: 11400000, guid: edcf2d90aa32b48938eeedd2f15cd600, type: 2}
+  assets:
+  - comment: 
+    bundleMode: 8
+    label: 
+    dependencies: []
+    readOnly: 0
+    path: Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset
+      Icon.psd
+    excludePaths: []
+    rootPath: 
+    parentGroup: {fileID: 11400000}
+    bundle: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle
+    index: 0
+  - comment: 
+    bundleMode: 8
+    label: 
+    dependencies: []
+    readOnly: 0
+    path: Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Sprite Asset
+      Icon.psd
+    excludePaths: []
+    rootPath: 
+    parentGroup: {fileID: 11400000}
+    bundle: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle
+    index: 0
+  readOnly: 1
+  autoStrip: 0
+  resMode: 0
+  allBundleNames:
+  - gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle

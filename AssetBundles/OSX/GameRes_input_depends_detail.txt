@@ -1,0 +1,31 @@
+[textmesh_pro_all.bundle]
+++Assets/TextMesh Pro/Fonts/msyh SDF.asset
+      Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset Icon.psd
+      == OWNER BUNDLE: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle ==
+
+++Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Drop Shadow.mat
+      Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset Icon.psd
+      == OWNER BUNDLE: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle ==
+
+++Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+      Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset Icon.psd
+      == OWNER BUNDLE: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle ==
+
+++Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Outline.mat
+      Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset Icon.psd
+      == OWNER BUNDLE: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle ==
+
+++Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset
+      Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset Icon.psd
+      == OWNER BUNDLE: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle ==
+
+++Assets/TextMesh Pro/Resources/Sprite Assets/EmojiOne.asset
+      Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Sprite Asset Icon.psd
+      == OWNER BUNDLE: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle ==
+
+++Assets/TextMesh Pro/Resources/TMP Settings.asset
+      Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset Icon.psd
+      Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Sprite Asset Icon.psd
+      == OWNER BUNDLE: gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle ==
+
+[gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle]

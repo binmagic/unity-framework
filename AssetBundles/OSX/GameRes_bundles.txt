@@ -1,0 +1,38 @@
++++++++++++++ GameRes +++++++++++++
+ BUNDLE [textmesh_pro_all.bundle]
+   |- Assets/TextMesh Pro/Documentation/TextMesh Pro User Guide 2016.pdf
+   |- Assets/TextMesh Pro/Fonts/LiberationSans - OFL.txt
+   |- Assets/TextMesh Pro/Fonts/LiberationSans.ttf
+   |- Assets/TextMesh Pro/Fonts/msyh SDF.asset
+   |- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Drop Shadow.mat
+   |- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+   |- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Outline.mat
+   |- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset
+   |- Assets/TextMesh Pro/Resources/LineBreaking Following Characters.txt
+   |- Assets/TextMesh Pro/Resources/LineBreaking Leading Characters.txt
+   |- Assets/TextMesh Pro/Resources/Sprite Assets/EmojiOne.asset
+   |- Assets/TextMesh Pro/Resources/Style Sheets/Default Style Sheet.asset
+   |- Assets/TextMesh Pro/Resources/TMP Settings.asset
+   |- Assets/TextMesh Pro/Shaders/TMP_Bitmap-Custom-Atlas.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_Bitmap-Mobile.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_Bitmap.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF Overlay.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF SSD.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile Masking.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile Overlay.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile SSD.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF-Surface-Mobile.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF-Surface.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_SDF.shader
+   |- Assets/TextMesh Pro/Shaders/TMP_Sprite.shader
+   |- Assets/TextMesh Pro/Shaders/TMPro.cginc
+   |- Assets/TextMesh Pro/Shaders/TMPro_Mobile.cginc
+   |- Assets/TextMesh Pro/Shaders/TMPro_Properties.cginc
+   |- Assets/TextMesh Pro/Shaders/TMPro_Surface.cginc
+   |- Assets/TextMesh Pro/Sprites/EmojiOne Attribution.txt
+   |- Assets/TextMesh Pro/Sprites/EmojiOne.json
+   |- Assets/TextMesh Pro/Sprites/EmojiOne.png
+ BUNDLE [gameres_auto_packages_com_unity_textmeshpro_editor_resources_gizmos.bundle]
+   |- Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Font Asset Icon.psd
+   |- Packages/com.unity.textmeshpro/Editor Resources/Gizmos/TMP - Sprite Asset Icon.psd

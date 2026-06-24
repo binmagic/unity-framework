@@ -1,0 +1,51 @@
+
+local SFSDataType =
+{
+    NULL = 0,
+    BOOL = 1,
+    BYTE = 2,
+    SHORT = 3,
+    INT = 4,
+    LONG = 5,
+    FLOAT = 6,
+    DOUBLE = 7,
+    UTF_STRING = 8,
+    BOOL_ARRAY = 9,
+    BYTE_ARRAY = 10,
+    SHORT_ARRAY = 11,
+    INT_ARRAY = 12,
+    LONG_ARRAY = 13,
+    FLOAT_ARRAY = 14,
+    DOUBLE_ARRAY = 15,
+    UTF_STRING_ARRAY = 16,
+    SFS_ARRAY = 17,
+    SFS_OBJECT = 18,
+    CLASS = 19,
+    TEXT = 20,
+    
+    Names = {
+        [0] = "NULL",
+        [1] = "BOOL",
+        [2] = "BYTE",
+        [3] = "SHORT",
+        [4] = "INT",
+        [5] = "LONG",
+        [6] = "FLOAT",
+        [7] = "DOUBLE",
+        [8] = "UTF_STRING",
+        [9] = "BOOL_ARRAY",
+        [10] = "BYTE_ARRAY",
+        [11] = "SHORT_ARRAY",
+        [12] = "INT_ARRAY",
+        [13] = "LONG_ARRAY",
+        [14] = "FLOAT_ARRAY",
+        [15] = "DOUBLE_ARRAY",
+        [16] = "UTF_STRING_ARRAY",
+        [17] = "SFS_ARRAY",
+        [18] = "SFS_OBJECT",
+        [19] = "CLASS",
+        [20] = "TEXT",
+    }
+}
+
+return SFSDataType

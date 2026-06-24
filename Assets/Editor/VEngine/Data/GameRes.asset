@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f293bee68066970499b30d39c7a412ff, type: 3}
+  m_Name: GameRes
+  m_EditorClassIdentifier: 
+  groups:
+  - {fileID: 11400000, guid: b1dc87aa512834ee493478187c32b3c7, type: 2}
+  - {fileID: 11400000, guid: 8d776baf271b64f4c829b69729c5b267, type: 2}
+  - {fileID: 11400000, guid: 84ec127aeb5464050b3e37502d882e3a, type: 2}
+  - {fileID: 11400000, guid: b9f2bc543367748489439c93b46da2b8, type: 2}
+  - {fileID: 11400000, guid: 1519cfc0b4b9e40bbad6b6fe1dbd7339, type: 2}
+  - {fileID: 11400000, guid: 32488710dbbb44b1a9848455908d0872, type: 2}
+  size: 0
+  settings: {fileID: 11400000, guid: 99494e57557954eb1b11f8a5ad17bbfd, type: 2}
+  buildAssetBundleOptions: 256

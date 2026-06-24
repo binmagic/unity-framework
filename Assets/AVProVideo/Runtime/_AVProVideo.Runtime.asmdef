@@ -1,0 +1,35 @@
+{
+	"name": "AVProVideo.Runtime",
+	"rootNamespace": "",
+	"references": [],
+	"includePlatforms": [],
+	"excludePlatforms": [],
+	"allowUnsafeCode": false,
+	"overrideReferences": false,
+	"precompiledReferences": [],
+	"autoReferenced": true,
+	"defineConstraints": [],
+	"versionDefines": [
+		{
+			"name": "com.unity.render-pipelines.universal",
+			"expression": "0.0",
+			"define": "USING_URP"
+		},
+		{
+			"name": "com.unity.render-pipelines.high-definition",
+			"expression": "0.0",
+			"define": "USING_HDRP"
+		},
+		{
+			"name": "com.unity.xr.compositionlayers",
+			"expression": "2.0.0",
+			"define": "AVPRO_VIDEO_XR_COMPOSITION_LAYERS"
+		},
+        {
+            "name": "Unity",
+            "expression": "2022.3.18",
+            "define": "AVPRO_VIDEO_VISIONOS_AVAILABLE"
+        }
+	],
+	"noEngineReferences": false
+}

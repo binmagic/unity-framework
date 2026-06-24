@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec07db917d18ec94aaa94cb22a82b2a8, type: 3}
+  m_Name: Config
+  m_EditorClassIdentifier: 
+  comment: 
+  bundleMode: 1
+  manifest: {fileID: 11400000, guid: 98bfe06af81244857ace682b21ef9d66, type: 2}
+  assets:
+  - comment: 
+    bundleMode: 0
+    label: 
+    dependencies: []
+    readOnly: 0
+    path: Assets/Main/DataTable/LuaTxt
+    excludePaths: []
+    rootPath: 
+    parentGroup: {fileID: 11400000}
+    bundle: datatable_config_luatxt.bundle
+    index: -1
+  readOnly: 0
+  autoStrip: 0
+  resMode: 0
+  allBundleNames:
+  - datatable_config_luatxt.bundle
