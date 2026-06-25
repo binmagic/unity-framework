@@ -345,3 +345,116 @@ Logger.LogError("message")
 4. **横屏模式**: 游戏主要以横屏模式运行
 5. **Linear 色彩空间**: 项目使用 Linear 色彩空间
 6. **URP 管线**: 使用 Universal Render Pipeline，不要使用 Built-in 管线的 API
+
+---
+
+## Lua UI 模块注册规则
+
+### UIWindowNames.lua 格式
+
+文件路径：`Assets/Main/LuaScripts/UI/Config/UIWindowNames.lua`
+
+规则：
+- 格式为 `Name = "Name",`（key 与 value 必须是相同的字符串）
+- 缩进：4 空格
+- 每行一个条目，逗号结尾
+- 可加注释分组（`-- 模块名`）
+- 最终通过 `ConstClass` 包装为只读表
+
+正确示例：
+```lua
+    -- 连连看游戏
+    LianLianMain = "LianLianMain",
+    LianLianPlay = "LianLianPlay",
+    LianLianWin = "LianLianWin",
+```
+
+错误示例（绝对禁止）：
+```lua
+-- ❌ 不要用 UIConfig 的映射格式
+[UIWindowNames.LianLianMain] = "Game.LianLian.UI.LianLianMain.Config",
+-- ❌ 不要 key 和 value 不同名
+LianLianMain = "lianLianMain",
+```
+
+### UIConfig.lua 格式
+
+文件路径：`Assets/Main/LuaScripts/UI/Config/UIConfig.lua`
+
+规则：
+- 格式为 `[UIWindowNames.XXX] = "路径.Config",`
+- 缩进：1 个 tab
+- 路径前缀**只允许** `UI.` 或 `Slg.UI.`
+- 路径对应的物理目录在 `LuaScripts/UI/` 或 `LuaScripts/Slg/UI/` 下
+- 不允许自创命名空间（如 `Game.`、`MiniGame.`、`Module.`）
+
+路径格式规则：
+- 单层：`"UI.{窗口名}.Config"` — 对应 `LuaScripts/UI/{窗口名}/Config.lua`
+- 多层：`"UI.{模块组}.{窗口名}.Config"` — 对应 `LuaScripts/UI/{模块组}/{窗口名}/Config.lua`
+- Slg：`"Slg.UI.{模块组}.{窗口名}.Config"` — 对应 `LuaScripts/Slg/UI/{模块组}/{窗口名}/Config.lua`
+
+正确示例：
+```lua
+	[UIWindowNames.LianLianMain] = "UI.LianLian.LianLianMain.Config",
+	[UIWindowNames.UIBagView] = "UI.UIBagView.Config",
+	[UIWindowNames.UIAllianceMainTable] = "Slg.UI.UIAlliance.UIAllianceMainTable.Config",
+```
+
+错误示例（绝对禁止）：
+```lua
+-- ❌ 路径前缀不允许 Game.
+[UIWindowNames.LianLianMain] = "Game.LianLian.UI.LianLianMain.Config",
+-- ❌ 路径前缀不允许自创命名空间
+[UIWindowNames.XXX] = "MiniGame.XXX.Config",
+```
+
+### Config.lua 文件模板
+
+每个 UI 窗口的 Config.lua 必须包含以下字段：
+
+```lua
+local MyWindow = {
+    Name = UIWindowNames.MyWindow,
+    Layer = UILayer.Normal,
+    Ctrl = require "UI.MyModule.MyWindow.Controller.MyWindowCtrl",
+    View = require "UI.MyModule.MyWindow.View.MyWindowView",
+    PrefabPath = "Assets/Main/Prefabs/UI/MyModule/MyWindow.prefab",
+}
+
+return {
+    MyWindow = MyWindow,
+}
+```
+
+### LuaScripts 允许的顶层目录（不可新增）
+
+```
+LuaScripts/
+  Common/  DataCenter/  Framework/  Global/  Loading/
+  Net/  Scene/  Slg/  UI/  Util/
+```
+
+新增 UI 模块的 Lua 代码只能放在 `UI/` 或 `Slg/UI/` 下。
+
+### 新增 UI 窗口 checklist
+
+1. `UIWindowNames.lua` 添加：`MyWindow = "MyWindow",`
+2. `UIConfig.lua` 注册：`[UIWindowNames.MyWindow] = "UI.MyModule.MyWindow.Config",`
+3. 创建目录 `LuaScripts/UI/MyModule/MyWindow/`，包含 Config.lua、Controller/、View/
+4. Config.lua 包含 Name、Layer、Ctrl、View、PrefabPath
+5. Prefab 放在 `Assets/Main/Prefabs/UI/` 或 `Assets/Main/Prefabs/Slg/UI/` 下
+
+### UI 目录结构规则
+
+详见 `Assets/.claude/ui-directory-structure.md`，核心要点：
+
+- **标准 MVC 模式**（84%，472个）：有 View/ 子目录，可选 Controller/ 和 Component/
+- **平铺模式**（10个）：简单弹窗，Config.lua + XxxView.lua 平铺，Ctrl = nil，无子目录
+- **分组目录**（44个）：功能模块聚合，本身无 Config.lua，子窗口各自独立
+- **公共组件**（34个）：无 Config.lua，不注册到 UIConfig，被其他模块 require
+
+选择规则：
+- 有 Controller 逻辑 → 必须用标准 MVC（View/ + Controller/）
+- 无 Controller 且文件数 ≤ 2 → 可用平铺模式
+- 相关窗口 ≥ 3 个 → 用分组目录聚合
+- 不是独立窗口 → 公共组件目录（不注册 UIConfig）
