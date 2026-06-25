@@ -96,6 +96,13 @@ GameEntry.BuildAnimatorManager // 建筑动画
 
 **UI 层级顺序**: Scene → Background → UIResource → Normal → Info → Dialog → Guide → TopMost → TopCanvas
 
+**UI 模块注册规则**:
+- `UIWindowNames.lua`: 窗口名常量表，格式 `Name = "Name",`（4空格缩进，key=value同名）
+- `UIConfig.lua`: 窗口路由表，格式 `[UIWindowNames.XXX] = "UI.路径.Config",`（tab缩进）
+- Config 路径前缀只允许 `UI.` 或 `Slg.UI.`，禁止自创命名空间
+- Lua 文件放 `LuaScripts/UI/` 或 `LuaScripts/Slg/UI/` 下，不可新建顶层目录
+- 详细规则见 `.claude/rules.md`
+
 **全局模块加载**: `Assets/Main/LuaScripts/Global/Global.lua`
 
 ### 网络架构
@@ -222,7 +229,7 @@ ai, androidjni, animation, assetbundle, audio, cloth, director, imageconversion,
 
 支持 **16 种语言**（`Assets/Main/DataTable/Localization/`）：
 Arabic、ChineseSimplified、ChineseTraditional、English、French、German、Italian、Japanese、Korean、PortuguesePortugal、Russian、Spanish、Thai、Turkish、Vietnamese
-
+[CLAUDE.md](CLAUDE.md)
 **注意**: 阿拉伯语需要 RTL 布局适配（`Assets/Main/Scripts/UI/Arabic/`）
 
 ---
