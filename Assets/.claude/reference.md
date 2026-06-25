@@ -475,6 +475,40 @@ UIManager:GetInstance():OpenWindow(MyWindow)
 
 ---
 
+## UI 系统架构（注册与路由）
+
+### 文件关系图
+
+```
+UIWindowNames.lua     UIConfig.lua           UI/XXX/Config.lua
+───────────────────   ──────────────────     ──────────────────
+Name = "Name",   →   [UIWindowNames.Name]   →  { Name, Layer, Ctrl,
+                      = "UI.XXX.Config"          View, PrefabPath }
+```
+
+### UIManager 打开窗口流程
+
+```
+UIManager:OpenWindow(UIWindowNames.XXX, ...)
+  → UIConfig[UIWindowNames.XXX]           -- 得到 Config 路径字符串
+  → require("UI.XXX.Config")              -- 懒加载 Config 模块
+  → config = { Name, Layer, Ctrl, View, PrefabPath }
+  → window.Ctrl = config.Ctrl.New()       -- 实例化控制器
+  → window.View = config.View.New(...)    -- 实例化视图
+  → 加载 PrefabPath 的 Prefab
+```
+
+### 目录与路径对应关系
+
+| UIConfig 路径前缀 | 物理目录 |
+|---|---|
+| `"UI.XXX.Config"` | `LuaScripts/UI/XXX/Config.lua` |
+| `"Slg.UI.XXX.Config"` | `LuaScripts/Slg/UI/XXX/Config.lua` |
+
+不存在其他前缀。
+
+---
+
 ## 性能监控
 
 ### Graphy 性能面板

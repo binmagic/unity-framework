@@ -101,7 +101,8 @@ GameEntry.BuildAnimatorManager // 建筑动画
 - `UIConfig.lua`: 窗口路由表，格式 `[UIWindowNames.XXX] = "UI.路径.Config",`（tab缩进）
 - Config 路径前缀只允许 `UI.` 或 `Slg.UI.`，禁止自创命名空间
 - Lua 文件放 `LuaScripts/UI/` 或 `LuaScripts/Slg/UI/` 下，不可新建顶层目录
-- 详细规则见 `.claude/rules.md`
+- 详细规则见 `Assets/.claude/rules.md`
+- 目录结构规范见 `Assets/.claude/ui-directory-structure.md`
 
 **全局模块加载**: `Assets/Main/LuaScripts/Global/Global.lua`
 
@@ -274,5 +275,6 @@ Arabic、ChineseSimplified、ChineseTraditional、English、French、German、It
 
 ## 相关文档
 
-- **编码规范**: `.claude/rules.md`
-- **参考文档**: `.claude/reference.md`
+- **编码规范**: `Assets/.claude/rules.md`
+- **参考文档**: `Assets/.claude/reference.md`
+- **UI 目录结构规范**: `Assets/.claude/ui-directory-structure.md`
