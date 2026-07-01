@@ -4,8 +4,14 @@
 --- DateTime: 2023/1/30 17:52
 ---
 
-local NetProxy = CS.GameKit.Base.NetProxy
-local NetRawProxy = CS.GameKit.Base.NetRawProxy
+-- 按平台选择网络代理：WebGL(微信小游戏) 用 WebSocketNetProxy，其它平台用 SmartFox 的 NetProxy
+-- 两者构造签名一致：(name, host, port, net)
+local NetProxy
+if CS.SDKManager.IS_UNITY_WEBGL() then
+	NetProxy = CS.GameKit.Base.WebSocketNetProxy
+else
+	NetProxy = CS.GameKit.Base.NetProxy
+end
 local ProxyStatus = CS.GameKit.Base.ProxyStatus
 local Const = require("Loading.Const")
 

@@ -47,15 +47,14 @@ namespace VEngine
                     return null;
                 }
 
-                // if (Application.platform == RuntimePlatform.WebGLPlayer)
-                // {
-                //     // item = new WebBundle
-                //     // {
-                //     //     pathOrURL = url,
-                //     //     info = info
-                //     // };
-                // }
-                // else
+#if UNITY_WEBGL
+                // WebGL (微信小游戏): 所有 Bundle 都通过 WebBundle 加载
+                item = new WebBundle
+                {
+                    pathOrURL = url,
+                    info = info
+                };
+#else
                 {
                     if (!string.IsNullOrEmpty(Versions.DownloadURL) && url.StartsWith(Versions.DownloadURL))
                     {
@@ -74,6 +73,7 @@ namespace VEngine
                         };
                     }
                 }
+#endif
 
                 Cache.Add(info.name, item);
                 

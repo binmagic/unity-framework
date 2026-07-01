@@ -24,6 +24,27 @@ namespace VEngine
             }
             return file;
         }
+
+#if UNITY_WEBGL
+        /// <summary>
+        /// WebGL: 从文本内容加载版本文件（不依赖文件系统）
+        /// </summary>
+        public static ManifestVersionFile LoadFromText(string content)
+        {
+            var file = new ManifestVersionFile();
+            if (string.IsNullOrEmpty(content))
+            {
+                return file;
+            }
+            var fields = content.Split(',');
+            if (fields.Length > 2)
+            {
+                file.version = fields[0].IntValue();
+                file.crc = fields[2].UIntValue();
+            }
+            return file;
+        }
+#endif
     }
 
     /// <summary>

@@ -80,6 +80,10 @@ namespace VEngine
 
         public static uint ComputeCRC32(string filename)
         {
+#if UNITY_WEBGL
+            // WebGL: 包已由微信平台校验完整性，跳过客户端 CRC 校验
+            return 0;
+#else
             if (!File.Exists(filename))
             {
                 return 0;
@@ -89,6 +93,7 @@ namespace VEngine
             {
                 return _crc32.Compute(stream);
             }
+#endif
         }
     }
 }

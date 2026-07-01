@@ -277,7 +277,12 @@ public class ApplicationLaunch : MonoBehaviour
         GameEntry.Localization.Initialize(GameEntry.Setting.UserLanguage);
 
         // 初始化xlua引擎
+#if UNITY_WEBGL
+        // WebGL: 不支持指针模式（unsafe），强制使用字节数组加载
+        XLuaManager.loadUsePtr = false;
+#else
         XLuaManager.loadUsePtr = GameEntry.GameBase.UsePtrForLua;
+#endif
         Log.Info($"usePtrForLua: {XLuaManager.loadUsePtr}");
         GameEntry.Lua.Initialize();
         GameEntry.Lua.StartGame();

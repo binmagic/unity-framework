@@ -173,7 +173,7 @@ public static class GameEntry
 
     public static long Test_PbNode_Decode(string bytes, string type)
     {
-#if UNITY_IOS
+#if UNITY_IOS || UNITY_WEBGL
         return 0;
 #else
         byte[] data = Convert.FromBase64String(bytes);
@@ -186,7 +186,7 @@ public static class GameEntry
 
     public static int Test_PbNode_UserData_Parse(System.IntPtr ptr)
     {
-#if UNITY_IOS
+#if UNITY_IOS || UNITY_WEBGL
         return 0;
 #else
         return XLua.LuaDLL.Lua.pbn_ud_parse(ptr);
