@@ -5,8 +5,8 @@ using CSObjectWrapEditor;
 
 public static class GenConfig
 {
-    [GenPath]
-    public const string GenPath = "Assets/Main/Scripts/XLuaGen";
+	[GenPath]
+	public static string GenPath => UnityEngine.Application.dataPath + "/Main/Scripts/XLuaGen";
 
     //lua中要使用到C#库的配置，比如C#标准库，或者Unity API，第三方库等。
     [CSharpCallLua]
@@ -699,6 +699,24 @@ public static class GenConfig
     // 这里只需要屏蔽一些打包时编译不过的接口
 	[BlackList] // new List<string>() {类型的全路径, 成员或者方法名, 方法的参数类型的全路径}
 	public static List<List<string>> BlackList = new List<List<string>>()  {
+		// ReadOnlySpan<T>/Span<T> cannot be used as generic type argument in generated wrappers (Unity 2022+)
+		new List<string>(){"UnityEngine.Object", "InstantiateAsync", "UnityEngine.Object", "System.Int32", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.ReadOnlySpan`1[UnityEngine.Quaternion]"},
+		new List<string>(){"UnityEngine.Object", "InstantiateAsync", "UnityEngine.Object", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.ReadOnlySpan`1[UnityEngine.Quaternion]", "UnityEngine.Transform"},
+		new List<string>(){"UnityEngine.Object", "InstantiateAsync", "UnityEngine.Object", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.ReadOnlySpan`1[UnityEngine.Quaternion]", "UnityEngine.InstantiateParameters"},
+		new List<string>(){"UnityEngine.GameObject", "SetGameObjectsActive", "System.ReadOnlySpan`1[System.Int32]", "System.Boolean"},
+		// Transform batch methods with Span<Vector3>/ReadOnlySpan<Vector3> params
+		new List<string>(){"UnityEngine.Transform", "TransformDirections", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "TransformDirections", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "InverseTransformDirections", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "InverseTransformDirections", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "TransformVectors", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "TransformVectors", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "InverseTransformVectors", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "InverseTransformVectors", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "TransformPoints", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "TransformPoints", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "InverseTransformPoints", "System.Span`1[UnityEngine.Vector3]"},
+		new List<string>(){"UnityEngine.Transform", "InverseTransformPoints", "System.ReadOnlySpan`1[UnityEngine.Vector3]", "System.Span`1[UnityEngine.Vector3]"},
 		new List<string>(){"VEngine.Manifest", "AddAsset"},
 		new List<string>(){"VEngine.Manifest", "Save"},
 		new List<string>(){"VEngine.Manifest", "AllAssetPaths"},

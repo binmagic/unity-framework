@@ -1061,17 +1061,25 @@ namespace CSObjectWrapEditor
         {
             // 这个生成需要修改一下，因为我们不能把meta删除掉，这样太扯淡
             // 我们需要只删除CS文件，meta不要删除，删除之后需要重新导入很麻烦
+            if (!Directory.Exists(path))
+            {
+                Debug.Log("[XLua] Clear skipped: directory not found - " + path);
+                return;
+            }
             var files = Directory.GetFiles(path, "*.cs");
+            int count = 0;
             foreach (var file in files)
             {
                 if (file.EndsWith(".meta"))
                 {
                     continue;
                 }
-                
+
                 File.Delete(file);
+                count++;
             }
             AssetDatabase.Refresh();
+            Debug.Log("[XLua] Clear done: deleted " + count + " .cs file(s) from " + path);
         }
 #endif
 
@@ -1682,14 +1690,13 @@ namespace CSObjectWrapEditor
 #endif
             // 这个生成需要修改一下，因为我们不能把meta删除掉，这样太扯淡
             // 我们需要只删除lua，然后生成之后，再判断一下，把只有meta但是没有lua的项删除
+            var start = DateTime.Now;
+            Directory.CreateDirectory(GeneratorConfig.common_path);
             var files = Directory.GetFiles(GeneratorConfig.common_path, "*.cs");
             foreach (var file in files)
             {
                 File.Delete(file);
             }
-
-            var start = DateTime.Now;
-            Directory.CreateDirectory(GeneratorConfig.common_path);
             GetGenConfig(XLua.Utils.GetAllTypes());
             luaenv.DoString("require 'TemplateCommon'");
             var gen_push_types_setter = luaenv.Global.Get<LuaFunction>("SetGenPushAndUpdateTypes");
