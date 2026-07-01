@@ -19,10 +19,20 @@ local function Start()
     TimerManager:GetInstance():Startup()
     TimeUpManager:GetInstance():Startup()
     UIManager:GetInstance():Startup()
+
+    -- 初始化 LuaEntry（全局数据入口）
+    LuaEntry:Init()
+
+    -- 启动加载状态机（最终状态会启动游戏）
+    AppStartupLoading:GetInstance():Startup()
 end
 
 -- 退出
 local function Exit()
+    -- 销毁连连看游戏管理器
+    local LianLianManager = require "Game.LianLian.Manager.LianLianManager"
+    LianLianManager:Delete()
+
     UIManager:GetInstance():DestroyAllWindow()
 
     UIManager:GetInstance():Delete()
@@ -31,7 +41,9 @@ local function Exit()
     UpdateManager:GetInstance():Dispose()
     EventManager:GetInstance():Delete()
 
-    return
+    -- 销毁加载状态机和 LuaEntry
+    AppStartupLoading:GetInstance():Delete()
+    LuaEntry:Uninit()
 end
 
 local function ShowTips(msg)

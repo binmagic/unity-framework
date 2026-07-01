@@ -113,8 +113,8 @@ local function Broadcast(self, e_type, ...)
 		end
 				
 		if not ok then
-			local now = UITimeManager:GetInstance():GetServerSeconds()
-			CommonUtil.SendErrorMessageToServer(now, now, msg)
+			--local now = UITimeManager:GetInstance():GetServerSeconds()
+			--CommonUtil.SendErrorMessageToServer(now, now, msg)
 			Logger.LogError(msg)
 		end
 			

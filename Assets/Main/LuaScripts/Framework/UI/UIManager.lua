@@ -135,9 +135,9 @@ end
 local function ProtectCall(fun, ...)
     local ok, msg = XPCALL(fun, debug.traceback, ...)
     if not ok then
-        local now = UITimeManager:GetInstance():GetServerSeconds()
         local str = "UIManager Error:"..msg
-        CommonUtil.SendErrorMessageToServer(now, now, str)
+        --local now = UITimeManager:GetInstance():GetServerSeconds()
+        --CommonUtil.SendErrorMessageToServer(now, now, str)
         Logger.LogError(str)
     end
 end
@@ -340,10 +340,10 @@ local function OpenWindow(self, ui_name, ...)
     Logger.Debug('#UIManager# OpenWindow name:', tostring(ui_name))
     
     --跨服时不能打开的界面，给予提示
-    if self:IsUIShieldByCross(ui_name) then
-        UIUtil.ShowTipsId(379004)
-        return
-    end
+    --if self:IsUIShieldByCross(ui_name) then
+    --    UIUtil.ShowTipsId(379004)
+    --    return
+    --end
 
     local config = GetWindowConfig(self, ui_name)
     if config.Layer == UILayer.Background or config.Layer == UILayer.Normal then
@@ -353,7 +353,7 @@ local function OpenWindow(self, ui_name, ...)
         end
         if ui_name ~= UIWindowNames.UIBuildUpgradeAddDes and ui_name ~= UIWindowNames.UIItemTips
                 and ui_name ~= UIWindowNames.UIHeroTip and ui_name ~= UIWindowNames.UIFormationTip
-                and ui_name ~= UIWindowNames.UIMainPromptView and ui_name ~= UIWindowNames.UIArmyTips 
+                and ui_name ~= UIWindowNames.UIMainPromptView and ui_name ~= UIWindowNames.UIArmyTips
                 and ui_name ~= UIWindowNames.UIAllianceBossWorldPointTipPanel then
             UIUtil.ClickUICloseWorldUI()
         end
@@ -477,16 +477,16 @@ local function OpenWindow(self, ui_name, ...)
     end
 
     if not self:NoSoundPlayed(ui_name) then
-        SUSoundUtil.PlayUISoundEffect(ui_name)
+        SoundUtil.PlayUISoundEffect(ui_name)
     end
     self:StopWorldCameraMove(window)
 
     if self:IsShouldPauseRole(config, ui_name) then
-        if (DataCenter.BattleLevel:GetRoleMgr()) then
-            DataCenter.BattleLevel:GetRoleMgr():PauseAll()
-        end
+        --if (DataCenter.BattleLevel:GetRoleMgr()) then
+        --    DataCenter.BattleLevel:GetRoleMgr():PauseAll()
+        --end
     end
-    DataCenter.QuestArrowManager:ResetLastRecordTime()
+    --DataCenter.QuestArrowManager:ResetLastRecordTime()
 end
 
 function UIManager:NoSoundPlayed(ui_name)
@@ -765,7 +765,7 @@ local function OnAfterWindowDestroy(self, ui_name)
             --DataCenter.BattleLevel:GetRoleMgr():ResumeAll()
         --end
     --end
-    DataCenter.QuestArrowManager:ResetLastRecordTime()
+    --DataCenter.QuestArrowManager:ResetLastRecordTime()
 end
 
 local function DestroyWindow(self, ui_name, closeOptions)
@@ -1201,13 +1201,14 @@ function UIManager:DumpUIHierarchy()
     return retStr
 end
 
-local function IsUIShieldByCross(self, ui_name)
+--[[local function IsUIShieldByCross(self, ui_name)
+    if not LuaEntry or not LuaEntry.Player then return false end
     local checkServer = not LuaEntry.Player:IsInSelfServer() or LuaEntry.Player:IsInCrossFight()
     if checkServer and CrossShieldUI[ui_name] then
         return true
     end
     return false
-end
+end]]--
 
 local function GetAllWindowNames(self)
     if self.windows ~= nil then
@@ -1288,28 +1289,28 @@ end
 
 function UIManager:TryMuteWorldScopeAudio()
     if not SceneManager.IsInWorld() then
-        SUSoundUtil.SetWorldScopeVolume(1.0)
+        SoundUtil.SetWorldScopeVolume(1.0)
         return
     end
     if self.otherWindowStack.length == 0 and self.windowStack.length == 0 then
-        SUSoundUtil.SetWorldScopeVolume(1.0)
+        SoundUtil.SetWorldScopeVolume(1.0)
     end
 
     for _, v in ilist(self.windowStack) do
         if v.View and v.View.activeSelf and self:IsNeedMuteWorldScopeAudio(v.View) then
-            SUSoundUtil.SetWorldScopeVolume(0.0)
+            SoundUtil.SetWorldScopeVolume(0.0)
             return
         end
     end
 
     for _, v in ilist(self.windowStack) do
         if v.View and v.View.activeSelf and self:IsNeedMuteWorldScopeAudio(v.View) then
-            SUSoundUtil.SetWorldScopeVolume(0.0)
+            SoundUtil.SetWorldScopeVolume(0.0)
             return
         end
     end
 
-    SUSoundUtil.SetWorldScopeVolume(1.0)
+    SoundUtil.SetWorldScopeVolume(1.0)
 end
 
 UIManager.__init = __init

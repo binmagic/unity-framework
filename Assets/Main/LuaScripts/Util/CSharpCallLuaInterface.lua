@@ -658,8 +658,9 @@ local function IsShowWorldCollectPoint()
     return DataCenter.GuideManager:IsShowWorldCollectPoint()
 end
 local function SendErrorMessageToServer(errorMsg)
-    local now = UITimeManager:GetInstance():GetServerSeconds()
-    CommonUtil.SendErrorMessageToServer(now, now, errorMsg)
+    --local now = UITimeManager:GetInstance():GetServerSeconds()
+    --CommonUtil.SendErrorMessageToServer(now, now, errorMsg)
+    Logger.LogError(errorMsg)
 end
 
 function CSharpCallLuaInterface.IndexToTilePos(index)

@@ -197,7 +197,7 @@ end
 
 function UIBaseView:TryHideMainCamera()
 	--躲避球战斗中不禁用主相机
-	local isInBarrel = DataCenter.LWBattleManager:IsInBattleLevel()
+	local isInBarrel = false --DataCenter.LWBattleManager:IsInBattleLevel()
 	if isInBarrel then
 		return
 	end
