@@ -89,6 +89,26 @@ GameEntry.BuildAnimatorManager // 建筑动画
 
 **入口文件**: `Assets/Main/LuaScripts/GameMain.lua`
 
+**顶层目录（固定 10 个，不可新建）**:
+| 目录 | 职责 |
+|------|------|
+| `Global/` | 全局模块加载与全局命名空间（`Global.lua` 是唯一加载入口，有依赖顺序） |
+| `Framework/` | 框架层：OOP 系统、UI 基类、事件、定时器、日志 |
+| `Common/` | Lua 语言级扩展与 C# 交互封装（与游戏逻辑无关） |
+| `Util/` | 游戏业务工具类（全局 require） |
+| `DataCenter/` | 数据管理中枢 + 各业务 Manager |
+| `Net/` | 网络协议：消息定义、路由、消息类 |
+| `UI/` | UI 窗口（MVC） |
+| `Slg/` | SLG 业务（UI/DataCenter/Chat/Generated 并行体系） |
+| `Scene/` | 场景内动态对象管理器（血条、气泡、特效、行军等） |
+| `Loading/` | 启动加载流程、热更版本检测 |
+
+**OOP 系统**: 所有类用 `BaseClass(name, super)`；类名=文件名=变量名三者一致；生命周期 `__init`（初始化字段）/ `__delete`（字段置 nil，一一对应）；单例继承 `Singleton` 用 `GetInstance()`；只读常量用 `ConstClass` 包装
+
+**方法定义两种风格**（单文件内不混用）: ① `local function` + 末尾导出 ② `function Class:Method()`；文件末尾必须 `return 类变量`
+
+**详细总纲见 `Assets/.claude/lua-architecture.md`**
+
 **UI 框架**: MVC 模式
 - `UIBaseView` — 视图层
 - `UIBaseModel` — 数据模型层
@@ -104,7 +124,41 @@ GameEntry.BuildAnimatorManager // 建筑动画
 - 详细规则见 `Assets/.claude/rules.md`
 - 目录结构规范见 `Assets/.claude/ui-directory-structure.md`
 
+**全局资源表（`Assets/Main/LuaScripts/Global/EnumType.lua`）**:
+- `UIConfig` + `UIWindowNames`: 窗口 prefab，配套 `UIManager:OpenWindow`
+- `UIAssets`: 直接实例化的 cell/item/子组件 prefab，配套 `InstantiateAsync`
+- `VFXAssets`: UI 特效 prefab，配套 `AddUIEffect`/`RemoveUIEffect`
+- `SoundAssets`: 音效路径常量表，配套 `SUSoundUtil.PlayEffect`
+
+**SoundAssets 定义规则**（`EnumType.lua` 约 1438 行）:
+- 全局表，把逻辑名映射到音效资源路径
+- 格式 `逻辑名 = "音效路径", -- 中文注释`（说明音效用途）
+- 缩进：4 空格
+- 逻辑名 PascalCase，业务音效惯用 `Music_Effect_` 前缀，部分用 `Effect_` / `Click_` / `SU_` / `UI_` 前缀
+- 路径两种写法：① 短路径（相对 Sound 根目录），如 `"effect_open"`、`"btn/StereoButtons"`、`"city/TrainTroops"`；② 完整路径，如 `"Assets/Main/Sound/Effect/ui/xxx.ogg"`（需精确指定文件时用）
+- 短路径按子目录组织：`building/`、`city/`、`ui/`、`btn/`、`world/`、`barrel_new/` 等
+- 使用：`SUSoundUtil.PlayEffect(SoundAssets.Music_Effect_Button)`，循环音效用 `PlayLoopEffect`，背景乐用 `PlaySound`
+- 可拼接动态后缀：`SoundAssets.Click_Monster_Female .. tostring(index)`
+- 禁止：硬编码音效字符串（必须走 SoundAssets）、逻辑名重复、新建其他全局音效表
+- 详细规则见 `Assets/.claude/rules.md`
+
 **全局模块加载**: `Assets/Main/LuaScripts/Global/Global.lua`
+
+### 数据层（DataCenter）
+
+- **DataCenter** (`LuaScripts/DataCenter/DataCenter.lua`): 全局数据管理中枢，懒加载所有 Manager
+- 访问方式: `DataCenter.XxxManager:Method()`（全局可用，首次访问时 `require` + `New()` 并缓存）
+- 类角色（按后缀）: `*Manager` 管理器（注册到 DataCenter）、`*Template` 配置行类、`*Info` 数据实体、`*Data` 数据管理器
+- 生命周期: `__init(self)` 初始化字段 / `__delete(self)` 字段置 nil（一一对应，防泄漏）
+- 网络回调命名: `XxxHandle`（响应）、`PushXxxHandle`（推送）；处理后用 `EventManager:Broadcast` 通知 UI
+- 新增管理器两步: ① `Managers` 表加 `XxxManager = "DataCenter.Xxx.XxxManager"` ② 末尾加 `---@field XxxManager XxxManager`
+- **LuaEntry** (`LuaScripts/DataCenter/Global/LuaEntry.lua`): 与 DataCenter 并列的核心数据入口（类似 C# `GameEntry.Data`）
+  - 持有最核心高频数据: `LuaEntry.Player`（玩家）、`LuaEntry.DataConfig`（配置）、`LuaEntry.Resource`（资源）、`LuaEntry.Effect`、`LuaEntry.GlobalData`、`LuaEntry.Network`
+  - 冒号方法风格的单例表（非 BaseClass）；生命周期 `Init/onMessage/StartGame/EndGame/Uninit` 由框架调用
+  - 登录消息回来时 `onMessage` 会**重新 New** Player 等对象（防数据串乱）→ 不要缓存 `LuaEntry.Player` 引用，每次直接取
+  - 随开局启动的 Manager 在 `LuaEntry:StartGame()` 中 `Startup`，并在 `EndGame()` 对应 `Delete`
+  - 访问 `LuaEntry.Player` 前框架须已 `Init()`（登录前/简化流程可能为 nil，需判空）
+- 详细规则见 `Assets/.claude/datacenter-conventions.md`
 
 ### 网络架构
 
@@ -275,6 +329,10 @@ Arabic、ChineseSimplified、ChineseTraditional、English、French、German、It
 
 ## 相关文档
 
+- **Lua 整体架构与编写规范（总纲）**: `Assets/.claude/lua-architecture.md`
 - **编码规范**: `Assets/.claude/rules.md`
 - **参考文档**: `Assets/.claude/reference.md`
 - **UI 目录结构规范**: `Assets/.claude/ui-directory-structure.md`
+- **UI 代码编写规范**: `Assets/.claude/ui-coding-conventions.md`
+- **UI 组件参考手册**: `Assets/.claude/ui-components-reference.md`
+- **DataCenter 编写规范**: `Assets/.claude/datacenter-conventions.md`
