@@ -24,8 +24,15 @@ namespace VEngine
         protected override void OnLoad()
         {
             base.OnLoad();
-            
+
             versionName = Manifest.GetVersionFile(name);
+
+#if UNITY_WEBGL
+            // WebGL: 版本文件通过 UnityWebRequest 异步加载，不在 OnLoad 中同步检查
+            // 直接进入 CheckVersion 阶段，通过 HTTP 下载版本文件
+            pathOrURL = Versions.GetDownloadURL(name);
+            status = LoadableStatus.CheckVersion;
+#else
             var versionPath = GetTemporaryPath(versionName);
             if (!File.Exists(versionPath))
             {
@@ -37,6 +44,7 @@ namespace VEngine
             pathOrURL = Versions.GetDownloadURL($"{name}{CompressPosfix}_v{versionFile.version}");
 
             status = LoadableStatus.CheckVersion;
+#endif
         }
 
         protected override void OnUpdate()
@@ -70,6 +78,14 @@ namespace VEngine
                 var newName = split[0];
                 target.name = newName;
             }
+
+#if UNITY_WEBGL
+            // WebGL: 不使用文件复制，直接从内存加载
+            var tempPath = GetTemporaryPath(name);
+            target.Load(tempPath);
+            Log.Debug($"[WebGL] Load manifest {tempPath} {target.version}");
+            Versions.Override(target);
+#else
             var from = GetTemporaryPath(name);
             var dest = Versions.GetDownloadDataPath(name).Replace(name, target.name);
             if (File.Exists(from))
@@ -91,6 +107,7 @@ namespace VEngine
             target.Load(dest);
             Log.Debug($"Load manifest {dest} {target.version}");
             Versions.Override(target);
+#endif
         }
 
         private void UpdateDownloading()
@@ -113,10 +130,13 @@ namespace VEngine
                 return;
             }
 
+#if UNITY_WEBGL
+            // WebGL: 下载的数据在内存中，直接进入 Loading 阶段
+            download = null;
+            status = LoadableStatus.Loading;
+#else
             // 解压Manifest
             var savePath = GetTemporaryPath($"{name}{CompressPosfix}");
-            //var fastZip = new FastZip();
-            //fastZip.ExtractZip(savePath, Path.GetDirectoryName(savePath), "");
             var destDir = Path.GetDirectoryName(savePath);
             try
             {
@@ -127,24 +147,22 @@ namespace VEngine
             {
                 CommonUtils.LogErrorWithPost($"ExtractToDirectory exception: {exception.Message}");
             }
-            
+
             download = null;
             status = LoadableStatus.Loading;
+#endif
         }
 
         private void UpdateVersion()
         {
+#if UNITY_WEBGL
+            // WebGL: 跳过本地版本检查，直接下载最新 manifest
+            Log.Debug($"[WebGL] Download manifest {name}");
+            var savePath = GetTemporaryPath($"{name}{CompressPosfix}");
+            download = Download.DownloadAsync(pathOrURL, savePath);
+            status = LoadableStatus.Downloading;
+#else
             var path = GetTemporaryPath(name);
-            // if (Versions.Manifests.Exists(m => m.version == versionFile.version && name.Contains(m.name)))
-            // {
-            //     Log.Debug("[DownloadManifest]1 Skip to download {0}, because nothing to update.", name);
-            //     if (File.Exists(path))
-            //     {
-            //         File.Delete(path);
-            //     }
-            //     Finish();
-            //     return;
-            // }
 
             for (int i = 0; i < Versions.Manifests.Count; ++i)
             {
@@ -163,10 +181,9 @@ namespace VEngine
                     }
                 }
             }
-            
 
             Log.Debug("Read {0} with version {1} crc {2}", name, versionFile.version, versionFile.crc);
-            
+
             if (File.Exists(path))
             {
                 using (var stream = File.OpenRead(path))
@@ -186,9 +203,10 @@ namespace VEngine
 
             var savePath = GetTemporaryPath($"{name}{CompressPosfix}");
             Debug.LogFormat("DownloadAsync: {0} -> {1}", pathOrURL, savePath);
-            
+
             download = Download.DownloadAsync(pathOrURL, savePath);
             status = LoadableStatus.Downloading;
+#endif
         }
     }
 }

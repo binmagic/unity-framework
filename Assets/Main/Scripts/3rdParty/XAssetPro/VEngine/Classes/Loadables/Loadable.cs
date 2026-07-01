@@ -12,7 +12,12 @@ namespace VEngine
     /// </summary>
     public class Loadable
     {
+#if UNITY_WEBGL
+        // WebGL 不支持 AssetBundle 的 offset 参数，Bundle 需不加密打包
+        public static uint BundleEncodeOffset = 0;
+#else
         public static uint BundleEncodeOffset = 8;
+#endif
         /// <summary>
         ///     加载中的列表，会在 Updater 中集中更新状态
         /// </summary>

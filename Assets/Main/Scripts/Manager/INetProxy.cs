@@ -1,4 +1,6 @@
+#if !UNITY_WEBGL
 using Sfs2X.Requests;
+#endif
 
 namespace GameKit.Base
 {
@@ -11,10 +13,12 @@ namespace GameKit.Base
         bool IsConnecting { get; }
 
         void Connect();
-        
+
         void Disconnect();
 
+#if !UNITY_WEBGL
         void Send(IRequest request);
+#endif
         void Send(byte[] data, int dataLen);
 
         void SyncPingPong(int time = -1);
@@ -26,8 +30,3 @@ namespace GameKit.Base
         void UpdateSmartFoxClient();
     }
 }
-
-
-
-
-
