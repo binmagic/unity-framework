@@ -44,7 +44,7 @@ function SFSNetwork.HandleMessage(cmd, t)
 		local ok, errorMsg = xpcall(SafeHandleMessage, debug.traceback, msgType, t)
 		if not ok then
 			local now = UITimeManager:GetInstance():GetServerSeconds()
-			CommonUtil.SendErrorMessageToServer(now, now, errorMsg)
+			--CommonUtil.SendErrorMessageToServer(now, now, errorMsg)
 			Logger.LogError(errorMsg)
 			return false
 		end

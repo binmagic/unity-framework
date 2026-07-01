@@ -126,7 +126,7 @@ local function flipTable(tbl)
 end
 
 --横=>竖 id映射
-local ToPortraitIdMapping = {
+--[[local ToPortraitIdMapping = {
 	[141166] = 900000,
 	[141198] = 900001,
 	[372440] = 900002,
@@ -142,10 +142,10 @@ local ToPortraitIdMapping = {
 	[897855] = 897867,
 	[897856] = 897868,
 	[897857] = 897869,
-}
+}]]--
 
 --竖=>横 id映射
-local ToLandScapeIdMapping = flipTable(ToPortraitIdMapping)
+--local ToLandScapeIdMapping = flipTable(ToPortraitIdMapping)
 
 function Localization.GetRealId(originId)
 	local id = tonumber(originId)

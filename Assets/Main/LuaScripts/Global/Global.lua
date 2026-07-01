@@ -32,8 +32,28 @@ FireBaseLog = require "Framework.Logger.FireBaseLog"
 EventId = require "Framework.UI.Message.EventId"
 EventManager = require "Framework.UI.Message.EventManager"
 
+UITimeManager = require "Framework.UI.Time.UITimeManager"
 Hex = require "Util.Hex"
+ListenerHandler = require 'Global.ListenerHandler'
+SingletonListenerHandler = require 'Global.SingletonListenerHandler'
+LuaWebRequest = require 'Global.LuaWebRequest'
+require "Global.UnityUtils"
+
+-- game data
+NameCount = 0
+DataCenter = require "DataCenter.DataCenter"
+RenderSetting =require "Framework.Render.RenderSetting"
+
+-- LUA全局数据
+LuaEntry = require "DataCenter.Global.LuaEntry"
+AppStartupLoading = require "Loading.AppStartupLoading"
+
+-- util 类
+CommonUtil = require "Util.CommonUtil"
 UIStrCache = require "Util.UIStrCache"
+UIUtil = require "Util.UIUtil"
+---@type SUSoundUtil
+SoundUtil = require "Util.SoundUtil"
 
 -- ui base
 PathUtil = require "Framework.Common.PathUtil"
@@ -82,6 +102,10 @@ UISpine = require "Framework.UI.Component.UISpine"
 UITMPInput = require "Framework.UI.Component.UITMPInput"
 
 require "Global.EnumType"
+
+UIWindowNames = require "UI.Config.UIWindowNames"
+UIConfig = require "UI.Config.UIConfig"
+
 
 -- ui window
 UILayer = require "Framework.UI.UILayer"

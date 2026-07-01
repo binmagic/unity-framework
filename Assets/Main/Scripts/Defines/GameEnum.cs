@@ -19,9 +19,9 @@ public enum ResourceType
 {
     None = -1,//默认值，只前端要用
     // 0 燃油
-    Oil=0,
+    //Oil=0,
     // 1 金属
-    Metal=1,
+    //Metal=1,
     // // 2 核燃料
     // Nuclear,
     // // 3 粮食
