@@ -74,6 +74,8 @@ Thumbs.db
 # --- XLua Generated ---
 Assets/Plugins/XLua/Gen/*
 !Assets/Plugins/XLua/Gen/.gitkeep
+Assets/Main/LuaTxt/*
+Assets/Main/Scripts/XLuaGen/*
 
 # --- XLua Examples (可选，如不需要可取消注释) ---
 # Assets/XLua/Examples/
