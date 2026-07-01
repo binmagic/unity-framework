@@ -458,3 +458,282 @@ LuaScripts/
 - 无 Controller 且文件数 ≤ 2 → 可用平铺模式
 - 相关窗口 ≥ 3 个 → 用分组目录聚合
 - 不是独立窗口 → 公共组件目录（不注册 UIConfig）
+
+## UIAssets 资源路径注册规则
+
+文件路径：`Assets/Main/LuaScripts/Global/EnumType.lua`（全局表 `UIAssets`，约 547 行起）
+
+### 用途
+
+`UIAssets` 是**直接实例化型 prefab 的路径常量表**，把逻辑名映射到 prefab 完整路径。
+适用于通过 `ResourceManager:InstantiateAsync` / `GameObjectInstantiateAsync` / `AddComponent` 等方式**直接实例化**的 prefab：
+
+- 列表项 / 单元格（Cell、Item）
+- 场景中动态生成的 UI（血条、状态图标、气泡）
+- 特效 prefab（Effect）
+- 子组件 prefab
+
+与 `UIConfig`（通过 `UIManager:OpenWindow` 打开的窗口）是**两套独立机制**，不要混用。
+
+### 格式规则
+
+```lua
+UIAssets =
+{
+    UICommonItem = "Assets/Main/Prefabs/UI/Common/UICommonItem.prefab",
+    MailUserItem = "Assets/Main/Prefabs/Slg/Mail/ObjMail/MailUserItem.prefab",
+}
+```
+
+- 格式为 `逻辑名 = "完整 prefab 路径",`
+- 缩进：4 空格
+- 逻辑名：PascalCase，通常与 prefab 文件名一致
+- 路径：必须是 `Assets/` 开头的完整路径，以 `.prefab` 结尾
+- 路径前缀允许 `Assets/Main/Prefabs/...` 或 `Assets/_Art_LastDay/...` 等实际美术目录（不限于 UI 目录）
+
+### 带格式化参数的路径
+
+需要运行时拼接的路径用 `%s` 占位，配合 `string.format` 使用：
+
+```lua
+March = "Assets/Main/Prefabs/March/%s.prefab",
+BuildUpgradeCompleteEffect = "Assets/Main/Prefabs/BuildEffect/BuildUpgradeCompleteEffect%s.prefab",
+```
+
+调用：`string.format(UIAssets.March, prefabName)`
+
+### 使用方式
+
+```lua
+-- 实例化
+local request = ResourceManager:InstantiateAsync(UIAssets.TroopTransUI)
+
+-- 异步实例化
+self:GameObjectInstantiateAsync(UIAssets.UIWorldTileBuildBtn, function(request) ... end)
+
+-- 作为 AddComponent 的 prefab 路径判断
+if prefabPathStr == UIAssets.UICommonResItem then ... end
+```
+
+### UIConfig vs UIAssets 选择规则
+
+| 场景 | 用哪个 |
+|------|--------|
+| 通过 `UIManager:OpenWindow` 打开的独立窗口 | `UIConfig` + `UIWindowNames` |
+| 直接实例化的 cell / item / 特效 / 子组件 | `UIAssets` |
+
+### 禁止事项
+
+1. **禁止把窗口 prefab 注册到 UIAssets**（窗口走 UIConfig）
+2. **禁止把直接实例化的 cell/item 注册到 UIConfig**（它们不是窗口）
+3. **禁止路径不以 `.prefab` 结尾**（除非是 `%s` 格式化模板）
+4. **禁止逻辑名重复**（UIAssets 是全局唯一 key 表）
+5. **新增时追加到 `UIAssets` 表内**，不要新建其他全局资源表
+
+## VFXAssets 特效路径注册规则
+
+文件路径：`Assets/Main/LuaScripts/Global/EnumType.lua`（全局表 `VFXAssets`，紧接 `UIAssets` 之后，约 1126 行起）
+
+### 用途
+
+`VFXAssets` 是**UI 特效（VFX）prefab 的路径常量表**，把逻辑名映射到特效 prefab 完整路径。
+专门配合 `self:AddUIEffect` / `self:RemoveUIEffect` 使用，用于挂在 UI 节点上的粒子/动效特效：
+
+- 按钮高亮 / 闪光特效
+- 升级 / 解锁 / 战力提升动效
+- 列表项 / 头像 / 进度条上的光效
+
+与 `UIAssets`（普通实例化 prefab）、`UIConfig`（窗口）是**三套独立机制**。
+
+### 格式规则
+
+```lua
+VFXAssets =
+{
+    UITopLevelUpEff = 'Assets/_Art_LastDay/Effect/Prefab/UI/UILevel/Eff_UI_level.prefab',
+    UnlockNewFunctionInEff = 'Assets/_Art_LastDay/Effect/Prefab/UI/UnlockNewFunction/Eff_UnlockNewFunction_In.prefab',
+}
+```
+
+- 格式为 `逻辑名 = '完整特效路径',`（注意现有代码用**单引号**，保持一致）
+- 缩进：4 空格
+- 逻辑名：PascalCase，建议以 `Eff` 结尾（如 `UITopLevelUpEff`、`UISonBuildCellEff`）
+- 路径：特效 prefab 一般在美术特效目录下，如 `Assets/_Art_LastDay/Effect/Prefab/...` 或 `Assets/_Art_Barrel/Effect/Prefab/...`，以 `.prefab` 结尾
+- 特效 prefab 命名通常以 `Eff_` / `VFX_` 开头（美术规范）
+- 带运行时拼接的路径用 `%s` 占位（如 `UIMainNewPath = '.../UIPVEMain/%s.prefab'`）
+
+### 使用方式
+
+```lua
+-- 添加特效（挂到指定父节点）
+self:AddUIEffect(VFXAssets.UITopLevelUpEff, { parentNode = self.levelUpEffect })
+
+-- 带回调
+self:AddUIEffect(VFXAssets.UnlockNewFunctionInEff, { parentNode = btn }, function(obj)
+    -- 特效加载完成回调
+end)
+
+-- 移除特效（用同一个 key 移除）
+self:RemoveUIEffect(VFXAssets.UITopLevelUpEff)
+```
+
+`AddUIEffect` 参数表常用字段：`parentNode`（父节点）、`localScale`（缩放）。
+
+### 三套资源表选择规则
+
+| 场景 | 用哪个 | 配套 API |
+|------|--------|----------|
+| `OpenWindow` 打开的独立窗口 | `UIConfig` + `UIWindowNames` | `UIManager:OpenWindow` |
+| 直接实例化的 cell / item / 子组件 | `UIAssets` | `InstantiateAsync` / `AddComponent` |
+| 挂在 UI 节点上的粒子/动效特效 | `VFXAssets` | `AddUIEffect` / `RemoveUIEffect` |
+
+### 禁止事项
+
+1. **禁止用双引号**（VFXAssets 现有约定用单引号 `'...'`，新条目保持一致）
+2. **禁止把普通 cell/item prefab 注册到 VFXAssets**（非特效走 UIAssets）
+3. **禁止把特效 prefab 注册到 UIAssets**（特效走 VFXAssets，配套 AddUIEffect）
+4. **禁止 AddUIEffect 后漏写 RemoveUIEffect**（特效需成对管理，避免残留）
+5. **禁止逻辑名重复**（VFXAssets 是全局唯一 key 表）
+6. **新增时追加到 `VFXAssets` 表内**，不要新建其他全局特效表
+
+## SoundAssets 音效路径注册规则
+
+文件路径：`Assets/Main/LuaScripts/Global/EnumType.lua`（全局表 `SoundAssets`，约 1438 行起）
+
+### 用途
+
+`SoundAssets` 是**音效路径常量表**，把逻辑名映射到音效资源路径，配合 `SUSoundUtil` 播放接口使用。
+涵盖：界面音效、收取/建造音效、按钮音效、英雄/科技音效、场景音效、活动音效等。
+
+### 格式规则
+
+```lua
+SoundAssets =
+{
+    Music_Effect_Open = "effect_open",          --打开界面
+    Music_Effect_Button = "btn/StereoButtons",  --点击按钮
+    Music_Effect_Trained = "city/TrainTroops",  --收取士兵
+    SU_BuildUpgrade = "building/sounds_builder_upgrade",
+}
+```
+
+- 格式为 `逻辑名 = "音效路径", -- 中文注释`（注释说明音效用途，强烈建议写）
+- 缩进：4 空格
+- 逻辑名：PascalCase。常见前缀：
+  - `Music_Effect_`：通用业务音效（最常用）
+  - `Effect_`：场景/功能特定音效
+  - `Click_`：点击类音效
+  - `SU_`：建造系统音效
+  - `UI_`：界面专用音效
+
+### 路径两种写法
+
+1. **短路径**（相对 Sound 根目录，推荐）— 底层自动补全：
+   ```lua
+   Music_Effect_Open = "effect_open",
+   Music_Effect_Button = "btn/StereoButtons",
+   Music_Effect_Trained = "city/TrainTroops",
+   ```
+   按子目录组织：`building/`、`city/`、`ui/`、`btn/`、`world/`、`barrel_new/` 等
+
+2. **完整路径**（需精确指定文件、扩展名时用）：
+   ```lua
+   UI_TerritoryTriumph_Cooper_Loop = "Assets/Main/Sound/Effect/ui/ui_territorytriumph_cooper_loop.ogg",
+   ```
+
+### 使用方式
+
+```lua
+-- 播放普通音效
+SUSoundUtil.PlayEffect(SoundAssets.Music_Effect_Button)
+
+-- 播放循环音效（播放后需 stop）
+SUSoundUtil.PlayLoopEffect(SoundAssets.XXX)
+
+-- 播放背景音乐
+SUSoundUtil.PlaySound(SoundAssets.XXX)
+
+-- 拼接动态后缀（同类多个音效）
+SUSoundUtil.PlayEffect(SoundAssets.Click_Monster_Female .. tostring(index))
+
+-- 也可直接调 C# 接口
+CS.GameEntry.Sound:PlayEffect(SoundAssets.Music_Effect_Click_Enemy1)
+```
+
+### 四套全局资源表总览
+
+| 场景 | 用哪个 | 配套 API |
+|------|--------|----------|
+| `OpenWindow` 打开的独立窗口 | `UIConfig` + `UIWindowNames` | `UIManager:OpenWindow` |
+| 直接实例化的 cell / item / 子组件 | `UIAssets` | `InstantiateAsync` / `AddComponent` |
+| 挂在 UI 节点上的粒子/动效特效 | `VFXAssets` | `AddUIEffect` / `RemoveUIEffect` |
+| 音效 / 音乐 | `SoundAssets` | `SUSoundUtil.PlayEffect` / `PlaySound` |
+
+### 禁止事项
+
+1. **禁止硬编码音效字符串**（必须通过 `SoundAssets.XXX` 引用，不要直接传 `"effect_open"`）
+2. **禁止逻辑名重复**（SoundAssets 是全局唯一 key 表）
+3. **禁止循环音效播放后不 stop**（`PlayLoopEffect` 需配对停止）
+4. **新增时追加到 `SoundAssets` 表内**，不要新建其他全局音效表
+5. **建议每条音效加中文注释**，说明触发场景（与现有约定一致）
+
+## DataCenter 数据层规范
+
+文件路径：`Assets/Main/LuaScripts/DataCenter/`（注册中枢 `DataCenter.lua`）
+
+### 核心机制
+
+- 全局数据管理中枢，`Global.lua` 中 `DataCenter = require "DataCenter.DataCenter"`
+- 访问：`DataCenter.XxxManager:Method()`，首次访问时懒加载（`require` + `New()`）并缓存
+- 注册：`DataCenter.lua` 顶部 `Managers` 表 `名 = "模块路径"` + 末尾 `---@field` 注解
+
+### 类角色与命名（后缀区分）
+
+| 后缀 | 角色 | 基类 |
+|------|------|------|
+| `*Manager` / `*Data` | 管理器（注册到 DataCenter） | `BaseClass("XxxManager")` |
+| `*TemplateManager` | 配置表管理器（单例） | `BaseClass("Xxx", Singleton)` |
+| `*Template` | 配置行类（DataTable 一行） | `BaseClass("XxxTemplate")` |
+| `*Info` | 数据实体（业务对象） | `BaseClass("XxxInfo")` |
+
+类名 = 文件名 = BaseClass 名（三者一致）。
+
+### 关键规则
+
+- 生命周期：`__init(self)` 初始化字段 / `__delete(self)` 字段置 nil（一一对应，防泄漏）
+- 网络回调命名：`XxxHandle`（响应）、`PushXxxHandle`（推送）；处理后 `EventManager:Broadcast` 通知 UI
+- 配置解析：Info 用 `Parse(self, message)`（网络），Template 用 `InitData(self, row)`（`row:getIntValue`/`getValue`）
+- 两种方法风格（`local function`+末尾导出 / `function Class:`）均可，单文件内不混用
+- 高频/大表用 `createtable(narr, nrec)` 预分配
+
+### 新增管理器两步
+
+1. `Managers` 表加 `XxxManager = "DataCenter.Xxx.XxxManager",`（前缀可为 `DataCenter.`/`Slg.DataCenter.`/`Scene.`）
+2. 末尾加 `---@field XxxManager XxxManager`
+
+### 禁止事项
+
+1. **禁止在 Manager 里放 UI 逻辑**（Manager 只管数据，UI 刷新走 Event 广播）
+2. **禁止手动 require + New 管理器**（统一走 `DataCenter.XxxManager` 懒加载）
+3. **禁止 `__init` 的字段在 `__delete` 中漏置 nil**
+4. **禁止新增管理器漏加 `Managers` 注册或 `---@field` 注解**
+5. **禁止把 Template 配置行类注册到 DataCenter**（由对应 TemplateManager 加载）
+
+### LuaEntry — 核心数据入口（与 DataCenter 并列）
+
+文件：`DataCenter/Global/LuaEntry.lua`，全局加载 `Global.lua` → `LuaEntry = require "DataCenter.Global.LuaEntry"`
+
+- 类似 C# `GameEntry.Data`，持有最核心高频数据；与 `DataCenter`（业务模块仓库）并列、职责不同
+- 核心字段：`LuaEntry.Player`（玩家）、`LuaEntry.DataConfig`（配置）、`LuaEntry.Resource`（资源）、`LuaEntry.Effect`、`LuaEntry.GlobalData`、`LuaEntry.Network`/`CrossNetwork`
+- 是**冒号方法风格的单例表**（非 BaseClass）
+- 生命周期 `Init/onMessage/LoadDataConfig/StartGame/EndGame/Uninit` 由框架（GameMain）调用，业务不要乱调
+- 登录消息回来时 `onMessage` 会**重新 New** Player/Effect/Resource（防数据串乱）
+
+LuaEntry 相关禁止事项：
+
+1. **禁止缓存 `LuaEntry.Player` 等引用**（onMessage 会重建对象，须每次 `LuaEntry.Player` 直接取）
+2. **禁止在 `LuaEntry:Init()` 之前访问 `LuaEntry.Player` 等字段**（未登录可能为 nil，需判空）
+3. **随开局启动的 Manager 必须在 `StartGame()` 加 `Startup`、`EndGame()` 加 `Delete`**（成对）
+4. **禁止把普通业务数据塞进 LuaEntry**（业务数据走 DataCenter 的 Manager，LuaEntry 只放核心未分组数据）
+
+详细规则见 `Assets/.claude/datacenter-conventions.md`
