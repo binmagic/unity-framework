@@ -335,4 +335,5 @@ Arabic、ChineseSimplified、ChineseTraditional、English、French、German、It
 - **UI 目录结构规范**: `Assets/.claude/ui-directory-structure.md`
 - **UI 代码编写规范**: `Assets/.claude/ui-coding-conventions.md`
 - **UI 组件参考手册**: `Assets/.claude/ui-components-reference.md`
+- **UI Prefab 制作规范**: `Assets/.claude/ui-prefab-conventions.md`
 - **DataCenter 编写规范**: `Assets/.claude/datacenter-conventions.md`

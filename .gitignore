@@ -108,3 +108,7 @@ Podfile.lock
 # --- TexturePacker ---
 *.tps
 atlas/
+
+# --- Game Tmp ---
+Assets/_Art_Tmp
+Assets/_Art_Tmp.meta
