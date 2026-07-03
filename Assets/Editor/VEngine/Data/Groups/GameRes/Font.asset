@@ -29,13 +29,13 @@ MonoBehaviour:
     index: -1
   - comment: 
     bundleMode: 0
-    label: 
+    label: Font Materials
     dependencies: []
     readOnly: 0
     path: Assets/Main/Fonts/Materials
     excludePaths: []
     rootPath: 
-    parentGroup: {fileID: 0}
+    parentGroup: {fileID: 11400000}
     bundle: 
     index: -1
   - comment: 
@@ -46,7 +46,7 @@ MonoBehaviour:
     path: Assets/TextMesh Pro
     excludePaths: []
     rootPath: 
-    parentGroup: {fileID: 0}
+    parentGroup: {fileID: 11400000}
     bundle: 
     index: -1
   readOnly: 0
