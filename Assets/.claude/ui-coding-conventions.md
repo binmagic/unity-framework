@@ -358,11 +358,59 @@ return {
 |------|----------|------|
 | View 类名 | `UI{功能名}View` 或 `{功能名}View` | `UIBagView`、`UIScienceView` |
 | Controller 类名 | `UI{功能名}Ctrl` 或 `{功能名}Ctrl` | `UIBagCtrl`、`UIScienceCtrl` |
-| Component 类名 | 描述性名称 | `UIBagCell`、`ScienceCellNew`、`ResourceItem` |
+| Component 类名 | 见下方 Component 命名详细规则 | `UIBagCell`、`ActivityRewardItem` |
 | 路径变量 | `{描述}_path` | `back_btn_path`、`title_path` |
 | self 字段 | camelCase（无前缀） | `self.closeBtn`、`self.title` |
 | 局部常量 | camelCase 或 UPPER_CASE | `rowItemCount`、`rowCellHight` |
 | require 变量 | PascalCase（类名） | `local UICommonItem = require "..."` |
+
+### Component 命名详细规则
+
+基于 1201 个 Component 文件统计。
+
+#### 后缀约定（按使用频率）
+
+| 后缀 | 数量 | 含义 | 示例 |
+|------|------|------|------|
+| `*Item` | 345 | 列表中的一行/一个条目 | `ActivityRewardItem`、`AllianceTaskItem` |
+| `*Cell` | 304 | 网格/滚动列表中的单元格 | `UIBagCell`、`UISidebarCell`、`ScienceCellNew` |
+| `*Panel` | 70 | 界面中的子面板/子区域 | `UIMainBuildPanel`、`RecordPanel` |
+| `*Main` | 33 | 主体/主内容区域 | `AlContributeMain`、`ArenaMain` |
+| `*List` | 22 | 列表容器 | `MainScoutTroopList` |
+| `*Tip` | 19 | 提示/气泡 | `UIMainDragonTip`、`UIMainDurableTip` |
+| `*Info` | 16 | 信息展示区 | `UIBagItemInfo` |
+| `*Content` | 15 | 内容区域 | `DragonBattlingContent` |
+| `*Btn` | 13 | 按钮组/复杂按钮 | `UIMainRadarBtn` |
+| `*Bar` | 12 | 进度条/状态条 | `UIPVEMainResourceBar` |
+| `*Tab` | 11 | 页签/标签 | `UICommonToggleBtnTab` |
+| `*Node` | 10 | 子节点/小组件 | `UIBagItemInfoBaubleNode` |
+| `*Box` | 9 | 宝箱/奖励盒 | `CompeteRewardBox` |
+
+#### 前缀约定
+
+Component 文件有两种前缀风格（均可接受）：
+
+| 前缀 | 数量 | 规则 | 示例 |
+|------|------|------|------|
+| `UI` 前缀 | 694 | 与所属窗口同前缀（`UI{窗口名}{功能}{后缀}`） | `UIBagCell`、`UIPVEMainBtnItem` |
+| 无 `UI` 前缀 | 564 | 用模块/功能名开头（`{模块名}{功能}{后缀}`） | `ActivityRewardItem`、`AllianceFlagItem`、`ScienceCellNew` |
+
+#### 选择建议
+
+1. 所属窗口名以 `UI` 开头 → Component 也以 `UI` 开头（如 `UIBag` 窗口下的 `UIBagCell`）
+2. 所属模块名不以 `UI` 开头 → Component 用模块名开头（如 `Alliance` 模块下的 `AllianceTaskItem`）
+3. 后缀选择：
+   - 滚动列表中的行 → `*Item` 或 `*Cell`（均可，`Item` 更通用，`Cell` 偏网格/LoopList）
+   - 界面中的子区域 → `*Panel`
+   - 提示/气泡 → `*Tip`
+   - 复杂按钮/工具栏按钮 → `*Btn`
+   - 进度/资源条 → `*Bar`
+
+#### View vs Component 命名区别
+
+- View 文件**必须以 `View` 结尾**（如 `UIBagView`、`UIScienceView`）
+- Controller 文件**必须以 `Ctrl` 结尾**（如 `UIBagCtrl`）
+- Component 文件**不以 `View`/`Ctrl` 结尾**，用上述后缀（`Cell`/`Item`/`Panel`/`Tip` 等）
 
 ---
 
