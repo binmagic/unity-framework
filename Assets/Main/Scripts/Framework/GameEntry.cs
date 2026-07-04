@@ -93,7 +93,7 @@ public static class GameEntry
 
     public static void InitUIContainer()
     {
-        UIContainer = GameObject.Find("GameFramework/UI/UIContainer").transform;
+        UIContainer = GameObject.Find(FrameworkEnv.UIContainerPath).transform;
         if (UIContainer)
         {
             Debug.Log("container not null.");

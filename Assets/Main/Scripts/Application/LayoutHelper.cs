@@ -149,7 +149,7 @@ public static class LayoutHelper
     //修正UI Design Size
     public static void SetDesignSize(Vector2 size)
     {
-        var _uiContainer = GameObject.Find("GameFramework/UI/UIContainer");
+        var _uiContainer = GameObject.Find(FrameworkEnv.UIContainerPath);
         if (_uiContainer == null)
             return;
         var _canvasScale = _uiContainer.GetComponent<CanvasScaler>();
