@@ -22,7 +22,7 @@ public class GFXConsole:BaseGFXConsole
 
         _uiContainerGO = GameObject.Find("UIContainer");
         _touchCamera = GameObject.Find("Main Camera").GetComponent<MobileTouchCamera>();
-        _gfxBg = GameObject.Find("GameFramework/UI/UIContainer/GfxProfilerBg");
+        _gfxBg = GameObject.Find(FrameworkEnv.GfxProfilerBgPath);
         if (_gfxBg)
         {
             _gfxBg.transform.SetAsLastSibling();

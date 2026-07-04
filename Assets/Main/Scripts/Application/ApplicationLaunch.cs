@@ -31,7 +31,27 @@ public class ApplicationLaunch : MonoBehaviour
     } = true;
 
     public Dictionary<string, Shader> m_kvNameToShader = new Dictionary<string, Shader>(128);
-    
+
+    // 框架 Prefab：在面板中拖拽 prefab 资产，编辑期自动固化为资产路径字符串供运行时加载
+    [Header("框架 Prefab")]
+    [SerializeField] private GameObject frameworkPrefab;
+    [SerializeField, HideInInspector] private string frameworkPrefabPath = "Assets/Main/Prefabs/UnityGameFramework/GameFramework.prefab";
+
+#if UNITY_EDITOR
+    // 仅编辑器：把拖入的 prefab 引用固化成资产路径字符串
+    private void OnValidate()
+    {
+        if (frameworkPrefab != null)
+        {
+            string path = UnityEditor.AssetDatabase.GetAssetPath(frameworkPrefab);
+            if (!string.IsNullOrEmpty(path))
+            {
+                frameworkPrefabPath = path;
+            }
+        }
+    }
+#endif
+
     // 配置的zip处理
     public ZipDataTable _zipDataTable;
     
@@ -311,7 +331,7 @@ public class ApplicationLaunch : MonoBehaviour
 
     private void InitFrameworkEnv()
     {
-        InstanceObj("Assets/Main/Prefabs/UnityGameFramework/GameFramework.prefab");
+        InstanceObj(frameworkPrefabPath);
         
         GameEntry.InitUIContainer();
         
@@ -356,6 +376,11 @@ public class ApplicationLaunch : MonoBehaviour
     private void InstanceObj(string path)
     {
         string _realName = GetRealName(path);
+        // 框架 prefab 实例化后，把根节点名写入 FrameworkEnv 供全局读取
+        if (path == frameworkPrefabPath)
+        {
+            FrameworkEnv.RootName = _realName;
+        }
         var req = GameEntry.Resource.LoadAsset(path, typeof(GameObject));
         if (req != null)
         {

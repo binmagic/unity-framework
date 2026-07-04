@@ -166,6 +166,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2af9b753b0a9d451fb6bffb9ab625a52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  frameworkPrefab: {fileID: 3117016631776435802, guid: 177d054d670248dab87a7d3818fd9617, type: 3}
+  frameworkPrefabPath: Assets/Main/Prefabs/UnityGameFramework/GameFramework2D.prefab
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

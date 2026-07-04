@@ -30,7 +30,7 @@ public class ProfilerGraph
             
             if (_gfxBg == null)
             {
-                _gfxBg = GameObject.Find("GameFramework/UI/UIContainer/GfxProfilerBg");
+                _gfxBg = GameObject.Find(FrameworkEnv.GfxProfilerBgPath);
             }
             
             if (_gfxBg)

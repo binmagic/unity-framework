@@ -16,9 +16,9 @@ public class BlurMgr
     private Camera m_uiCamera;
     private BlurMgr()
     {
-        m_blurCamera = GameObject.Find("GameFramework/UI/BlurCamera");
-        m_rootCanvas = GameObject.Find("GameFramework/UI/UIContainer").GetComponent<Canvas>();
-        m_uiCamera = GameObject.Find("GameFramework/UI/UICamera").GetComponent<Camera>();
+        m_blurCamera = GameObject.Find(FrameworkEnv.BlurCameraPath);
+        m_rootCanvas = GameObject.Find(FrameworkEnv.UIContainerPath).GetComponent<Canvas>();
+        m_uiCamera = GameObject.Find(FrameworkEnv.UICameraPath).GetComponent<Camera>();
     }
 
     private static BlurMgr _inst;
@@ -102,7 +102,7 @@ public class BlurPanel : MonoBehaviour
         yield return new WaitForSeconds(0);
         var canvas = m_transParent.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceCamera;
-        var blurCamera = GameObject.Find("GameFramework/UI/BlurCamera").GetComponent<Camera>();
+        var blurCamera = GameObject.Find(FrameworkEnv.BlurCameraPath).GetComponent<Camera>();
         canvas.worldCamera = blurCamera;
         m_objBlur.gameObject.SetActive(true);
     }
