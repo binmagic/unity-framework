@@ -7,6 +7,7 @@ local LianLianManager = require "Game.LianLian.Manager.LianLianManager"
 local LianLianMainCtrl = BaseClass("LianLianMainCtrl", UIBaseCtrl)
 
 function LianLianMainCtrl:StartGame()
+    Logger.Log("[LianLian] LianLianMainCtrl:StartGame called")
     -- 初始化游戏并打开游戏界面
     LianLianManager:GetInstance():startGame(1)
     UIManager:GetInstance():OpenWindow(UIWindowNames.LianLianPlay)

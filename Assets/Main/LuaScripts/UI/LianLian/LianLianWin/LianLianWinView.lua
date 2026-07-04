@@ -7,60 +7,71 @@ local LianLianPlay = require "Game.LianLian.Model.LianLianPlay"
 local LianLianWinView = BaseClass("LianLianWinView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
-end
-
-local function OnCreate(self)
+function LianLianWinView:OnCreate()
     base.OnCreate(self)
-
-    self.titleText = self:AddComponent(UIText, "Title")
-    self.timeText = self:AddComponent(UIText, "TimeText")
-    self.rewardText = self:AddComponent(UIText, "RewardText")
-    self.nextBtn = self:AddComponent(UIButton, "NextBtn")
-    self.closeBtn = self:AddComponent(UIButton, "CloseBtn")
-    self.shareBtn = self:AddComponent(UIButton, "ShareBtn")
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnEnable(self)
-    base.OnEnable(self)
+function LianLianWinView:ComponentDefine()
+    self.titleText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Title")
+    self.timeText = self:AddComponent(UITextMeshProUGUIEx, "Panel/TimeText")
+    self.rewardText = self:AddComponent(UITextMeshProUGUIEx, "Panel/RewardText")
+    self.nextBtn = self:AddComponent(UIButton, "Panel/NextBtn")
+    self.shareBtn = self:AddComponent(UIButton, "Panel/ShareBtn")
+    self.closeBtn = self:AddComponent(UIButton, "Panel/CloseBtn")
 
+    self.nextBtn:SetOnClick(BindCallback(self, self.OnNextClick))
+    self.shareBtn:SetOnClick(BindCallback(self, self.OnShareClick))
+    self.closeBtn:SetOnClick(BindCallback(self, self.OnCloseClick))
+end
+
+function LianLianWinView:DataDefine()
+end
+
+function LianLianWinView:DataDestroy()
+end
+
+function LianLianWinView:OnEnable()
+    base.OnEnable(self)
     local args = {self:GetUserData()}
     local data = args[1] or {}
 
-    -- 显示游戏时间
-    if self.timeText and data.time then
-        self.timeText:SetText("用时: " .. LianLianPlay.getTimeStr(data.time))
-    end
-
-    -- 判断是否每日完成
     if self.titleText then
         self.titleText:SetText("胜利！")
     end
+    if self.timeText and data.time then
+        self.timeText:SetText("用时: " .. LianLianPlay.getTimeStr(data.time))
+    end
 end
 
-local function OnAddListener(self)
+function LianLianWinView:OnNextClick()
+    self.ctrl:NextLevel()
+end
+
+function LianLianWinView:OnShareClick()
+    self.ctrl:Share()
+end
+
+function LianLianWinView:OnCloseClick()
+    self.ctrl:CloseSelf()
+end
+
+function LianLianWinView:OnAddListener()
     base.OnAddListener(self)
 end
 
-local function OnRemoveListener(self)
+function LianLianWinView:OnRemoveListener()
     base.OnRemoveListener(self)
 end
 
-local function OnDisable(self)
+function LianLianWinView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianWinView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianWinView.__init = __init
-LianLianWinView.OnCreate = OnCreate
-LianLianWinView.OnEnable = OnEnable
-LianLianWinView.OnDisable = OnDisable
-LianLianWinView.OnDestroy = OnDestroy
-LianLianWinView.OnAddListener = OnAddListener
-LianLianWinView.OnRemoveListener = OnRemoveListener
 
 return LianLianWinView

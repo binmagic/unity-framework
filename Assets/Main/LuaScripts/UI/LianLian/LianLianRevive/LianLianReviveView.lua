@@ -5,23 +5,32 @@
 local LianLianReviveView = BaseClass("LianLianReviveView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
-end
-
-local function OnCreate(self)
+function LianLianReviveView:OnCreate()
     base.OnCreate(self)
-
-    self.titleText = self:AddComponent(UIText, "Title")
-    self.descText = self:AddComponent(UIText, "Desc")
-    self.videoBtn = self:AddComponent(UIButton, "VideoBtn")
-    self.shareBtn = self:AddComponent(UIButton, "ShareBtn")
-    self.closeBtn = self:AddComponent(UIButton, "CloseBtn")
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnEnable(self)
-    base.OnEnable(self)
+function LianLianReviveView:ComponentDefine()
+    self.titleText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Title")
+    self.descText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Desc")
+    self.videoBtn = self:AddComponent(UIButton, "Panel/VideoBtn")
+    self.shareBtn = self:AddComponent(UIButton, "Panel/ShareBtn")
+    self.closeBtn = self:AddComponent(UIButton, "Panel/CloseBtn")
 
+    self.videoBtn:SetOnClick(BindCallback(self, self.OnVideoClick))
+    self.shareBtn:SetOnClick(BindCallback(self, self.OnShareClick))
+    self.closeBtn:SetOnClick(BindCallback(self, self.OnCloseClick))
+end
+
+function LianLianReviveView:DataDefine()
+end
+
+function LianLianReviveView:DataDestroy()
+end
+
+function LianLianReviveView:OnEnable()
+    base.OnEnable(self)
     local args = {self:GetUserData()}
     local data = args[1] or {}
 
@@ -34,28 +43,33 @@ local function OnEnable(self)
     end
 end
 
-local function OnAddListener(self)
+function LianLianReviveView:OnVideoClick()
+    self.ctrl:WatchVideo()
+end
+
+function LianLianReviveView:OnShareClick()
+    self.ctrl:Share()
+end
+
+function LianLianReviveView:OnCloseClick()
+    self.ctrl:CloseSelf()
+end
+
+function LianLianReviveView:OnAddListener()
     base.OnAddListener(self)
 end
 
-local function OnRemoveListener(self)
+function LianLianReviveView:OnRemoveListener()
     base.OnRemoveListener(self)
 end
 
-local function OnDisable(self)
+function LianLianReviveView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianReviveView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianReviveView.__init = __init
-LianLianReviveView.OnCreate = OnCreate
-LianLianReviveView.OnEnable = OnEnable
-LianLianReviveView.OnDisable = OnDisable
-LianLianReviveView.OnDestroy = OnDestroy
-LianLianReviveView.OnAddListener = OnAddListener
-LianLianReviveView.OnRemoveListener = OnRemoveListener
 
 return LianLianReviveView

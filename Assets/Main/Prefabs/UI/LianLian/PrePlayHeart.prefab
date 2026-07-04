@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 9100000000000000001}
   - component: {fileID: 2737425063118197772}
   - component: {fileID: 8465290083062734797}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PrePlayHeart
   m_TagString: Untagged
   m_Icon: {fileID: 0}

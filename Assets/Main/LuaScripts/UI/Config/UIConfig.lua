@@ -5,16 +5,16 @@
 
 local UIConfig = {
 	-- 连连看游戏
-	[UIWindowNames.UILianLianMain] = "UI.LianLian.LianLianMain.Config",
-	[UIWindowNames.UILianLianPlay] = "UI.LianLian.LianLianPlay.Config",
-	[UIWindowNames.UILianLianWin] = "UI.LianLian.LianLianWin.Config",
-	[UIWindowNames.UILianLianLose] = "UI.LianLian.LianLianLose.Config",
-	[UIWindowNames.UILianLianRevive] = "UI.LianLian.LianLianRevive.Config",
-	[UIWindowNames.UILianLianLevelup] = "UI.LianLian.LianLianLevelup.Config",
-	[UIWindowNames.UILianLianSettings] = "UI.LianLian.LianLianSettings.Config",
-	[UIWindowNames.UILianLianSkin] = "UI.LianLian.LianLianSkin.Config",
-	[UIWindowNames.UILianLianToast] = "UI.LianLian.LianLianToast.Config",
-	[UIWindowNames.UILianLianTest] = "UI.LianLian.LianLianTest.Config",
+	[UIWindowNames.LianLianMain] = "UI.LianLian.LianLianMain.Config",
+	[UIWindowNames.LianLianPlay] = "UI.LianLian.LianLianPlay.Config",
+	[UIWindowNames.LianLianWin] = "UI.LianLian.LianLianWin.Config",
+	[UIWindowNames.LianLianLose] = "UI.LianLian.LianLianLose.Config",
+	[UIWindowNames.LianLianRevive] = "UI.LianLian.LianLianRevive.Config",
+	[UIWindowNames.LianLianLevelup] = "UI.LianLian.LianLianLevelup.Config",
+	[UIWindowNames.LianLianSettings] = "UI.LianLian.LianLianSettings.Config",
+	[UIWindowNames.LianLianSkin] = "UI.LianLian.LianLianSkin.Config",
+	[UIWindowNames.LianLianToast] = "UI.LianLian.LianLianToast.Config",
+	[UIWindowNames.LianLianTest] = "UI.LianLian.LianLianTest.Config",
 }
 --[[
 local UIConfig = {}

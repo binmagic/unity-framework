@@ -5,49 +5,53 @@
 local LianLianSkinView = BaseClass("LianLianSkinView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
-end
-
-local function OnCreate(self)
+function LianLianSkinView:OnCreate()
     base.OnCreate(self)
-
-    self.titleText = self:AddComponent(UIText, "Title")
-    self.skinList = self:AddComponent(UIScrollView, "SkinList")
-    self.closeBtn = self:AddComponent(UIButton, "CloseBtn")
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnEnable(self)
-    base.OnEnable(self)
+function LianLianSkinView:ComponentDefine()
+    self.titleText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Title")
+    self.skinList = self:AddComponent(UIScrollView, "Panel/SkinList")
+    self.closeBtn = self:AddComponent(UIButton, "Panel/CloseBtn")
 
+    self.closeBtn:SetOnClick(BindCallback(self, self.OnCloseClick))
+end
+
+function LianLianSkinView:DataDefine()
+end
+
+function LianLianSkinView:DataDestroy()
+end
+
+function LianLianSkinView:OnEnable()
+    base.OnEnable(self)
     if self.titleText then
         self.titleText:SetText("皮肤管理")
     end
     -- TODO: 加载皮肤列表数据
 end
 
-local function OnAddListener(self)
+function LianLianSkinView:OnCloseClick()
+    self.ctrl:CloseSelf()
+end
+
+function LianLianSkinView:OnAddListener()
     base.OnAddListener(self)
 end
 
-local function OnRemoveListener(self)
+function LianLianSkinView:OnRemoveListener()
     base.OnRemoveListener(self)
 end
 
-local function OnDisable(self)
+function LianLianSkinView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianSkinView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianSkinView.__init = __init
-LianLianSkinView.OnCreate = OnCreate
-LianLianSkinView.OnEnable = OnEnable
-LianLianSkinView.OnDisable = OnDisable
-LianLianSkinView.OnDestroy = OnDestroy
-LianLianSkinView.OnAddListener = OnAddListener
-LianLianSkinView.OnRemoveListener = OnRemoveListener
 
 return LianLianSkinView

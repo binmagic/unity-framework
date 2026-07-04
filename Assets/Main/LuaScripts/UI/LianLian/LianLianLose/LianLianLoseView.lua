@@ -5,23 +5,32 @@
 local LianLianLoseView = BaseClass("LianLianLoseView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
-end
-
-local function OnCreate(self)
+function LianLianLoseView:OnCreate()
     base.OnCreate(self)
-
-    self.titleText = self:AddComponent(UIText, "Title")
-    self.failImage = self:AddComponent(UIImage, "FailImage")
-    self.retryBtn = self:AddComponent(UIButton, "RetryBtn")
-    self.closeBtn = self:AddComponent(UIButton, "CloseBtn")
-    self.shareBtn = self:AddComponent(UIButton, "ShareBtn")
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnEnable(self)
-    base.OnEnable(self)
+function LianLianLoseView:ComponentDefine()
+    self.titleText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Title")
+    self.failImage = self:AddComponent(UIImage, "Panel/FailImage")
+    self.retryBtn = self:AddComponent(UIButton, "Panel/RetryBtn")
+    self.shareBtn = self:AddComponent(UIButton, "Panel/ShareBtn")
+    self.closeBtn = self:AddComponent(UIButton, "Panel/CloseBtn")
 
+    self.retryBtn:SetOnClick(BindCallback(self, self.OnRetryClick))
+    self.shareBtn:SetOnClick(BindCallback(self, self.OnShareClick))
+    self.closeBtn:SetOnClick(BindCallback(self, self.OnCloseClick))
+end
+
+function LianLianLoseView:DataDefine()
+end
+
+function LianLianLoseView:DataDestroy()
+end
+
+function LianLianLoseView:OnEnable()
+    base.OnEnable(self)
     local args = {self:GetUserData()}
     local data = args[1] or {}
 
@@ -30,28 +39,33 @@ local function OnEnable(self)
     end
 end
 
-local function OnAddListener(self)
+function LianLianLoseView:OnRetryClick()
+    self.ctrl:Retry()
+end
+
+function LianLianLoseView:OnShareClick()
+    self.ctrl:Share()
+end
+
+function LianLianLoseView:OnCloseClick()
+    self.ctrl:CloseSelf()
+end
+
+function LianLianLoseView:OnAddListener()
     base.OnAddListener(self)
 end
 
-local function OnRemoveListener(self)
+function LianLianLoseView:OnRemoveListener()
     base.OnRemoveListener(self)
 end
 
-local function OnDisable(self)
+function LianLianLoseView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianLoseView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianLoseView.__init = __init
-LianLianLoseView.OnCreate = OnCreate
-LianLianLoseView.OnEnable = OnEnable
-LianLianLoseView.OnDisable = OnDisable
-LianLianLoseView.OnDestroy = OnDestroy
-LianLianLoseView.OnAddListener = OnAddListener
-LianLianLoseView.OnRemoveListener = OnRemoveListener
 
 return LianLianLoseView

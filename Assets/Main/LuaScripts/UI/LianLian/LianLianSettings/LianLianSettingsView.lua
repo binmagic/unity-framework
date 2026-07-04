@@ -5,52 +5,55 @@
 local LianLianSettingsView = BaseClass("LianLianSettingsView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
-end
-
-local function OnCreate(self)
+function LianLianSettingsView:OnCreate()
     base.OnCreate(self)
-
-    self.titleText = self:AddComponent(UIText, "Title")
-    self.soundToggle = self:AddComponent(UIToggle, "SoundToggle")
-    self.bgmToggle = self:AddComponent(UIToggle, "BgmToggle")
-    self.vibrateToggle = self:AddComponent(UIToggle, "VibrateToggle")
-    self.closeBtn = self:AddComponent(UIButton, "CloseBtn")
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnEnable(self)
-    base.OnEnable(self)
+function LianLianSettingsView:ComponentDefine()
+    self.titleText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Title")
+    self.soundToggle = self:AddComponent(UIToggle, "Panel/SoundToggle")
+    self.bgmToggle = self:AddComponent(UIToggle, "Panel/BgmToggle")
+    self.vibrateToggle = self:AddComponent(UIToggle, "Panel/VibrateToggle")
+    self.closeBtn = self:AddComponent(UIButton, "Panel/CloseBtn")
 
+    self.closeBtn:SetOnClick(BindCallback(self, self.OnCloseClick))
+end
+
+function LianLianSettingsView:DataDefine()
+end
+
+function LianLianSettingsView:DataDestroy()
+end
+
+function LianLianSettingsView:OnEnable()
+    base.OnEnable(self)
     if self.titleText then
         self.titleText:SetText("设置")
     end
-
     -- TODO: 从存储中读取设置状态
 end
 
-local function OnAddListener(self)
+function LianLianSettingsView:OnCloseClick()
+    self.ctrl:CloseSelf()
+end
+
+function LianLianSettingsView:OnAddListener()
     base.OnAddListener(self)
 end
 
-local function OnRemoveListener(self)
+function LianLianSettingsView:OnRemoveListener()
     base.OnRemoveListener(self)
 end
 
-local function OnDisable(self)
+function LianLianSettingsView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianSettingsView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianSettingsView.__init = __init
-LianLianSettingsView.OnCreate = OnCreate
-LianLianSettingsView.OnEnable = OnEnable
-LianLianSettingsView.OnDisable = OnDisable
-LianLianSettingsView.OnDestroy = OnDestroy
-LianLianSettingsView.OnAddListener = OnAddListener
-LianLianSettingsView.OnRemoveListener = OnRemoveListener
 
 return LianLianSettingsView

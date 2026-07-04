@@ -5,32 +5,41 @@
 local LianLianTestView = BaseClass("LianLianTestView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
+function LianLianTestView:OnCreate()
+    base.OnCreate(self)
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnCreate(self)
-    base.OnCreate(self)
-    -- 只绑定一个背景图
+function LianLianTestView:ComponentDefine()
     self.bgImage = self:AddComponent(UIImage, "Bg")
 end
 
-local function OnEnable(self)
+function LianLianTestView:DataDefine()
+end
+
+function LianLianTestView:DataDestroy()
+end
+
+function LianLianTestView:OnEnable()
     base.OnEnable(self)
 end
 
-local function OnDisable(self)
+function LianLianTestView:OnAddListener()
+    base.OnAddListener(self)
+end
+
+function LianLianTestView:OnRemoveListener()
+    base.OnRemoveListener(self)
+end
+
+function LianLianTestView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianTestView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianTestView.__init = __init
-LianLianTestView.OnCreate = OnCreate
-LianLianTestView.OnEnable = OnEnable
-LianLianTestView.OnDisable = OnDisable
-LianLianTestView.OnDestroy = OnDestroy
 
 return LianLianTestView

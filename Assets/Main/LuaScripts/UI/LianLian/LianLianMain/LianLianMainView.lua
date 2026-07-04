@@ -5,39 +5,34 @@
 local LianLianMainView = BaseClass("LianLianMainView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
-end
-
-local function OnCreate(self)
+function LianLianMainView:OnCreate()
     base.OnCreate(self)
-
-    -- 按钮绑定
-    self.startBtn = self:AddComponent(UIButton, "StartBtn")
-    self.settingsBtn = self:AddComponent(UIButton, "SettingsBtn")
-    self.skinBtn = self:AddComponent(UIButton, "SkinBtn")
-
-    -- 标题
-    self.titleText = self:AddComponent(UIText, "Title")
-
-    -- 背景图
-    self.bgImage = self:AddComponent(UIImage, "Bg")
-
-    -- 按钮点击事件
-    self.startBtn:SetOnClick(function()
-        self.ctrl:StartGame()
-    end)
-
-    self.settingsBtn:SetOnClick(function()
-        self.ctrl:OpenSettings()
-    end)
-
-    self.skinBtn:SetOnClick(function()
-        self.ctrl:OpenSkin()
-    end)
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnEnable(self)
+function LianLianMainView:ComponentDefine()
+    Logger.Log("[LianLian] LianLianMainView:ComponentDefine called")
+    
+    self.bgImage = self:AddComponent(UIImage, "Bg")
+    self.titleText = self:AddComponent(UITextMeshProUGUIEx, "Content/Title")
+    self.startBtn = self:AddComponent(UIButton, "Content/StartBtn")
+    Logger.Log("[LianLian] startBtn = " .. tostring(self.startBtn) .. ", gameObject = " .. tostring(self.startBtn and self.startBtn.gameObject) .. ", unity_uibutton = " .. tostring(self.startBtn and self.startBtn.unity_uibutton))
+    self.settingsBtn = self:AddComponent(UIButton, "Content/SettingsBtn")
+    self.skinBtn = self:AddComponent(UIButton, "Content/SkinBtn")
+
+    self.startBtn:SetOnClick(BindCallback(self, self.OnStartClick))
+    self.settingsBtn:SetOnClick(BindCallback(self, self.OnSettingsClick))
+    self.skinBtn:SetOnClick(BindCallback(self, self.OnSkinClick))
+end
+
+function LianLianMainView:DataDefine()
+end
+
+function LianLianMainView:DataDestroy()
+end
+
+function LianLianMainView:OnEnable()
     base.OnEnable(self)
     self:RefreshView()
 end
@@ -48,29 +43,33 @@ function LianLianMainView:RefreshView()
     end
 end
 
-local function OnAddListener(self)
-    base.OnAddListener(self)
-    -- 监听皮肤切换事件
+function LianLianMainView:OnStartClick()
+    self.ctrl:StartGame()
 end
 
-local function OnRemoveListener(self)
+function LianLianMainView:OnSettingsClick()
+    self.ctrl:OpenSettings()
+end
+
+function LianLianMainView:OnSkinClick()
+    self.ctrl:OpenSkin()
+end
+
+function LianLianMainView:OnAddListener()
+    base.OnAddListener(self)
+end
+
+function LianLianMainView:OnRemoveListener()
     base.OnRemoveListener(self)
 end
 
-local function OnDisable(self)
+function LianLianMainView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianMainView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianMainView.__init = __init
-LianLianMainView.OnCreate = OnCreate
-LianLianMainView.OnEnable = OnEnable
-LianLianMainView.OnDisable = OnDisable
-LianLianMainView.OnDestroy = OnDestroy
-LianLianMainView.OnAddListener = OnAddListener
-LianLianMainView.OnRemoveListener = OnRemoveListener
 
 return LianLianMainView

@@ -1,11 +1,13 @@
+local LianLianSettings = {
+    Name = UIWindowNames.LianLianSettings,
+    Layer = UILayer.Dialog,
+    View = require "UI.LianLian.LianLianSettings.LianLianSettingsView",
+    Ctrl = require "UI.LianLian.LianLianSettings.LianLianSettingsCtrl",
+    PrefabPath = "Assets/Main/Prefabs/UI/LianLian/LianLianSettings.prefab",
+    Priority = 4,
+    isBlur = true,
+}
+
 return {
-    {
-        Name = UIWindowNames.LianLianSettings,
-        Layer = UILayer.Dialog,
-        PrefabPath = "Assets/Main/Prefabs/UI/LianLian/LianLianSettings.prefab",
-        View = require("UI.LianLian.LianLianSettings.LianLianSettingsView"),
-        Ctrl = require("UI.LianLian.LianLianSettings.LianLianSettingsCtrl"),
-        Priority = 4,
-        isBlur = true,
-    }
+    LianLianSettings = LianLianSettings,
 }

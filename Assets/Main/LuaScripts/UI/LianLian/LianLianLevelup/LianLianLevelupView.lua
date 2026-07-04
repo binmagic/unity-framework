@@ -5,21 +5,28 @@
 local LianLianLevelupView = BaseClass("LianLianLevelupView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
-end
-
-local function OnCreate(self)
+function LianLianLevelupView:OnCreate()
     base.OnCreate(self)
-
-    self.titleText = self:AddComponent(UIText, "Title")
-    self.descText = self:AddComponent(UIText, "Desc")
-    self.continueBtn = self:AddComponent(UIButton, "ContinueBtn")
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnEnable(self)
-    base.OnEnable(self)
+function LianLianLevelupView:ComponentDefine()
+    self.titleText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Title")
+    self.descText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Desc")
+    self.continueBtn = self:AddComponent(UIButton, "Panel/ContinueBtn")
 
+    self.continueBtn:SetOnClick(BindCallback(self, self.OnContinueClick))
+end
+
+function LianLianLevelupView:DataDefine()
+end
+
+function LianLianLevelupView:DataDestroy()
+end
+
+function LianLianLevelupView:OnEnable()
+    base.OnEnable(self)
     local args = {self:GetUserData()}
     local data = args[1] or {}
 
@@ -31,28 +38,25 @@ local function OnEnable(self)
     end
 end
 
-local function OnAddListener(self)
+function LianLianLevelupView:OnContinueClick()
+    self.ctrl:Continue()
+end
+
+function LianLianLevelupView:OnAddListener()
     base.OnAddListener(self)
 end
 
-local function OnRemoveListener(self)
+function LianLianLevelupView:OnRemoveListener()
     base.OnRemoveListener(self)
 end
 
-local function OnDisable(self)
+function LianLianLevelupView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianLevelupView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianLevelupView.__init = __init
-LianLianLevelupView.OnCreate = OnCreate
-LianLianLevelupView.OnEnable = OnEnable
-LianLianLevelupView.OnDisable = OnDisable
-LianLianLevelupView.OnDestroy = OnDestroy
-LianLianLevelupView.OnAddListener = OnAddListener
-LianLianLevelupView.OnRemoveListener = OnRemoveListener
 
 return LianLianLevelupView

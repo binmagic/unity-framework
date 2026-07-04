@@ -5,19 +5,25 @@
 local LianLianToastView = BaseClass("LianLianToastView", UIBaseView)
 local base = UIBaseView
 
-local function __init(self, holder, winName, ctrl, config)
-    base.__init(self, holder, winName, ctrl, config)
-end
-
-local function OnCreate(self)
+function LianLianToastView:OnCreate()
     base.OnCreate(self)
-    self.descText = self:AddComponent(UIText, "Desc")
-    self.iconImage = self:AddComponent(UIImage, "Icon")
+    self:ComponentDefine()
+    self:DataDefine()
 end
 
-local function OnEnable(self)
-    base.OnEnable(self)
+function LianLianToastView:ComponentDefine()
+    self.descText = self:AddComponent(UITextMeshProUGUIEx, "ToastBg/Desc")
+    self.iconImage = self:AddComponent(UIImage, "ToastBg/Icon")
+end
 
+function LianLianToastView:DataDefine()
+end
+
+function LianLianToastView:DataDestroy()
+end
+
+function LianLianToastView:OnEnable()
+    base.OnEnable(self)
     local args = {self:GetUserData()}
     local data = args[1] or {}
 
@@ -31,28 +37,21 @@ local function OnEnable(self)
     end, data.duration or 1.5)
 end
 
-local function OnAddListener(self)
+function LianLianToastView:OnAddListener()
     base.OnAddListener(self)
 end
 
-local function OnRemoveListener(self)
+function LianLianToastView:OnRemoveListener()
     base.OnRemoveListener(self)
 end
 
-local function OnDisable(self)
+function LianLianToastView:OnDisable()
     base.OnDisable(self)
 end
 
-local function OnDestroy(self)
+function LianLianToastView:OnDestroy()
+    self:DataDestroy()
     base.OnDestroy(self)
 end
-
-LianLianToastView.__init = __init
-LianLianToastView.OnCreate = OnCreate
-LianLianToastView.OnEnable = OnEnable
-LianLianToastView.OnDisable = OnDisable
-LianLianToastView.OnDestroy = OnDestroy
-LianLianToastView.OnAddListener = OnAddListener
-LianLianToastView.OnRemoveListener = OnRemoveListener
 
 return LianLianToastView
