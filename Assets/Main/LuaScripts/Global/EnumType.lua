@@ -6522,47 +6522,45 @@ WorldPointBtnName[WorldPointBtnType.MinePlunder_Rally] = 300038
 WorldPointBtnName[WorldPointBtnType.MinePlunder_Scout] = 300037
 WorldPointBtnName[WorldPointBtnType.Outfire] = 900162
 
---WorldPointUIType =
---{
---    None=0,
---    Monster=1,
---    Boss=2,
---    City=3,
---    Build=4,
---    CollectPoint=5,
---    CollectArmy=6,
---    Road=7,
---    Explore = 8,
---    MonsterReward = 9,
---    Sample = 10,
---    PickGarbage = 11,
---    SingleMapGarbage = 12,
---    -- 13
---    AllianceCollectPoint = 14,
---    ActBoss = 15,
---
---    MonsterLock = 16,
---    PuzzleBoss = 17,
---    ChallengeBoss = 18,
---    CityResPoint = 19,
---    Desert =20,
---    AllianceMine = 21,
---    GuideEventMonster = 22,
---    AllianceBuild = 23,
---    Ruin = 24,
---    AllianceBoss = 25,
---    DispatchTask = 26,  --派遣任务
---    NpcCity = 27,
---    Train = 28, -- 卡车
---    Truck = 28, -- dark 卡车
---    DragonBuild = 29, --巨龙中立建筑
---    DragonSecretKey = 30, --密钥
---    GodzillaGift = 31,
---    DigTreasure = 32,--联盟宝藏雷达事件
---    Empty = 33, -- 空地
---    DragonBoss = 34, --巨龙Boss
---    ActResource = 35, --金矿采集/金矿掠夺
---}
+WorldPointUIType =
+{
+    None=0,
+    Monster=1,
+    Boss=2,
+    City=3,
+    Build=4,
+    CollectPoint=5,
+    CollectArmy=6,
+    Road=7,
+    Explore = 8,
+    MonsterReward = 9,
+    Sample = 10,
+    PickGarbage = 11,
+    SingleMapGarbage = 12,
+    AllianceCollectPoint = 14,
+    ActBoss = 15,
+    MonsterLock = 16,
+    PuzzleBoss = 17,
+    ChallengeBoss = 18,
+    CityResPoint = 19,
+    Desert =20,
+    AllianceMine = 21,
+    GuideEventMonster = 22,
+    AllianceBuild = 23,
+    Ruin = 24,
+    AllianceBoss = 25,
+    DispatchTask = 26,
+    NpcCity = 27,
+    Train = 28,
+    Truck = 28,
+    DragonBuild = 29,
+    DragonSecretKey = 30,
+    GodzillaGift = 31,
+    DigTreasure = 32,
+    Empty = 33,
+    DragonBoss = 34,
+    ActResource = 35,
+}
 
 --WorldBuildTopBubbleType = {
 --    None = 0,
@@ -6652,43 +6650,19 @@ WorldPointBtnName[WorldPointBtnType.Outfire] = 900162
 --}
 
 --点击世界需要关闭的世界上UI
---ClickWorldNeedCloseWorldUI =
---{
---    UIWindowNames.UISearch,
-----    UIWindowNames.WorldDesUI,
-----    UIWindowNames.UIAllianceRally,
---    UIWindowNames.UIWorldBlackTile,
---    UIWindowNames.UIWorldNoSelectable,
---    --UIWindowNames.UIArrow,--策划(小雨)要求拖动时不再关闭此UI
---    UIWindowNames.UIWorldExplorePointUI,
---    UIWindowNames.UIWorldSamplePointUI,
---    UIWindowNames.UIWorldGarbagePointUI,
---    UIWindowNames.UIGuideGarbage,
---}
+ClickWorldNeedCloseWorldUI =
+{
+}
 
 --点击UI需要关闭的额外的世界上UI
---ClickUINeedCloseExtraWorldUI =
---{
---    UIWindowNames.UIPasture,
---    UIWindowNames.UIWorldTileUI,
---    UIWindowNames.UIResourceCost,
---    UIWindowNames.UIWorldSiegePoint,
---    --UIWindowNames.UIFormationSelectListNew,
---    UIWindowNames.UIFingerArrow,
---}
+ClickUINeedCloseExtraWorldUI =
+{
+}
 
 --点击UI需要关闭的额外的世界上UI
---DragWorldNeedCloseExtraWorldUI =
---{
---    UIWindowNames.UIPasture,
---    UIWindowNames.UIPasture,
---    UIWindowNames.UIWorldSiegePoint,
---    UIWindowNames.UIWorldNewsTips,
---    UIWindowNames.UIWorldPoint,
---    UIWindowNames.UIWorldNewsAbbrDetail,
---    UIWindowNames.UIActBossTips,
---    UIWindowNames.UIFormationSelectListNew,--新增
---}
+DragWorldNeedCloseExtraWorldUI =
+{
+}
 
 --兵营类建筑对应训练按钮
 --BarracksBuildToBtnType =
