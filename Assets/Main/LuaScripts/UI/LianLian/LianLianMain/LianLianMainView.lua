@@ -12,12 +12,9 @@ function LianLianMainView:OnCreate()
 end
 
 function LianLianMainView:ComponentDefine()
-    Logger.Log("[LianLian] LianLianMainView:ComponentDefine called")
-    
     self.bgImage = self:AddComponent(UIImage, "Bg")
     self.titleText = self:AddComponent(UITextMeshProUGUIEx, "Content/Title")
     self.startBtn = self:AddComponent(UIButton, "Content/StartBtn")
-    Logger.Log("[LianLian] startBtn = " .. tostring(self.startBtn) .. ", gameObject = " .. tostring(self.startBtn and self.startBtn.gameObject) .. ", unity_uibutton = " .. tostring(self.startBtn and self.startBtn.unity_uibutton))
     self.settingsBtn = self:AddComponent(UIButton, "Content/SettingsBtn")
     self.skinBtn = self:AddComponent(UIButton, "Content/SkinBtn")
 
