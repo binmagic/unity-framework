@@ -544,17 +544,16 @@ SkinType = {
 --    WaitEnd = 7 ,--等待结束
 --}
 
---[[
+
 UIAssets =
 {
 }
-]]
 
---VFXAssets =
---{
+VFXAssets =
+{
 --    UIMainTaskHead = 'Assets/_Art_LastDay/Effect/Prefab/UI/Common/%s.prefab',
 --    UIMainTaskNormalCompHead = 'Assets/_Art_LastDay/Effect/Prefab/UI/UIPVEMain/Eff_UI_PVEMain_renwutishi_05_Head.prefab',
---}
+}
 
 
 
@@ -7062,10 +7061,10 @@ UIMainResourceSort[ResourceType.Money] = 5
 ]]
 
 --罗马数字
---RomeNum =
---{
---    "I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIX"
---}
+RomeNum =
+{
+    "I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIX"
+}
 
 --产出资源气泡图片名字
 --OutResourceTypeIconName = {}
