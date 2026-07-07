@@ -41,15 +41,23 @@ function LianLianPlayCtrl:OnTileClick(pos)
             -- 点击同一张牌，取消选中
             self.manager:cancelChecked()
         else
-            -- 第二次选中，执行消除
+            -- 第二次选中，执行消除（先捕获两张牌位置，doClear 失败时会内部清空 item_checked）
+            local posA = { r = checked[1].r, c = checked[1].c }
+            local posB = { r = pos.r, c = pos.c }
             self.manager:checkTile(2, pos)
             local success, pathLine = self.manager:doClear()
             if success then
                 -- 消除成功：播放连线动画，然后删除牌面
                 EventManager:GetInstance():Broadcast("LianLian_PlayClear", {
                     pathLine = pathLine,
-                    posA = checked[1],
-                    posB = checked[2],
+                    posA = posA,
+                    posB = posB,
+                })
+            else
+                -- 配对失败：闪烁反馈（扣血已在 doClear 内处理）
+                EventManager:GetInstance():Broadcast("LianLian_MatchFail", {
+                    posA = posA,
+                    posB = posB,
                 })
             end
         end

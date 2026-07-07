@@ -1,44 +1,27 @@
 --[[
 -- 连连看单张牌 widget
--- 包装 PrePlayItem 实例：设置图案(占位色块)、点击、选中/提示高亮、连线、显隐
+-- 双层结构：Bg(底图 bg/select/tip) + Face(图案 1..27)
 --]]
 
 local LianLianTileItem = BaseClass("LianLianTileItem", UIBaseContainer)
 local base = UIBaseContainer
 
-local KIND_MAX = 27
+local SKIN = 1  -- 当前皮肤（后续接 state.skinId）
+local ITEM_PATH = "Assets/_Art_LianLian/ItemSprites/item_%d/%s"
 
--- 依据 id 生成一个稳定的占位颜色 (HSV 均匀取色)
-local function IdToColor(id)
-    local h = ((id - 1) % KIND_MAX) / KIND_MAX
-    -- 简单 HSV(h,0.65,0.95) -> RGB
-    local s, v = 0.65, 0.95
-    local i = math.floor(h * 6)
-    local f = h * 6 - i
-    local p = v * (1 - s)
-    local q = v * (1 - f * s)
-    local t = v * (1 - (1 - f) * s)
-    local r, g, b
-    local m = i % 6
-    if m == 0 then r, g, b = v, t, p
-    elseif m == 1 then r, g, b = q, v, p
-    elseif m == 2 then r, g, b = p, v, t
-    elseif m == 3 then r, g, b = p, q, v
-    elseif m == 4 then r, g, b = t, p, v
-    else r, g, b = v, p, q end
-    return r, g, b
+local function GetSpritePath(name)
+    return string.format(ITEM_PATH, SKIN, name)
 end
 
 function LianLianTileItem:OnCreate()
     base.OnCreate(self)
 
-    -- 根节点 Image (占位色块) 与 Button
-    self.icon = self:AddComponent(UIImage, "")
-    self.button = self:AddComponent(UIButton, "")
+    -- 底图 + 图案
+    self.bg = self:AddComponent(UIImage, "Bg")
+    self.face = self:AddComponent(UIImage, "Face")
 
-    -- 高亮/提示
-    self.highlight = self:AddComponent(UIBaseComponent, "Highlight")
-    self.tipHighlight = self:AddComponent(UIBaseComponent, "TipHighlight")
+    -- 按钮（根节点 NewButton）
+    self.button = self:AddComponent(UIButton, "")
 
     -- 连线四方向
     self.lineTop = self:AddComponent(UIBaseComponent, "LineTop")
@@ -47,23 +30,18 @@ function LianLianTileItem:OnCreate()
     self.lineLeft = self:AddComponent(UIBaseComponent, "LineLeft")
 
     self:HideLines()
-    if self.highlight then self.highlight:SetActive(false) end
-    if self.tipHighlight then self.tipHighlight:SetActive(false) end
+    self._checked = false
+    self._tip = false
 end
 
 --- 设置牌数据
---- @param pos table {r, c}
---- @param id number 图案 id (1..27)
---- @param onClick function 点击回调, 接收 pos
 function LianLianTileItem:SetData(pos, id, onClick)
     self.pos = pos
     self.id = id
 
-    -- 占位：按 id 上色 (真实贴图后续 LoadSprite 替换)
-    if self.icon and self.icon.unity_image then
-        local r, g, b = IdToColor(id)
-        self.icon.unity_image.color = CS.UnityEngine.Color(r, g, b, 1)
-    end
+    -- 加载底图和图案
+    if self.bg then self.bg:LoadSprite(GetSpritePath("bg")) end
+    if self.face and id > 0 then self.face:LoadSprite(GetSpritePath(tostring(id))) end
 
     if self.button then
         self.button:SetOnClick(function()
@@ -71,34 +49,51 @@ function LianLianTileItem:SetData(pos, id, onClick)
         end)
     end
 
-    self:SetChecked(false)
-    self:SetTip(false)
+    self._checked = false
+    self._tip = false
     self:HideLines()
     self:SetVisible(id ~= 0)
 end
 
---- 设置牌在棋盘容器内的锚点坐标
+--- 刷新底图（依据 checked/tip 状态）
+function LianLianTileItem:RefreshBg()
+    if not self.bg then return end
+    if self._checked then
+        self.bg:LoadSprite(GetSpritePath("select"))
+    elseif self._tip then
+        self.bg:LoadSprite(GetSpritePath("tip"))
+    else
+        self.bg:LoadSprite(GetSpritePath("bg"))
+    end
+end
+
+--- 设置牌在棋盘容器内的锚点坐标（相对 Board 中心的偏移）
 function LianLianTileItem:SetPosition(x, y)
     if self.rectTransform then
-        self.rectTransform.anchoredPosition = CS.UnityEngine.Vector2(x, y)
+        self.rectTransform:Set_anchoredPosition(x, y)
     end
 end
 
---- 设置牌尺寸
+--- 设置牌尺寸（归一到中心锚点固定尺寸模式）
 function LianLianTileItem:SetSize(w, h)
     if self.rectTransform then
-        self.rectTransform.sizeDelta = CS.UnityEngine.Vector2(w, h)
+        self.rectTransform:Set_anchorMin(0.5, 0.5)
+        self.rectTransform:Set_anchorMax(0.5, 0.5)
+        self.rectTransform:Set_pivot(0.5, 0.5)
+        self.rectTransform:Set_sizeDelta(w, h)
     end
 end
 
---- 选中高亮
+--- 选中高亮（切换底图为 select）
 function LianLianTileItem:SetChecked(bChecked)
-    if self.highlight then self.highlight:SetActive(bChecked and true or false) end
+    self._checked = bChecked and true or false
+    self:RefreshBg()
 end
 
---- 提示高亮
+--- 提示高亮（切换底图为 tip）
 function LianLianTileItem:SetTip(bTip)
-    if self.tipHighlight then self.tipHighlight:SetActive(bTip and true or false) end
+    self._tip = bTip and true or false
+    self:RefreshBg()
 end
 
 --- 显隐整张牌
@@ -114,8 +109,7 @@ function LianLianTileItem:HideLines()
     if self.lineLeft then self.lineLeft:SetActive(false) end
 end
 
---- 依据连线节点 (getPathLine 生成) 显示方向线段
---- node: { top,right,bottom,left, lt,rt,lb,rb }
+--- 依据连线节点显示方向线段
 function LianLianTileItem:SetLines(node)
     if not node then return end
     local top = (node.top == 1) or (node.lt == 1) or (node.rt == 1)
