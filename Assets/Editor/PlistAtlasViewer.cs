@@ -386,9 +386,179 @@ public class PlistAtlasViewer : EditorWindow
                 if (!string.IsNullOrEmpty(m_PlistPath))
                     LoadPlist(m_PlistPath);
             }
+
+            if (GUILayout.Button("导出独立图片", EditorStyles.toolbarButton, GUILayout.Width(90)))
+            {
+                ExportSpritesToPng();
+            }
         }
         EditorGUILayout.EndHorizontal();
     }
+
+    #region 导出独立图片（像素烘焙，处理旋转帧）
+
+    private void ExportSpritesToPng()
+    {
+        if (m_Sprites.Count == 0 || string.IsNullOrEmpty(m_PlistPath))
+        {
+            EditorUtility.DisplayDialog("导出失败", "请先加载一个 plist 图集", "确定");
+            return;
+        }
+
+        // 1. 定位图集 png 的 AssetDatabase 路径
+        var dir = Path.GetDirectoryName(m_PlistPath);
+        var texName = !string.IsNullOrEmpty(m_TextureFileName)
+            ? m_TextureFileName
+            : Path.GetFileNameWithoutExtension(m_PlistPath) + ".png";
+        var texPath = Path.Combine(dir, texName);
+        if (!File.Exists(texPath))
+            texPath = Path.Combine(dir, Path.GetFileNameWithoutExtension(m_PlistPath) + ".png");
+        if (!File.Exists(texPath))
+        {
+            EditorUtility.DisplayDialog("导出失败", "找不到图集纹理: " + texPath, "确定");
+            return;
+        }
+        var texAssetPath = "Assets" + texPath.Replace(Application.dataPath, "").Replace("\\", "/");
+
+        // 2. 临时开启可读
+        var importer = AssetImporter.GetAtPath(texAssetPath) as TextureImporter;
+        bool prevReadable = false;
+        bool prevCrunch = false;
+        TextureImporterCompression prevComp = TextureImporterCompression.Uncompressed;
+        if (importer != null)
+        {
+            prevReadable = importer.isReadable;
+            prevCrunch = importer.crunchedCompression;
+            prevComp = importer.textureCompression;
+            if (!prevReadable || prevComp != TextureImporterCompression.Uncompressed)
+            {
+                importer.isReadable = true;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.crunchedCompression = false;
+                importer.SaveAndReimport();
+            }
+        }
+
+        var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(texAssetPath);
+        if (atlas == null)
+        {
+            EditorUtility.DisplayDialog("导出失败", "无法加载图集纹理: " + texAssetPath, "确定");
+            return;
+        }
+
+        // 3. 输出目录 Assets/_Art_LianLian/ItemSprites/{图集名}/
+        var atlasName = Path.GetFileNameWithoutExtension(texAssetPath);
+        var outDir = Path.Combine(Path.GetDirectoryName(Application.dataPath),
+            "Assets/_Art_LianLian/ItemSprites/" + atlasName);
+        Directory.CreateDirectory(outDir);
+
+        int texH = atlas.height;
+        int okCount = 0;
+        var exportedAssetPaths = new List<string>();
+
+        try
+        {
+            for (int i = 0; i < m_Sprites.Count; i++)
+            {
+                var sp = m_Sprites[i];
+                EditorUtility.DisplayProgressBar("导出独立图片", sp.name, (float)i / m_Sprites.Count);
+
+                // plist frame: 左上原点。rotated 时图集中占 (h × w)（宽高交换）
+                int fx = Mathf.RoundToInt(sp.frame.x);
+                int fy = Mathf.RoundToInt(sp.frame.y);
+                int fw = Mathf.RoundToInt(sp.frame.width);
+                int fh = Mathf.RoundToInt(sp.frame.height);
+
+                // 图集中实际占用的像素宽高（rotated 时交换）
+                int rawW = sp.rotated ? fh : fw;
+                int rawH = sp.rotated ? fw : fh;
+
+                // Unity GetPixels 左下原点：srcY = texH - (fy + rawH)
+                int srcX = fx;
+                int srcY = texH - fy - rawH;
+                if (srcX < 0 || srcY < 0 || srcX + rawW > atlas.width || srcY + rawH > atlas.height)
+                {
+                    Debug.LogWarning($"[PlistAtlasViewer] 跳过越界帧: {sp.name} rect=({srcX},{srcY},{rawW},{rawH})");
+                    continue;
+                }
+
+                var raw = atlas.GetPixels(srcX, srcY, rawW, rawH);
+
+                // 目标像素（还原到正向 fw×fh）
+                Color[] outPixels;
+                int outW, outH;
+                if (sp.rotated)
+                {
+                    // TexturePacker 顺时针旋转 90° 存储 → 逆时针转回
+                    outW = fw;
+                    outH = fh;
+                    outPixels = new Color[outW * outH];
+                    // raw 尺寸 rawW×rawH (= fh×fw)，raw[x + y*rawW]
+                    for (int y = 0; y < outH; y++)
+                    {
+                        for (int x = 0; x < outW; x++)
+                        {
+                            // 逆旋转映射：out(x,y) <- raw(y, rawH-1-x)
+                            int rx = y;
+                            int ry = rawH - 1 - x;
+                            outPixels[x + y * outW] = raw[rx + ry * rawW];
+                        }
+                    }
+                }
+                else
+                {
+                    outW = fw;
+                    outH = fh;
+                    outPixels = raw;
+                }
+
+                var outTex = new Texture2D(outW, outH, TextureFormat.RGBA32, false);
+                outTex.SetPixels(outPixels);
+                outTex.Apply();
+
+                // sprite 名去掉 .png 后缀
+                var spriteName = sp.name.EndsWith(".png") ? sp.name.Substring(0, sp.name.Length - 4) : sp.name;
+                var outFile = Path.Combine(outDir, spriteName + ".png");
+                File.WriteAllBytes(outFile, outTex.EncodeToPNG());
+                Object.DestroyImmediate(outTex);
+
+                var outAssetPath = "Assets" + outFile.Replace(Application.dataPath, "").Replace("\\", "/");
+                exportedAssetPaths.Add(outAssetPath);
+                okCount++;
+            }
+        }
+        finally
+        {
+            EditorUtility.ClearProgressBar();
+            // 恢复图集导入设置
+            if (importer != null && (!prevReadable || prevComp != TextureImporterCompression.Uncompressed))
+            {
+                importer.isReadable = prevReadable;
+                importer.textureCompression = prevComp;
+                importer.crunchedCompression = prevCrunch;
+                importer.SaveAndReimport();
+            }
+        }
+
+        AssetDatabase.Refresh();
+
+        // 把导出的 PNG 设为 Sprite 类型
+        foreach (var p in exportedAssetPaths)
+        {
+            var imp = AssetImporter.GetAtPath(p) as TextureImporter;
+            if (imp != null)
+            {
+                imp.textureType = TextureImporterType.Sprite;
+                imp.spriteImportMode = SpriteImportMode.Single;
+                imp.SaveAndReimport();
+            }
+        }
+
+        EditorUtility.DisplayDialog("导出完成",
+            $"已导出 {okCount} 张独立图片到:\nAssets/_Art_LianLian/ItemSprites/{atlasName}/", "确定");
+    }
+
+    #endregion
 
     private void DrawPreviewArea()
     {
