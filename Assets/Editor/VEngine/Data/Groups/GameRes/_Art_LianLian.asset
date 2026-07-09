@@ -71,6 +71,17 @@ MonoBehaviour:
     parentGroup: {fileID: 0}
     bundle: 
     index: -1
+  - comment: 
+    bundleMode: 6
+    label: 
+    dependencies: []
+    readOnly: 0
+    path: Assets/_Art_LianLian/Line
+    excludePaths: []
+    rootPath: 
+    parentGroup: {fileID: 0}
+    bundle: 
+    index: -1
   readOnly: 1
   autoStrip: 0
   resMode: 0

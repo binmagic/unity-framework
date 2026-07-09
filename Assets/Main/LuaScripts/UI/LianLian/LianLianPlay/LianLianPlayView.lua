@@ -63,7 +63,7 @@ end
 
 function LianLianPlayView:DataDefine()
     self.tileItems = {}
-    self.lineItems = {}
+    self._lineSegments = nil
 end
 
 function LianLianPlayView:DataDestroy()
@@ -71,9 +71,8 @@ function LianLianPlayView:DataDestroy()
     self:CancelClearTimer()
     self:CancelFailTimer()
     self:CancelEnterTimer()
+    self:ClearLines()
     self.tileItems = {}
-    self.lineItems = {}
-    self._lineNodes = nil
     self._heartText = nil
 end
 
@@ -253,24 +252,99 @@ function LianLianPlayView:UpdateCardCounts()
     if self.hpCountText then self.hpCountText:SetText(tostring(hpLeft)) end
 end
 
--- 连线：沿路径显示各 tile 的方向线段（简单版）
+-- 连线：只用 line_1(直线) 和 line_5(拐角) 两张图，通过旋转+缩放实现
+-- line_1 (160×160): 线内容从中心向下延伸（y[66..158]，center=80）
+-- line_5 (160×160): L形内容在右上象限（x[66..158], y[0..92]），即从中心向上+向右延伸
+-- 两张图都是 160×160 正方形，pivot(0.5,0.5)，放在格中心即可
+local LINE_SEG_PREFAB = "Assets/Main/Prefabs/UI/LianLian/PreLineSegment.prefab"
+local LINE_STRAIGHT = "Assets/_Art_LianLian/Line/line_1"   -- 直线：从中心向下延伸
+local LINE_CORNER   = "Assets/_Art_LianLian/Line/line_5"   -- L形拐角：从中心向上+右延伸(rt)
+local LINE_THICK = 1  -- 连线缩放倍率（1=图片=一格大小，内容半边=半格；>1整体放大，线更粗更长）
+
+-- 直线方向 → Z轴旋转角度
+-- line_1 默认向下延伸: bottom=0°, left=270°, top=180°, right=90°
+local DIR_ANGLE = { top = 180, right = 90, bottom = 0, left = 270 }
+
+-- 拐角类型 → Z轴旋转角度（逆时针）
+-- line_5 默认 = 左上角 lt(左+上)，实测需加 180° 修正（Unity Y轴向上 vs 图片Y轴向下）
+-- lt=180°, lb=270°, rb=0°, rt=90°
+local CORNER_ROT = { lt = 180, lb = 270, rb = 0, rt = 90 }
+
 function LianLianPlayView:DrawLine(pathLine)
-    if not pathLine then return end
-    self._lineNodes = pathLine
+    self:ClearLines()
+    if not pathLine or #pathLine == 0 then return end
+    self._lineSegments = {}
     for _, node in ipairs(pathLine) do
-        local tile = self:GetTile(node)
-        if tile then tile:SetLines(node) end
+        self:CreateLineSegments(node)
     end
 end
 
-function LianLianPlayView:ClearLines()
-    if self._lineNodes then
-        for _, node in ipairs(self._lineNodes) do
-            local tile = self:GetTile(node)
-            if tile then tile:HideLines() end
+-- 为路径节点生成线段（直线和/或拐角都放在格中心，靠旋转确定方向）
+-- 两张图都是 160×160 正方形画布，统一用相同 size 正方形缩放，保证线粗一致
+function LianLianPlayView:CreateLineSegments(node)
+    local cx, cy = self:GridToAnchor({ r = node.r, c = node.c })
+    local cell = self._cell or 40
+    -- 统一尺寸：size = cell（内容占半边=半格=恰好从中心到格边）
+    -- LINE_THICK 作为缩放倍率（1=刚好一格，>1 放大即更粗，<1 缩小即更细）
+    local size = cell * LINE_THICK
+
+    -- 直线方向：放格中心，正方形(size×size)，旋转到对应方向
+    for dir, angle in pairs(DIR_ANGLE) do
+        if node[dir] == 1 then
+            self:SpawnLine(LINE_STRAIGHT, cx, cy, size, size, angle)
         end
-        self._lineNodes = nil
     end
+
+    -- 拐角：绕图片中心(0.5,0.5)旋转，L拐点偏离图片中心，用 CORNER_OFFSET 补偿回格中心
+    -- Unity UI 坐标：右=+x, 上=+y。QUARTER = size/4（拐点相对中心约 1/4 图宽）
+    local q = size / 2
+    -- 偏移随图片旋转一起转（逆时针90°递推：(x,y)→(-y,x)），基准 rb={0,-q}
+    local CORNER_OFFSET = {
+        rb = { 0, -q },   -- 0°
+        rt = { q, 0 },    -- 90°
+        lt = { 0, q },    -- 180°
+        lb = { -q, 0 },   -- 270°
+    }
+    for corner, angle in pairs(CORNER_ROT) do
+        if node[corner] == 1 then
+            local off = CORNER_OFFSET[corner]
+            self:SpawnLine(LINE_CORNER, cx + off[1], cy + off[2], size, size, angle)
+        end
+    end
+end
+
+-- 实例化一个线段 Image（异步，在 Lines 容器里）
+-- spritePath: 完整资产路径（如 LINE_STRAIGHT / LINE_CORNER）
+function LianLianPlayView:SpawnLine(spritePath, x, y, w, h, angle)
+    if not self.lineContainer then return end
+    self.lineContainer:GameObjectInstantiateAsync(LINE_SEG_PREFAB, function(request)
+        if request == nil or request.isError or request.gameObject == nil then return end
+        if not self._lineSegments then
+            CS.UnityEngine.GameObject.Destroy(request.gameObject)
+            return
+        end
+        local img = self.lineContainer:AddComponent(UIImage, request.gameObject)
+        local rt = img.rectTransform
+        if rt then
+            rt:Set_anchorMin(0.5, 0.5)
+            rt:Set_anchorMax(0.5, 0.5)
+            rt:Set_pivot(0.5, 0.5)
+            rt:Set_sizeDelta(w, h)
+            rt:Set_anchoredPosition(x, y)
+            rt:Set_localEulerAngles(0, 0, angle)
+        end
+        img:LoadSprite(spritePath)
+        self._lineSegments[#self._lineSegments + 1] = request.gameObject
+    end, self.lineContainer.transform)
+end
+
+function LianLianPlayView:ClearLines()
+    if self._lineSegments then
+        for _, go in ipairs(self._lineSegments) do
+            if go then CS.UnityEngine.GameObject.Destroy(go) end
+        end
+    end
+    self._lineSegments = nil
 end
 
 function LianLianPlayView:ShowChecked(pos)
@@ -339,7 +413,7 @@ function LianLianPlayView:OnPlayClear(data)
     self:DrawLine(data.pathLine)
 
     self:CancelClearTimer()
-    self._clearTimer = TimerManager:GetInstance():GetTimer(0.2, function()
+    self._clearTimer = TimerManager:GetInstance():GetTimer(0.5, function()
         self:ClearLines()
         -- 隐藏被消除的两张牌
         local a, b = data.posA, data.posB
