@@ -433,9 +433,10 @@ function EnterGameState:OnEnter(args)
     Logger.Log("[Loading] EnterGameState:OnEnter")
 
     -- 初始化连连看游戏管理器并打开主界面
-    local LianLianManager = require "Game.LianLian.Manager.LianLianManager"
+    local LianLianManager = require "Game.LianLian.DataCenter.LianLianManager"
     LianLianManager:GetInstance()
     UIManager:GetInstance():OpenWindow(UIWindowNames.LianLianMain)
+    UIManager:GetInstance():OpenWindow(UIWindowNames.LianLianDebug)
 
     -- 关闭加载流程
     self._loading:Shutdown()

@@ -256,18 +256,8 @@ function LianLianGrid.getPathLine(path)
         }
     end
 
-    -- 处理拐角
-    for _, node in ipairs(lineList) do
-        if node.left == 1 and node.top == 1 then
-            node.lt = 1; node.left = 0; node.top = 0
-        elseif node.right == 1 and node.top == 1 then
-            node.rt = 1; node.right = 0; node.top = 0
-        elseif node.left == 1 and node.bottom == 1 then
-            node.lb = 1; node.left = 0; node.bottom = 0
-        elseif node.right == 1 and node.bottom == 1 then
-            node.rb = 1; node.right = 0; node.bottom = 0
-        end
-    end
+    -- 不合成拐角：拐角格保留两个方向标志（如 top=1 且 right=1），
+    -- 渲染层用两条半边直线在格中心交汇拼成 L，自动对齐，无需独立拐角图。
 
     return lineList
 end

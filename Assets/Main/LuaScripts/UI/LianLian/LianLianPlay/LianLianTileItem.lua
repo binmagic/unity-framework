@@ -95,6 +95,35 @@ function LianLianTileItem:PlayPopIn(delay, duration, onDone)
     end)
 end
 
+--- 滑动到目标锚点坐标（DOTween 动画）
+--- @param x number 目标 x
+--- @param y number 目标 y
+--- @param duration number 时长（秒）
+--- @param onDone function|nil 完成回调
+function LianLianTileItem:MoveTo(x, y, duration, onDone)
+    self:KillMove()
+    if not self.rectTransform then
+        if onDone then onDone() end
+        return
+    end
+    local sx, sy = self.rectTransform:Get_anchoredPosition()
+    self._moveTween = DOTween.To(function(t)
+        local cx = sx + (x - sx) * t
+        local cy = sy + (y - sy) * t
+        if self.rectTransform then
+            self.rectTransform:Set_anchoredPosition(cx, cy)
+        end
+    end, 0, 1, duration)
+    self._moveTween:SetEase(Ease.OutQuad)
+    self._moveTween:OnComplete(function()
+        self._moveTween = nil
+        if self.rectTransform then
+            self.rectTransform:Set_anchoredPosition(x, y)
+        end
+        if onDone then onDone() end
+    end)
+end
+
 --- 中断入场动画并把 scale 复位为 1（幂等）
 function LianLianTileItem:KillPopIn()
     if self._popTween then
@@ -102,6 +131,14 @@ function LianLianTileItem:KillPopIn()
         self._popTween = nil
     end
     self:SetLocalScaleXYZ(1, 1, 1)
+end
+
+--- 中断滑动动画
+function LianLianTileItem:KillMove()
+    if self._moveTween then
+        self._moveTween:Kill()
+        self._moveTween = nil
+    end
 end
 
 --- 设置牌尺寸（归一到中心锚点固定尺寸模式）

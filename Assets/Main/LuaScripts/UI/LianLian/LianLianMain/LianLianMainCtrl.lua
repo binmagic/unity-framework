@@ -2,7 +2,7 @@
 -- 连连看主菜单控制器
 --]]
 
-local LianLianManager = require "Game.LianLian.Manager.LianLianManager"
+local LianLianManager = require "Game.LianLian.DataCenter.LianLianManager"
 
 local LianLianMainCtrl = BaseClass("LianLianMainCtrl", UIBaseCtrl)
 

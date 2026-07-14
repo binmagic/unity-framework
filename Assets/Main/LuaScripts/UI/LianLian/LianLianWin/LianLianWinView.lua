@@ -2,7 +2,7 @@
 -- 连连看胜利弹窗视图
 --]]
 
-local LianLianPlay = require "Game.LianLian.Model.LianLianPlay"
+local LianLianPlay = require "Game.LianLian.DataCenter.LianLianPlay"
 
 local LianLianWinView = BaseClass("LianLianWinView", UIBaseView)
 local base = UIBaseView

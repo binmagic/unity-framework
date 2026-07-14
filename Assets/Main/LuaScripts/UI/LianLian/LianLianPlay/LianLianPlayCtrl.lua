@@ -3,12 +3,13 @@
 -- 处理游戏逻辑交互
 --]]
 
-local LianLianManager = require "Game.LianLian.Manager.LianLianManager"
+local LianLianManager = require "Game.LianLian.DataCenter.LianLianManager"
 
 local LianLianPlayCtrl = BaseClass("LianLianPlayCtrl", UIBaseCtrl)
 
 function LianLianPlayCtrl:__init()
     self.manager = nil
+    self._inputLocked = false
 end
 
 --- 初始化游戏
@@ -28,9 +29,18 @@ function LianLianPlayCtrl:GetHp()
     return self.manager and self.manager:getHp() or 0
 end
 
+--- 获取当前盘面行列数（供 View 绘制/居中）
+--- @return number rows, number cols
+function LianLianPlayCtrl:GetBoardSize()
+    if not self.manager then return nil, nil end
+    return self.manager:getBoardSize()
+end
+
 --- 点击牌面
 function LianLianPlayCtrl:OnTileClick(pos)
     if not self.manager then return end
+    -- 移动/消除动画进行中，拦截点击，避免状态错乱
+    if self._inputLocked then return end
 
     local checked = self.manager.state.item_checked
     if #checked == 0 then

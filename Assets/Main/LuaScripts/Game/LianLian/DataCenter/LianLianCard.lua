@@ -4,8 +4,8 @@
 --]]
 
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
-local LianLianItem = require "Game.LianLian.Model.LianLianItem"
-local LianLianBase = require "Game.LianLian.Model.Board.LianLianGenStrategyBase"
+local LianLianItem = require "Game.LianLian.DataCenter.LianLianItem"
+local LianLianBase = require "Game.LianLian.DataCenter.Board.LianLianGenStrategyBase"
 
 local LianLianCard = {}
 

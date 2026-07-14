@@ -4,7 +4,9 @@
 --]]
 
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
-local LianLianCard = require "Game.LianLian.Model.LianLianCard"
+local LianLianGrid = require "Game.LianLian.DataCenter.LianLianGrid"
+local LianLianPlay = require "Game.LianLian.DataCenter.LianLianPlay"
+local LianLianCard = require "Game.LianLian.DataCenter.LianLianCard"
 local LianLianEnum = require "Game.LianLian.Config.LianLianEnum"
 local LianLianTileItem = require "UI.LianLian.LianLianPlay.LianLianTileItem"
 
@@ -117,45 +119,75 @@ function LianLianPlayView:Update()
 end
 
 local TILE_PREFAB = "Assets/Main/Prefabs/UI/LianLian/PrePlayItem.prefab"
+local RENDER_CELL = 160    -- 渲染格距（=连线资源原生尺寸；数据层 CELL_SIZE 不受影响）
 
 -- grid 物理坐标(r,c) -> Board 容器锚点坐标（以 Board 中心为原点）
 -- 依据盘面 layout 的激活区（origin + activeRows/activeCols）定位，
 -- 不再假设固定的 8×14 内部区域，激活区自动居中。
 function LianLianPlayView:GridToAnchor(cell)
-    local L = self._layout
-    local cellSize = self._cell or 40
-    if not L then
-        return 0, 0
-    end
-    -- 转到激活区内的相对坐标，再以激活区中心为原点
-    local localC = cell.c - L.originCol
-    local localR = cell.r - L.originRow
-    local x = (localC - (L.activeCols - 1) / 2) * cellSize
-    local y = -(localR - (L.activeRows - 1) / 2) * cellSize
+    local cols = self._boardCols or LianLianConst.INTERIOR_COLS
+    local rows = self._boardRows or LianLianConst.INTERIOR_ROWS
+    local cellSize = self._cell or RENDER_CELL
+    local x = (cell.c - (cols + 1) / 2) * cellSize
+    local y = -(cell.r - (rows + 1) / 2) * cellSize
+    -- 取整消除亚像素缝隙（格距 160 为整数，仅列/行为偶数时中心落半格产生 .0/.5）
+    x = math.floor(x + 0.5)
+    y = math.floor(y + 0.5)
     return x, y
+end
+
+-- 清除棋盘上所有牌面 GameObject
+function LianLianPlayView:ClearBoard()
+    if self.tileItems then
+        for _, tile in pairs(self.tileItems) do
+            if tile and tile.gameObject then
+                CS.UnityEngine.GameObject.Destroy(tile.gameObject)
+            end
+        end
+    end
+    self.tileItems = {}
+    self:ClearLines()
 end
 
 -- 首次绘制整个棋盘：为每个非空格子异步实例化一张牌（带入场序列）
 function LianLianPlayView:DrawBoard()
     if not self.boardContainer then return end
-    -- 清掉旧牌
-    self.tileItems = {}
+    -- 清掉旧牌（销毁 GameObject）
+    self:ClearBoard()
 
-    -- 从盘面描述对象取布局元信息（激活区尺寸决定格子边长）
-    local board = self.ctrl.manager:getBoard()
-    if not board then return end
-    local L = board.layout
-    self._layout = L
-
-    -- 依据 Board 容器实际尺寸计算格子边长（正方格，取小边）
+    -- 行列数从 Ctrl 取（当前盘面实际尺寸，含 Debug 自定义）
     local rt = self.boardContainer.rectTransform
+    local rows, cols = self.ctrl:GetBoardSize()
+    cols = cols or LianLianConst.INTERIOR_COLS
+    rows = rows or LianLianConst.INTERIOR_ROWS
+    self._boardCols = cols
+    self._boardRows = rows
+
+    -- 格距固定 160（连线原生尺寸），连线/牌面均按 160 基准布局、不缩放
+    self._cell = RENDER_CELL
+    -- 整体缩放：让 cols×160 / rows×160 的内容适配 Board 容器实际像素（取小边只缩不放）
+    local s = 1
     if rt then
         local bw = rt.rect.width
         local bh = rt.rect.height
-        self._cell = math.min(bw / L.activeCols, bh / L.activeRows)
-    else
-        self._cell = 40
+        local contentW = cols * RENDER_CELL
+        local contentH = rows * RENDER_CELL
+        if contentW > 0 and contentH > 0 then
+            s = math.min(bw / contentW, bh / contentH)
+        end
     end
+    -- Board 与 Lines 两个容器同步缩放，保证牌面层与连线层坐标系一致
+    -- 注意：Set_localScale 走 .transform（Transform），rectTransform 上未绑定该方法
+    if self.boardContainer.transform then
+        self.boardContainer.transform:Set_localScale(s, s, 1)
+    end
+    if self.lineContainer and self.lineContainer.transform then
+        self.lineContainer.transform:Set_localScale(s, s, 1)
+    end
+
+    -- 从盘面描述对象取数据
+    local board = self.ctrl.manager:getBoard()
+    if not board then return end
 
     -- 计算每张牌的入场错峰延迟（按 enterList 顺序），总时长与牌数无关
     local delayByN = self:BuildEnterDelays(board)
@@ -236,7 +268,7 @@ function LianLianPlayView:CreateTile(cell, popDelay)
         if request == nil or request.isError or request.gameObject == nil then return end
         if not self.tileItems then return end
         local tile = self.boardContainer:AddComponent(LianLianTileItem, request.gameObject)
-        local sz = (self._cell or 40) * 0.92
+        local sz = (self._cell or RENDER_CELL) * 0.92
         tile:SetSize(sz, sz)
         tile:SetPosition(ax, ay)
         tile:SetData(pos, cell.id, function(p) self.ctrl:OnTileClick(p) end)
@@ -291,23 +323,20 @@ function LianLianPlayView:UpdateCardCounts()
     if self.hpCountText then self.hpCountText:SetText(tostring(hpLeft)) end
 end
 
--- 连线：只用 line_1(直线) 和 line_5(拐角) 两张图，通过旋转+缩放实现
--- line_1 (160×160): 线内容从中心向下延伸（y[66..158]，center=80）
--- line_5 (160×160): L形内容在右上象限（x[66..158], y[0..92]），即从中心向上+向右延伸
--- 两张图都是 160×160 正方形，pivot(0.5,0.5)，放在格中心即可
+-- 连线：只用 line_1(半边直线) 一张图，靠旋转拼出直线与拐角
+-- line_1 (160×160, pivot 0.5,0.5): 竖条居中于 x 轴，从格中心(y≈0)向下延伸到接近格底边(y≈-78)
+--   即"从格中心到某条边"的半边直线。四方向靠旋转，拐角=两条垂直半直线在格中心交汇。
+-- 格距固定 = 160（连线资源原生尺寸），连线 sizeDelta 恒 160×160 不缩放；屏幕适配靠容器整体 localScale。
 local LINE_SEG_PREFAB = "Assets/Main/Prefabs/UI/LianLian/PreLineSegment.prefab"
-local LINE_STRAIGHT = "Assets/_Art_LianLian/Line/line_1"   -- 直线：从中心向下延伸
-local LINE_CORNER   = "Assets/_Art_LianLian/Line/line_5"   -- L形拐角：从中心向上+右延伸(rt)
-local LINE_THICK = 1  -- 连线缩放倍率（1=图片=一格大小，内容半边=半格；>1整体放大，线更粗更长）
+local LINE_STRAIGHT = "Assets/_Art_LianLian/Line/line_1"   -- 半边直线：从中心向下延伸
+local LINE_OVERLAP = 3     -- 半直线沿延伸方向外移的像素，令相邻半条在格边重叠、消除接缝
 
--- 直线方向 → Z轴旋转角度
--- line_1 默认向下延伸: bottom=0°, left=270°, top=180°, right=90°
+-- 直线方向 → Z轴旋转角度（line_1 默认向下延伸=0°）
 local DIR_ANGLE = { top = 180, right = 90, bottom = 0, left = 270 }
-
--- 拐角类型 → Z轴旋转角度（逆时针）
--- line_5 默认 = 左上角 lt(左+上)，实测需加 180° 修正（Unity Y轴向上 vs 图片Y轴向下）
--- lt=180°, lb=270°, rb=0°, rt=90°
-local CORNER_ROT = { lt = 180, lb = 270, rb = 0, rt = 90 }
+-- 方向单位向量（Unity UI：右=+x, 上=+y），用于沿延伸方向做重叠外移
+local DIR_VEC = {
+    top = { 0, 1 }, bottom = { 0, -1 }, left = { -1, 0 }, right = { 1, 0 },
+}
 
 function LianLianPlayView:DrawLine(pathLine)
     self:ClearLines()
@@ -318,42 +347,23 @@ function LianLianPlayView:DrawLine(pathLine)
     end
 end
 
--- 为路径节点生成线段（直线和/或拐角都放在格中心，靠旋转确定方向）
--- 两张图都是 160×160 正方形画布，统一用相同 size 正方形缩放，保证线粗一致
+-- 为路径节点生成线段：每个连通方向放一条 line_1 半直线（中心→该边），
+-- 直线格 = 两条相对半直线，拐角格 = 两条垂直半直线，在格中心交汇，自动对齐。
+-- 所有半直线尺寸恒为 RENDER_CELL×RENDER_CELL（不缩放），沿延伸方向外移 LINE_OVERLAP 消缝。
 function LianLianPlayView:CreateLineSegments(node)
     local cx, cy = self:GridToAnchor({ r = node.r, c = node.c })
-    local cell = self._cell or 40
-    -- 统一尺寸：size = cell（内容占半边=半格=恰好从中心到格边）
-    -- LINE_THICK 作为缩放倍率（1=刚好一格，>1 放大即更粗，<1 缩小即更细）
-    local size = cell * LINE_THICK
-
-    -- 直线方向：放格中心，正方形(size×size)，旋转到对应方向
     for dir, angle in pairs(DIR_ANGLE) do
         if node[dir] == 1 then
-            self:SpawnLine(LINE_STRAIGHT, cx, cy, size, size, angle)
-        end
-    end
-
-    -- 拐角：绕图片中心(0.5,0.5)旋转，L拐点偏离图片中心，用 CORNER_OFFSET 补偿回格中心
-    -- Unity UI 坐标：右=+x, 上=+y。QUARTER = size/4（拐点相对中心约 1/4 图宽）
-    local q = size / 2
-    -- 偏移随图片旋转一起转（逆时针90°递推：(x,y)→(-y,x)），基准 rb={0,-q}
-    local CORNER_OFFSET = {
-        rb = { 0, -q },   -- 0°
-        rt = { q, 0 },    -- 90°
-        lt = { 0, q },    -- 180°
-        lb = { -q, 0 },   -- 270°
-    }
-    for corner, angle in pairs(CORNER_ROT) do
-        if node[corner] == 1 then
-            local off = CORNER_OFFSET[corner]
-            self:SpawnLine(LINE_CORNER, cx + off[1], cy + off[2], size, size, angle)
+            local v = DIR_VEC[dir]
+            local x = cx + v[1] * LINE_OVERLAP
+            local y = cy + v[2] * LINE_OVERLAP
+            self:SpawnLine(LINE_STRAIGHT, x, y, RENDER_CELL, RENDER_CELL, angle)
         end
     end
 end
 
 -- 实例化一个线段 Image（异步，在 Lines 容器里）
--- spritePath: 完整资产路径（如 LINE_STRAIGHT / LINE_CORNER）
+-- spritePath: 完整资产路径（如 LINE_STRAIGHT）
 function LianLianPlayView:SpawnLine(spritePath, x, y, w, h, angle)
     if not self.lineContainer then return end
     self.lineContainer:GameObjectInstantiateAsync(LINE_SEG_PREFAB, function(request)
@@ -472,9 +482,69 @@ function LianLianPlayView:CancelClearTimer()
     end
 end
 
--- 棋盘移动后刷新牌面位置
+-- 棋盘移动：未消元素从旧位滑到新位（DOTween），动画中锁输入
 function LianLianPlayView:OnMove(data)
-    self:UpdateBoard()
+    if not data or not data.moveList or #data.moveList == 0 then
+        self:UpdateBoard()
+        return
+    end
+    if not self.tileItems then return end
+
+    local W = LianLianConst.GRID_WIDTH
+
+    -- 解析每步：旧索引 oldN / 新索引 newN / 新锚点坐标
+    local moves = {}
+    for _, mv in ipairs(data.moveList) do
+        local orr, oc = mv.oldRc:match("^(%d+)_(%d+)$")
+        local nr, nc = mv.newRc:match("^(%d+)_(%d+)$")
+        if orr and nr then
+            orr, oc, nr, nc = tonumber(orr), tonumber(oc), tonumber(nr), tonumber(nc)
+            local oldN = orr * W + oc
+            local tile = self.tileItems[oldN]
+            if tile then
+                local nx, ny = self:GridToAnchor({ r = nr, c = nc })
+                moves[#moves + 1] = {
+                    tile = tile, oldN = oldN, newN = nr * W + nc,
+                    nx = nx, ny = ny, r = nr, c = nc,
+                }
+            end
+        end
+    end
+
+    if #moves == 0 then
+        self:UpdateBoard()
+        return
+    end
+
+    -- 先从旧索引整体摘除，避免"某步的 newN 恰是另一步的 oldN"造成覆盖
+    for _, m in ipairs(moves) do
+        if self.tileItems[m.oldN] == m.tile then
+            self.tileItems[m.oldN] = nil
+        end
+    end
+
+    -- 重挂到新索引并播放滑动，全部完成后解锁 + 兜底校正
+    self:SetInputLock(true)
+    local total = #moves
+    local done = 0
+    for _, m in ipairs(moves) do
+        self.tileItems[m.newN] = m.tile
+        m.tile.pos = { r = m.r, c = m.c }
+        m.tile:MoveTo(m.nx, m.ny, LianLianConst.MOVE_DURATION, function()
+            done = done + 1
+            if done >= total then
+                self:UpdateBoard()
+                self:SetInputLock(false)
+            end
+        end)
+    end
+end
+
+-- 输入锁（动画期间禁止点击），供 Ctrl 查询
+function LianLianPlayView:SetInputLock(bLock)
+    if self.ctrl then
+        self.ctrl._inputLocked = bLock and true or false
+    end
 end
 
 function LianLianPlayView:OnBackClick()
@@ -504,6 +574,12 @@ function LianLianPlayView:OnAddListener()
     self:AddUIListener("LianLian_PlayClear", self.OnPlayClear)
     self:AddUIListener("LianLian_Move", self.OnMove)
     self:AddUIListener("LianLian_MatchFail", self.OnMatchFail)
+    self:AddUIListener("LianLian_GameStart", self.OnGameStart)
+end
+
+-- 游戏开局（初次进 Play 或 Debug 重生）：重绘棋盘
+function LianLianPlayView:OnGameStart(data)
+    self:RefreshView()
 end
 
 function LianLianPlayView:OnRemoveListener()

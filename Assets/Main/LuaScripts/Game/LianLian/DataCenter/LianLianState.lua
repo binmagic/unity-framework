@@ -19,6 +19,7 @@ function LianLianState.New()
         revive_times = 0,       -- 本局已复活次数
         card_used = {},         -- 本局道具使用记录
         level = 0,              -- 当前层级 (Layer)
+        direction = "",         -- 本盘锁定的移动方向（enum 值），开盘时 rollDirection 写入
         isPlaying = false,      -- 是否在游戏中
         startTime = 0,          -- 开始时间
         endTime = 0,            -- 结束时间
@@ -34,6 +35,7 @@ function LianLianState.reset(state)
     state.hp = LianLianConst.HP_NUM
     state.revive_times = 0
     state.card_used = {}
+    state.direction = ""
     state.isPlaying = false
     state.startTime = 0
     state.endTime = 0

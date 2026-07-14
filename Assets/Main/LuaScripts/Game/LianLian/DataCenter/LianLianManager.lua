@@ -6,11 +6,11 @@
 require "Framework.Common.BaseClass"
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
 local LianLianEnum = require "Game.LianLian.Config.LianLianEnum"
-local LianLianGrid = require "Game.LianLian.Model.LianLianGrid"
-local LianLianItem = require "Game.LianLian.Model.LianLianItem"
-local LianLianPlay = require "Game.LianLian.Model.LianLianPlay"
-local LianLianCard = require "Game.LianLian.Model.LianLianCard"
-local LianLianState = require "Game.LianLian.Model.LianLianState"
+local LianLianGrid = require "Game.LianLian.DataCenter.LianLianGrid"
+local LianLianItem = require "Game.LianLian.DataCenter.LianLianItem"
+local LianLianPlay = require "Game.LianLian.DataCenter.LianLianPlay"
+local LianLianCard = require "Game.LianLian.DataCenter.LianLianCard"
+local LianLianState = require "Game.LianLian.DataCenter.LianLianState"
 
 local LianLianManager = BaseClass("LianLianManager", Singleton)
 
@@ -24,14 +24,71 @@ function LianLianManager:startGame(part)
     self.state.part = part or 1
     LianLianState.reset(self.state)
     LianLianPlay.initData(self.state)
+    -- 按 level 随机抽本盘移动方向并锁定；教学关 part 1 强制无移动
+    self.state.direction = self:rollBoardDirection()
     self.state.isPlaying = true
     self.state.startTime = os.time() * 1000
 
     -- 广播游戏开始事件
     EventManager:GetInstance():Broadcast("LianLian_GameStart", {
         part = self.state.part,
-        direction = self:getDirection(),
+        direction = self.state.direction,
     })
+end
+
+--- 抽取本盘移动方向（教学关 part 1 强制无移动）
+function LianLianManager:rollBoardDirection()
+    if self.state.part == 1 then return "" end
+    return LianLianPlay.rollDirection(self.state.level)
+end
+
+--- Debug：按自定义 rows×cols 重新生成棋盘
+--- @param rows number 行数
+--- @param cols number 列数
+--- @param part number 关卡号(用于移动方向等)
+--- @param moveType string|nil 指定移动方向；nil 时随机抽取
+function LianLianManager:startGameCustom(rows, cols, part, moveType)
+    -- 校验并 clamp 参数（盘面生成规则在 Manager 侧统一管理）
+    rows = math.floor(tonumber(rows) or LianLianConst.INTERIOR_ROWS)
+    cols = math.floor(tonumber(cols) or LianLianConst.INTERIOR_COLS)
+    part = math.floor(tonumber(part) or 1)
+    rows = math.min(math.max(rows, 1), LianLianConst.INTERIOR_ROWS)
+    cols = math.min(math.max(cols, 1), LianLianConst.INTERIOR_COLS)
+    part = math.min(math.max(part, 1), LianLianPlay.getPartMax() or 10)
+
+    self.state.part = part
+    LianLianState.reset(self.state)
+    LianLianPlay.initDataCustom(self.state, rows, cols)
+    -- 指定了移动类型则固定使用，否则随机抽取
+    if moveType ~= nil then
+        self.state.direction = moveType
+    else
+        self.state.direction = self:rollBoardDirection()
+    end
+    self.state.isPlaying = true
+    self.state.startTime = os.time() * 1000
+
+    EventManager:GetInstance():Broadcast("LianLian_GameStart", {
+        part = self.state.part,
+        direction = self.state.direction,
+    })
+end
+
+--- 获取当前盘面行列数（从 grid 非空格子推算）
+--- @return number rows, number cols
+function LianLianManager:getBoardSize()
+    local maxR, maxC = 0, 0
+    if self.state and self.state.grid then
+        for _, cell in pairs(self.state.grid) do
+            if cell.id and cell.id ~= 0 then
+                if cell.r > maxR then maxR = cell.r end
+                if cell.c > maxC then maxC = cell.c end
+            end
+        end
+    end
+    if maxR == 0 then maxR = LianLianConst.INTERIOR_ROWS end
+    if maxC == 0 then maxC = LianLianConst.INTERIOR_COLS end
+    return maxR, maxC
 end
 
 --- 获取棋盘数据
@@ -121,8 +178,9 @@ function LianLianManager:afterClear()
     local direction = self:getDirection()
     local moveList = LianLianPlay.getMoveList(self.state.grid, direction)
 
-    -- 广播移动事件
+    -- 把牌面 id 按移动列表迁移到新格（数据层生效），再广播给 View 播滑动动画
     if #moveList > 0 then
+        LianLianPlay.applyMoveList(self.state.grid, moveList)
         EventManager:GetInstance():Broadcast("LianLian_Move", {
             direction = direction,
             moveList = moveList,
@@ -238,8 +296,13 @@ function LianLianManager:getEnterList()
     return LianLianPlay.getItemEnterList(self.state.part)
 end
 
---- 获取移动方向（优先取盘面 meta，回退到 LianLianPlay）
+--- 获取移动方向（优先 Debug 覆盖，其次盘面 meta，回退到 LianLianPlay）
 function LianLianManager:getDirection()
+    -- Debug 覆盖优先
+    if self.state.direction and self.state.direction ~= "" then
+        return self.state.direction
+    end
+    -- 盘面 meta 次之
     local board = self.state.board
     if board and board.meta and board.meta.direction and board.meta.direction ~= "" then
         return board.meta.direction

@@ -43,6 +43,20 @@ local LianLianConst = {
         [2] = 0,
         [3] = 0,
     },
+
+    -- 移动动画时长（秒）：未消元素从旧位滑到新位的耗时，与牌数无关
+    MOVE_DURATION = 0.25,
+
+    -- 按 level 分档的"允许移动方向池"。开新盘时从对应档位随机抽一种，锁定本盘。
+    -- 越高 level，池里越难的方向越多；超过最大档位取最后一档（平台期）。
+    -- "divide"/"flock" 是大类，抽中后再随机定子方向（左右/上下），见 LianLianPlay.rollDirection。
+    LEVEL_MOVE_POOL = {
+        [0] = { "" },                                                   -- 新手：不移动，先熟悉规则
+        [1] = { "up", "down", "left", "right" },                        -- 入门：仅单向重力
+        [2] = { "up", "down", "left", "right" },
+        [3] = { "up", "down", "left", "right", "divide", "flock" },     -- 进阶：引入分散/聚拢
+        [4] = { "", "up", "down", "left", "right", "divide", "flock" }, -- 熟练：全部（含无移动）
+    },
 }
 
 return LianLianConst

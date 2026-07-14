@@ -30,7 +30,7 @@ end
 -- 退出
 local function Exit()
     -- 销毁连连看游戏管理器
-    local LianLianManager = require "Game.LianLian.Manager.LianLianManager"
+    local LianLianManager = require "Game.LianLian.DataCenter.LianLianManager"
     LianLianManager:Delete()
 
     UIManager:GetInstance():DestroyAllWindow()
