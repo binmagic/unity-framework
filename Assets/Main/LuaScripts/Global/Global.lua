@@ -39,6 +39,10 @@ SingletonListenerHandler = require 'Global.SingletonListenerHandler'
 LuaWebRequest = require 'Global.LuaWebRequest'
 require "Global.UnityUtils"
 
+-- DOTween 全局别名（C# 已通过 XLua 导出，见 GenConfig；框架多处以裸全局方式使用）
+DOTween = CS.DG.Tweening.DOTween
+Ease = CS.DG.Tweening.Ease
+
 -- game data
 NameCount = 0
 DataCenter = require "DataCenter.DataCenter"
