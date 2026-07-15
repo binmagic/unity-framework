@@ -9,19 +9,25 @@
         self.Network   -- 网络管理
 ]]
 
+local PlayerInfo = require "DataCenter.Global.PlayerInfo"
+
 local LuaEntry = {}
 
 -- 初始化
 function LuaEntry:Init()
-    -- TODO: 后续开发时初始化子模块
-    -- self.Player = xxx.New()
+    self.Player = PlayerInfo.New()
+    -- TODO: 后续开发时初始化其它子模块
     -- self.Resource = xxx.New()
     -- self.Network = xxx.New()
 end
 
 -- 销毁
 function LuaEntry:Uninit()
-    -- TODO: 后续开发时销毁子模块
+    if self.Player then
+        self.Player:Delete()
+        self.Player = nil
+    end
+    -- TODO: 后续开发时销毁其它子模块
 end
 
 -- 进入后台
