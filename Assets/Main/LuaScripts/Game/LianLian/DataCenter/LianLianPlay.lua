@@ -118,7 +118,27 @@ end
 
 --- Debug：自定义 rows×cols 初始化数据
 function LianLianPlay.initDataCustom(state, rows, cols)
-    state.grid = LianLianPlay.getGridCustom(rows, cols)
+    local grid = LianLianPlay.getGridCustom(rows, cols)
+    -- 构造与正式流程一致的 board 结构，供 DrawBoard 使用
+    local LianLianBoardResult = require "Game.LianLian.DataCenter.Board.LianLianBoardResult"
+    local LianLianLevel = require "Game.LianLian.Config.LianLianLevel"
+    rows = math.min(math.max(rows or 1, 1), HEIGHT - 2)
+    cols = math.min(math.max(cols or 1, 1), WIDTH - 2)
+    local layout = {
+        gridRows = HEIGHT,
+        gridCols = WIDTH,
+        activeRows = rows,
+        activeCols = cols,
+        originRow = 1,
+        originCol = 1,
+    }
+    local meta = {
+        strategy = "custom",
+        direction = "",
+        enterList = LianLianLevel.enterList and LianLianLevel.enterList[2] or {},
+    }
+    state.board = LianLianBoardResult.new(grid, layout, meta)
+    state.grid = state.board.grid
     state.items = {}
     state.item_checked = {}
     state.hp = LianLianConst.HP_NUM

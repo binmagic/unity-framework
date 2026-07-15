@@ -5,8 +5,8 @@
 -- View / Manager / Ctrl 全程不动。
 --]]
 
-local FixedLayoutStrategy = require "Game.LianLian.Model.Board.Strategies.FixedLayoutStrategy"
-local RandomFillStrategy = require "Game.LianLian.Model.Board.Strategies.RandomFillStrategy"
+local FixedLayoutStrategy = require "Game.LianLian.DataCenter.Board.Strategies.FixedLayoutStrategy"
+local RandomFillStrategy = require "Game.LianLian.DataCenter.Board.Strategies.RandomFillStrategy"
 
 local LianLianBoardGenerator = {}
 

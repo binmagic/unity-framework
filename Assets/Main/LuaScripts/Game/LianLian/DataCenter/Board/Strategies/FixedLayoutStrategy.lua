@@ -6,9 +6,9 @@
 
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
 local LianLianLevel = require "Game.LianLian.Config.LianLianLevel"
-local LianLianGrid = require "Game.LianLian.Model.LianLianGrid"
-local LianLianBase = require "Game.LianLian.Model.Board.LianLianGenStrategyBase"
-local LianLianBoardResult = require "Game.LianLian.Model.Board.LianLianBoardResult"
+local LianLianGrid = require "Game.LianLian.DataCenter.LianLianGrid"
+local LianLianBase = require "Game.LianLian.DataCenter.Board.LianLianGenStrategyBase"
+local LianLianBoardResult = require "Game.LianLian.DataCenter.Board.LianLianBoardResult"
 
 local FixedLayoutStrategy = {}
 

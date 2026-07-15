@@ -5,10 +5,10 @@
 --]]
 
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
-local LianLianGrid = require "Game.LianLian.Model.LianLianGrid"
-local LianLianItem = require "Game.LianLian.Model.LianLianItem"
-local LianLianBase = require "Game.LianLian.Model.Board.LianLianGenStrategyBase"
-local LianLianBoardResult = require "Game.LianLian.Model.Board.LianLianBoardResult"
+local LianLianGrid = require "Game.LianLian.DataCenter.LianLianGrid"
+local LianLianItem = require "Game.LianLian.DataCenter.LianLianItem"
+local LianLianBase = require "Game.LianLian.DataCenter.Board.LianLianGenStrategyBase"
+local LianLianBoardResult = require "Game.LianLian.DataCenter.Board.LianLianBoardResult"
 
 local RandomFillStrategy = {}
 

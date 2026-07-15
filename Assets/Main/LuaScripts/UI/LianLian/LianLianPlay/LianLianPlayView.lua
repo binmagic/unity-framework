@@ -86,7 +86,8 @@ function LianLianPlayView:OnEnable()
     if self.ctrl then
         self.ctrl:InitGame(1)
     end
-    self:RefreshView()
+    -- 不再手动调 RefreshView —— InitGame 内的 startGame 会广播 LianLian_GameStart，
+    -- OnGameStart 监听器已经调了 RefreshView。去掉这里避免双重 DrawBoard 产生重叠 tile。
 end
 
 function LianLianPlayView:RefreshView()
@@ -138,11 +139,11 @@ end
 
 -- 清除棋盘上所有牌面 GameObject
 function LianLianPlayView:ClearBoard()
-    if self.tileItems then
-        for _, tile in pairs(self.tileItems) do
-            if tile and tile.gameObject then
-                CS.UnityEngine.GameObject.Destroy(tile.gameObject)
-            end
+    -- 兜底：销毁 Board 容器下所有子节点（含异步还没进 tileItems 的孤儿 GO）
+    if self.boardContainer and self.boardContainer.transform then
+        local tf = self.boardContainer.transform
+        for i = tf.childCount - 1, 0, -1 do
+            CS.UnityEngine.GameObject.Destroy(tf:GetChild(i).gameObject)
         end
     end
     self.tileItems = {}
@@ -464,11 +465,11 @@ function LianLianPlayView:OnPlayClear(data)
     self:CancelClearTimer()
     self._clearTimer = TimerManager:GetInstance():GetTimer(0.5, function()
         self:ClearLines()
-        -- 隐藏被消除的两张牌
+        -- 隐藏被消除的两张牌（先杀入场动画避免干扰）
         local a, b = data.posA, data.posB
         local ta, tb = self:GetTile(a), self:GetTile(b)
-        if ta then ta:SetVisible(false) end
-        if tb then tb:SetVisible(false) end
+        if ta then ta:KillPopIn(); ta:SetVisible(false) end
+        if tb then tb:KillPopIn(); tb:SetVisible(false) end
         -- 触发后续（移动 + 胜负判定）
         self.ctrl:OnClearEnd()
     end, self, true, false, false)
