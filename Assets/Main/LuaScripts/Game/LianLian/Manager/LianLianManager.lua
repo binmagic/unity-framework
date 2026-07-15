@@ -30,13 +30,23 @@ function LianLianManager:startGame(part)
     -- 广播游戏开始事件
     EventManager:GetInstance():Broadcast("LianLian_GameStart", {
         part = self.state.part,
-        direction = LianLianPlay.getDirection(self.state.part),
+        direction = self:getDirection(),
     })
 end
 
 --- 获取棋盘数据
 function LianLianManager:getGrid()
     return self.state.grid
+end
+
+--- 获取完整盘面描述对象（含 grid / layout / meta）
+function LianLianManager:getBoard()
+    return self.state.board
+end
+
+--- 获取盘面布局元信息（activeRows/activeCols/origin 等）
+function LianLianManager:getLayout()
+    return self.state.board and self.state.board.layout
 end
 
 --- 获取当前生命值
@@ -108,7 +118,7 @@ end
 --- 消除后的处理（移动 + 胜利判定）
 function LianLianManager:afterClear()
     -- 获取移动方向
-    local direction = LianLianPlay.getDirection(self.state.part)
+    local direction = self:getDirection()
     local moveList = LianLianPlay.getMoveList(self.state.grid, direction)
 
     -- 广播移动事件
@@ -180,6 +190,11 @@ function LianLianManager:getPlayTime()
     return endTime - self.state.startTime
 end
 
+--- 获取游戏时长显示字符串
+function LianLianManager:getPlayTimeStr()
+    return LianLianPlay.getTimeStr(self:getPlayTime())
+end
+
 --- 使用提示道具
 function LianLianManager:useTip()
     self:cancelChecked()
@@ -199,19 +214,36 @@ function LianLianManager:useShuffle()
     EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true })
 end
 
+--- 盘面重排：按当前关卡难度把剩余元素重新摆放位置
+--- 与洗牌(useShuffle)的区别：位置也变，非仅原地换 id
+function LianLianManager:rearrangeBoard()
+    self:cancelChecked()
+    local difficulty = LianLianPlay.getDifficulty(self.state.level)
+    LianLianCard.rearrange(self.state.grid, difficulty)
+    EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { rearrange = true })
+end
+
 --- 使用加血道具
 function LianLianManager:useHp()
     self.state.hp = LianLianCard.addHp(self.state.hp)
     EventManager:GetInstance():Broadcast("LianLian_HpUpdate", { hp = self.state.hp })
 end
 
---- 获取进入动画列表
+--- 获取进入动画列表（优先取盘面 meta，回退到 LianLianPlay）
 function LianLianManager:getEnterList()
+    local board = self.state.board
+    if board and board.meta and board.meta.enterList then
+        return board.meta.enterList
+    end
     return LianLianPlay.getItemEnterList(self.state.part)
 end
 
---- 获取移动方向
+--- 获取移动方向（优先取盘面 meta，回退到 LianLianPlay）
 function LianLianManager:getDirection()
+    local board = self.state.board
+    if board and board.meta and board.meta.direction and board.meta.direction ~= "" then
+        return board.meta.direction
+    end
     return LianLianPlay.getDirection(self.state.part)
 end
 

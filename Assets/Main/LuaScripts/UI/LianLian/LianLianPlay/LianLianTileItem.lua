@@ -74,6 +74,36 @@ function LianLianTileItem:SetPosition(x, y)
     end
 end
 
+--- 缩放弹出入场动画：延迟 delay 后，localScale 从 0 弹到 1（带回弹）
+--- @param delay number 起始延迟（秒）
+--- @param duration number 弹出时长（秒）
+--- @param onDone function|nil 完成回调
+function LianLianTileItem:PlayPopIn(delay, duration, onDone)
+    self:KillPopIn()
+    self:SetVisible(true)
+    self:SetLocalScaleXYZ(0, 0, 1)
+
+    self._popTween = DOTween.Sequence()
+    if delay and delay > 0 then
+        self._popTween:AppendInterval(delay)
+    end
+    self._popTween:Append(self.transform:DOScale(Vector3.New(1, 1, 1), duration):SetEase(Ease.OutBack))
+    self._popTween:AppendCallback(function()
+        self._popTween = nil
+        self:SetLocalScaleXYZ(1, 1, 1)
+        if onDone then onDone() end
+    end)
+end
+
+--- 中断入场动画并把 scale 复位为 1（幂等）
+function LianLianTileItem:KillPopIn()
+    if self._popTween then
+        self._popTween:Kill()
+        self._popTween = nil
+    end
+    self:SetLocalScaleXYZ(1, 1, 1)
+end
+
 --- 设置牌尺寸（归一到中心锚点固定尺寸模式）
 function LianLianTileItem:SetSize(w, h)
     if self.rectTransform then

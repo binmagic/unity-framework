@@ -5,8 +5,8 @@
 
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
 local LianLianLevel = require "Game.LianLian.Config.LianLianLevel"
-local LianLianGrid = require "Game.LianLian.Model.LianLianGrid"
 local LianLianItem = require "Game.LianLian.Model.LianLianItem"
+local LianLianBoardGenerator = require "Game.LianLian.Model.Board.LianLianBoardGenerator"
 
 local WIDTH = LianLianConst.GRID_WIDTH
 local HEIGHT = LianLianConst.GRID_HEIGHT
@@ -46,124 +46,28 @@ end
 --- 初始化关卡数据
 --- @param state table 运行时状态
 function LianLianPlay.initData(state)
-    state.grid = LianLianPlay.getGrid(state.part)
+    state.board = LianLianPlay.getGrid(state.part, state.level)
+    state.grid = state.board.grid
     state.items = {}
     state.item_checked = {}
     state.hp = LianLianConst.HP_NUM
     state.revive_times = 0
     state.card_used = {}
-
-    -- Part 2 有概率生成锁定组
-    if state.part == 2 then
-        local rate = LianLianConst.LEVEL_LOCK_RATE[state.level or 0]
-        if rate == nil then rate = LianLianConst.LEVEL_LOCK_RATE[0] end
-        if rate > 0 and math.random() < rate then
-            LianLianPlay.setLockGroup(state.grid)
-        end
-    end
 end
 
---- 生成棋盘牌面 ID
+--- 生成棋盘（委托给盘面生成子系统）
 --- @param part number 当前关卡
-function LianLianPlay.getGrid(part)
-    local grid = LianLianGrid.create()
-    local ids = {}
-
-    if part == 1 then
-        -- 教学关：6 对牌
-        local pairCount = #LianLianLevel[1] / 2
-        for i = 1, pairCount do
-            ids[#ids + 1] = LianLianItem.rndId()
-        end
-    else
-        -- 正式关：56 对牌
-        local pairCount = LianLianGrid.getLen() / 2
-        for i = 1, pairCount do
-            if i <= LianLianConst.KIND_MAX then
-                ids[#ids + 1] = i
-            else
-                ids[#ids + 1] = LianLianItem.rndId()
-            end
-        end
-    end
-
-    -- 复制成对并打乱
-    local pairedIds = {}
-    for _, id in ipairs(ids) do
-        pairedIds[#pairedIds + 1] = id
-        pairedIds[#pairedIds + 1] = id
-    end
-    -- Fisher-Yates 洗牌
-    for i = #pairedIds, 2, -1 do
-        local j = math.random(i)
-        pairedIds[i], pairedIds[j] = pairedIds[j], pairedIds[i]
-    end
-
-    if part == 1 then
-        -- 教学关：按指定位置放置
-        for _, pos in ipairs(LianLianLevel[1]) do
-            local key = pos.r .. "_" .. pos.c
-            grid[key].id = table.remove(pairedIds)
-        end
-    else
-        -- 正式关：填充内部区域
-        for key, cell in pairs(grid) do
-            if cell.r > 0 and cell.r < HEIGHT - 1 and cell.c > 0 and cell.c < WIDTH - 1 then
-                cell.id = table.remove(pairedIds)
-            end
-        end
-    end
-
-    return grid
+--- @param level number 当前层级
+--- @return table LianLianBoardResult（含 grid / layout / meta）
+function LianLianPlay.getGrid(part, level)
+    return LianLianBoardGenerator.generate(part, level or 0)
 end
 
---- 设置锁定组（2×2 方块，只能通过洗牌消除）
-function LianLianPlay.setLockGroup(grid)
-    local r = math.random(1, HEIGHT - 3)
-    local c = math.random(1, WIDTH - 3)
-
-    local a = grid[r .. "_" .. c]
-    local b = grid[r .. "_" .. (c + 1)]
-    local d = grid[(r + 1) .. "_" .. c]
-    local e = grid[(r + 1) .. "_" .. (c + 1)]
-
-    -- 确保对角相同，邻角不同
-    -- 如果 a 和 b 相同，交换 b 和某个不同的牌
-    if a.id == b.id then
-        for key, cell in pairs(grid) do
-            if cell.id ~= a.id then
-                b.id, cell.id = cell.id, b.id
-                break
-            end
-        end
-    end
-
-    -- 找到与 a 相同的另一张牌放到 e（对角）
-    for key, cell in pairs(grid) do
-        if cell.id == a.id and not LianLianItem.isSamePos(a, cell) and not LianLianItem.isSamePos(e, cell) then
-            e.id, cell.id = cell.id, e.id
-            break
-        end
-    end
-
-    -- 找到与 b 相同的另一张牌放到 d（对角）
-    for key, cell in pairs(grid) do
-        if cell.id == b.id and not LianLianItem.isSamePos(b, cell) and not LianLianItem.isSamePos(d, cell) then
-            d.id, cell.id = cell.id, d.id
-            break
-        end
-    end
-
-    -- 将剩余的 a.id 牌替换为新的随机 ID（避免其他位置也有 a.id）
-    local newId = LianLianItem.rndId(a.id, b.id)
-    for key, cell in pairs(grid) do
-        if cell.id == a.id and not LianLianItem.isSamePos(a, cell) and not LianLianItem.isSamePos(e, cell) then
-            cell.id = newId
-        end
-        if cell.id == b.id and not LianLianItem.isSamePos(b, cell) and not LianLianItem.isSamePos(d, cell) then
-            cell.id = newId
-        end
-    end
+--- 获取当前层级的难度参数集（委托给盘面生成子系统）
+--- @param level number 当前层级
+--- @return table 难度参数集
+function LianLianPlay.getDifficulty(level)
+    return LianLianBoardGenerator.getDifficulty(level or 0)
 end
 
 --- 获取牌面进入动画的顺序

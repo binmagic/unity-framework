@@ -10,7 +10,8 @@ local LianLianState = {}
 --- 创建新的游戏状态
 function LianLianState.New()
     return {
-        grid = {},              -- 棋盘数据 {["r_c"] = {r, c, id, ...}}
+        board = nil,            -- 盘面描述对象 LianLianBoardResult（含 grid/layout/meta）
+        grid = {},              -- 棋盘数据 {["r_c"] = {r, c, id, ...}}，指向 board.grid
         items = {},             -- 牌面 UI 节点引用
         item_checked = {},      -- 当前选中的牌位列表
         part = 1,               -- 当前关卡 (Part)
@@ -26,6 +27,7 @@ end
 
 --- 重置状态为新一局
 function LianLianState.reset(state)
+    state.board = nil
     state.grid = {}
     state.items = {}
     state.item_checked = {}

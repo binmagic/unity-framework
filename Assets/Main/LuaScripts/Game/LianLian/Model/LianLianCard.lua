@@ -5,6 +5,7 @@
 
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
 local LianLianItem = require "Game.LianLian.Model.LianLianItem"
+local LianLianBase = require "Game.LianLian.Model.Board.LianLianGenStrategyBase"
 
 local LianLianCard = {}
 
@@ -91,6 +92,38 @@ function LianLianCard.shuffle(grid)
                 cell.id = table.remove(ids)
             end
         end
+    end
+end
+
+--- 盘面重排：把剩余元素随机散布到难度激活区内的格子
+--- 与 shuffle 的区别：位置也重排（shuffle 仅原地换 id）
+--- @param grid table 棋盘数据
+--- @param difficulty table 关卡难度参数集（决定激活区）
+function LianLianCard.rearrange(grid, difficulty)
+    -- 1) 收集剩余 id
+    local ids = {}
+    for _, cell in pairs(grid) do
+        if cell.id ~= 0 then ids[#ids + 1] = cell.id end
+    end
+    if #ids == 0 then return end
+
+    -- 2) 清空整盘
+    for _, cell in pairs(grid) do cell.id = 0 end
+
+    -- 3) 依难度取激活区内所有格子
+    local region = LianLianBase.computeActiveRegion(difficulty)
+    local cells = {}
+    for r = region.originRow, region.originRow + region.activeRows - 1 do
+        for c = region.originCol, region.originCol + region.activeCols - 1 do
+            local cell = grid[r .. "_" .. c]
+            if cell then cells[#cells + 1] = cell end
+        end
+    end
+
+    -- 4) 打乱目标格子顺序，把剩余 id 依次放入 → 位置全随机
+    LianLianBase.shuffle(cells)
+    for i = 1, #ids do
+        cells[i].id = ids[i]
     end
 end
 

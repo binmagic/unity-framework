@@ -4,8 +4,6 @@
 --]]
 
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
-local LianLianGrid = require "Game.LianLian.Model.LianLianGrid"
-local LianLianPlay = require "Game.LianLian.Model.LianLianPlay"
 local LianLianCard = require "Game.LianLian.Model.LianLianCard"
 local LianLianEnum = require "Game.LianLian.Config.LianLianEnum"
 local LianLianTileItem = require "UI.LianLian.LianLianPlay.LianLianTileItem"
@@ -23,6 +21,11 @@ local DIRECTION_SPRITE = {
     [LianLianEnum.MoveDirection.FLOCK_UP_DOWN] = "flock_up_down",
 }
 local DIRECTION_SPRITE_PATH = "Assets/_Art_LianLian/Direction/%s.png"
+
+-- 入场动画：无论牌数多少，总时长固定 = 错峰窗口 + 单张弹出时长
+local ENTER_TOTAL = 0.8                        -- 入场总时长（固定）
+local ENTER_POP = 0.3                          -- 单张牌缩放弹出时长
+local ENTER_STAGGER = ENTER_TOTAL - ENTER_POP  -- 首张到末张的错峰铺开窗口 = 0.5
 
 local LianLianPlayView = BaseClass("LianLianPlayView", UIBaseView)
 local base = UIBaseView
@@ -70,7 +73,7 @@ function LianLianPlayView:DataDestroy()
     self:CancelTipTimer()
     self:CancelClearTimer()
     self:CancelFailTimer()
-    self:CancelEnterTimer()
+    self:KillEnterAnim()
     self:ClearLines()
     self.tileItems = {}
     self._heartText = nil
@@ -98,7 +101,7 @@ end
 --- 更新方向图标
 function LianLianPlayView:UpdateDirectionIcon()
     if not self.directionImage then return end
-    local direction = LianLianPlay.getDirection(self.ctrl:GetPart())
+    local direction = self.ctrl.manager:getDirection()
     local spriteName = DIRECTION_SPRITE[direction] or "nomove"
     local path = string.format(DIRECTION_SPRITE_PATH, spriteName)
     self.directionImage:LoadSprite(path)
@@ -108,21 +111,27 @@ end
 function LianLianPlayView:Update()
     if not self.ctrl or not self.ctrl.manager then return end
     if not self.ctrl.manager.state.isPlaying then return end
-    local ms = self.ctrl.manager:getPlayTime()
     if self.timeText then
-        self.timeText:SetText(LianLianPlay.getTimeStr(ms))
+        self.timeText:SetText(self.ctrl.manager:getPlayTimeStr())
     end
 end
 
 local TILE_PREFAB = "Assets/Main/Prefabs/UI/LianLian/PrePlayItem.prefab"
 
--- grid 内部坐标(r,c) -> Board 容器锚点坐标（以 Board 中心为原点）
+-- grid 物理坐标(r,c) -> Board 容器锚点坐标（以 Board 中心为原点）
+-- 依据盘面 layout 的激活区（origin + activeRows/activeCols）定位，
+-- 不再假设固定的 8×14 内部区域，激活区自动居中。
 function LianLianPlayView:GridToAnchor(cell)
-    local cols = self._boardCols or LianLianConst.INTERIOR_COLS
-    local rows = self._boardRows or LianLianConst.INTERIOR_ROWS
+    local L = self._layout
     local cellSize = self._cell or 40
-    local x = (cell.c - (cols + 1) / 2) * cellSize
-    local y = -(cell.r - (rows + 1) / 2) * cellSize
+    if not L then
+        return 0, 0
+    end
+    -- 转到激活区内的相对坐标，再以激活区中心为原点
+    local localC = cell.c - L.originCol
+    local localR = cell.r - L.originRow
+    local x = (localC - (L.activeCols - 1) / 2) * cellSize
+    local y = -(localR - (L.activeRows - 1) / 2) * cellSize
     return x, y
 end
 
@@ -132,65 +141,94 @@ function LianLianPlayView:DrawBoard()
     -- 清掉旧牌
     self.tileItems = {}
 
+    -- 从盘面描述对象取布局元信息（激活区尺寸决定格子边长）
+    local board = self.ctrl.manager:getBoard()
+    if not board then return end
+    local L = board.layout
+    self._layout = L
+
     -- 依据 Board 容器实际尺寸计算格子边长（正方格，取小边）
     local rt = self.boardContainer.rectTransform
-    local cols = LianLianConst.INTERIOR_COLS
-    local rows = LianLianConst.INTERIOR_ROWS
-    self._boardCols = cols
-    self._boardRows = rows
     if rt then
         local bw = rt.rect.width
         local bh = rt.rect.height
-        self._cell = math.min(bw / cols, bh / rows)
+        self._cell = math.min(bw / L.activeCols, bh / L.activeRows)
     else
         self._cell = 40
     end
 
-    local grid = self.ctrl.manager:getGrid()
-    -- 先全部创建（初始隐藏），再按入场序列逐个显示
-    for key, cell in pairs(grid) do
+    -- 计算每张牌的入场错峰延迟（按 enterList 顺序），总时长与牌数无关
+    local delayByN = self:BuildEnterDelays(board)
+
+    -- 逐个（异步）创建牌，每张牌实例化后立即按其延迟播放弹出动画
+    for key, cell in pairs(board.grid) do
         if cell.id ~= 0 then
-            self:CreateTile(cell, true)  -- hidden=true 入场前不可见
+            self:CreateTile(cell, delayByN[cell.n] or 0)
         end
     end
-    self:PlayEnterAnim()
 end
 
--- 按 enterList 顺序逐个显示 tile（入场动画）
-function LianLianPlayView:PlayEnterAnim()
-    self:CancelEnterTimer()
+-- 物理坐标 (r,c) -> tile 索引 n（= r*gridCols+c，与 grid 的 cell.n 编码一致）
+function LianLianPlayView:PosToN(r, c)
+    local cols = (self._layout and self._layout.gridCols) or LianLianConst.GRID_WIDTH
+    return r * cols + c
+end
+
+-- "r_c" 字符串 -> tile 索引 n
+function LianLianPlayView:RcToN(rc)
+    local r, c = rc:match("^(%d+)_(%d+)$")
+    if not r then return nil end
+    return self:PosToN(tonumber(r), tonumber(c))
+end
+
+-- 依据盘面 meta.enterList 计算每个非空格子的入场延迟：
+-- 按入场序列排名把延迟均摊到固定的错峰窗口内 → 总时长恒定，与牌数无关。
+-- @return table { [n] = delaySeconds }
+function LianLianPlayView:BuildEnterDelays(board)
+    -- 收集所有非空格子的 n
+    local pending = {}   -- [n] = true
+    for _, cell in pairs(board.grid) do
+        if cell.id ~= 0 then pending[cell.n] = true end
+    end
+
+    -- 按 enterList 顺序排名，未覆盖的非空格子追加到末尾（兜底）
+    local ranked = {}
     local enterList = self.ctrl.manager:getEnterList()
-    if not enterList or #enterList == 0 then
-        -- 无入场序列，直接全部显示
-        for _, tile in pairs(self.tileItems) do tile:SetVisible(true) end
-        return
-    end
-    local idx = 0
-    self._enterTimer = TimerManager:GetInstance():GetTimer(0.02, function()
-        idx = idx + 1
-        if idx > #enterList then
-            self:CancelEnterTimer()
-            -- 兜底：把还没显示的都显示出来
-            for _, tile in pairs(self.tileItems) do tile:SetVisible(true) end
-            return
+    if enterList then
+        for _, rc in ipairs(enterList) do
+            local n = self:RcToN(rc)
+            if n and pending[n] then
+                ranked[#ranked + 1] = n
+                pending[n] = nil
+            end
         end
-        local rc = enterList[idx]
-        local n = LianLianGrid.rc2n(rc)
-        local tile = self.tileItems[n]
-        if tile then tile:SetVisible(true) end
-    end, self, false, false, false)  -- one_shot=false 循环触发
-    self._enterTimer:Start()
+    end
+    for n in pairs(pending) do
+        ranked[#ranked + 1] = n
+    end
+
+    -- 均摊延迟：第 i 张 delay = (i-1)/(count-1) * 错峰窗口
+    local count = #ranked
+    local delayByN = {}
+    local denom = math.max(count - 1, 1)
+    for i, n in ipairs(ranked) do
+        delayByN[n] = (i - 1) / denom * ENTER_STAGGER
+    end
+    return delayByN
 end
 
-function LianLianPlayView:CancelEnterTimer()
-    if self._enterTimer then
-        self._enterTimer:Stop()
-        self._enterTimer = nil
+-- 中断所有牌的入场动画（把 scale 复位为 1）
+function LianLianPlayView:KillEnterAnim()
+    if self.tileItems then
+        for _, tile in pairs(self.tileItems) do
+            if tile.KillPopIn then tile:KillPopIn() end
+        end
     end
 end
 
 -- 实例化单张牌
-function LianLianPlayView:CreateTile(cell, hidden)
+-- @param popDelay number|nil 入场缩放弹出的错峰延迟（秒），缺省 0（即刻弹出）
+function LianLianPlayView:CreateTile(cell, popDelay)
     local n = cell.n
     local pos = { r = cell.r, c = cell.c }
     local ax, ay = self:GridToAnchor(cell)
@@ -202,15 +240,16 @@ function LianLianPlayView:CreateTile(cell, hidden)
         tile:SetSize(sz, sz)
         tile:SetPosition(ax, ay)
         tile:SetData(pos, cell.id, function(p) self.ctrl:OnTileClick(p) end)
-        if hidden then tile:SetVisible(false) end
         self.tileItems[n] = tile
+        -- 按错峰延迟播放缩放弹出
+        tile:PlayPopIn(popDelay or 0, ENTER_POP)
     end, self.boardContainer.transform)
 end
 
 -- 依据某个位置取 tile
 function LianLianPlayView:GetTile(pos)
     if not pos then return nil end
-    local n = pos.r * LianLianConst.GRID_WIDTH + pos.c
+    local n = self:PosToN(pos.r, pos.c)
     return self.tileItems and self.tileItems[n]
 end
 
