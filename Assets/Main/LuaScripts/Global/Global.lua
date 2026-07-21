@@ -26,6 +26,7 @@ _ToID = StringLookupTable.Get
 
 Singleton = require "Framework.Common.Singleton"
 
+LocalController = require "Common.LocalController"
 Logger = require "Framework.Logger.Logger"
 PostEventLog = require "Framework.Logger.PostEventLog"
 FireBaseLog = require "Framework.Logger.FireBaseLog"

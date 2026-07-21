@@ -10,6 +10,8 @@
 ]]
 
 local PlayerInfo = require "DataCenter.Global.PlayerInfo"
+local DataConfig = require "DataCenter.Global.DataConfig"
+
 
 local LuaEntry = {}
 
@@ -19,6 +21,11 @@ function LuaEntry:Init()
     -- TODO: 后续开发时初始化其它子模块
     -- self.Resource = xxx.New()
     -- self.Network = xxx.New()
+
+    -- 模块启动
+    UIManager:GetInstance():Startup()
+    LuaEntry:LoadDataConfig()
+    
 end
 
 -- 销毁
@@ -33,6 +40,23 @@ end
 -- 进入后台
 function LuaEntry:OnApplicationPause(pause)
     -- TODO: 后续开发时处理前后台切换
+end
+
+-- 从服务器登录数据填充
+function LuaEntry:onMessage(data)
+
+
+    -- 在这里初始化一下声音
+    SoundUtil.InitSound()
+end
+
+-- 从本地配置表填充
+function LuaEntry:LoadDataConfig()
+    self.DataConfig = DataConfig.New()
+    self.DataConfig:InitFromTable()
+
+    -- 在这里初始化一下声音
+    SoundUtil.InitSound()
 end
 
 return LuaEntry
