@@ -1327,6 +1327,11 @@ public static class UnityUIExtension
         }
         
         var req = VEngine.Asset.Load(spritePath, typeof(Sprite));
+        if (req == null || req.isError)
+        {
+            // 加载失败：打印完整 path，便于定位资源/寻址问题
+            Debug.LogErrorFormat("LoadSprite failed, full path: {0}", spritePath);
+        }
         if ((req == null || req.isError) && !string.IsNullOrEmpty(defaultSprite))
         {
             if (!defaultSprite.EndsWith(".png"))
