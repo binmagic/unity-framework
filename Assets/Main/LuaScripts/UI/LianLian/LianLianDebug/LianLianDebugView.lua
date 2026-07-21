@@ -261,6 +261,8 @@ function LianLianDebugView:FillDefaults()
     if self.moveTypeDropdown then
         self.moveTypeDropdown:SetValueWithoutNotify(DirectionToIndex(direction))
     end
+    -- 打开面板时按 PlayerInfo 最新解锁态重建元素区
+    self:RefreshElementArea()
 end
 
 function LianLianDebugView:OnCloseClick()
