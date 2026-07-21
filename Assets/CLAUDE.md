@@ -337,3 +337,60 @@ Arabic、ChineseSimplified、ChineseTraditional、English、French、German、It
 - **UI 组件参考手册**: `Assets/.claude/ui-components-reference.md`
 - **UI Prefab 制作规范**: `Assets/.claude/ui-prefab-conventions.md`
 - **DataCenter 编写规范**: `Assets/.claude/datacenter-conventions.md`
+
+---
+
+## 配置表读取规范（LocalController）
+
+游戏配置表（Excel 导出的 `LuaDatatable/` 下 381 个 lua 表）统一通过 `LocalController` 读取。
+
+**定义位置**：`Assets/Main/LuaScripts/Common/LocalController.lua`（全局注册于 `Global.lua`，全项目直接用，无需 require）。
+
+### 表结构
+
+每张表是 `{ index = {列名→{列号,类型}}, data = {行号→数据数组} }` 结构。查值 = 用 `index` 找列号，再从 `data` 对应行取该列。
+
+### 加载机制（懒加载 + 缓存）
+
+- **不预加载**。首次访问某表时才 `require("LuaDatatable." .. 表名)`，由 `XLuaManager.CustomLoader` 从 AssetBundle 读 `.bytes`（源文件在 `DataTable/Lua/LuaDatatable/`，运行时读 `DataTable/LuaTxt/` 下的字节码）
+- 加载后缓存在 `LocalController.xmlValue`，后续命中缓存零成本
+- 表名常量定义在 `Global/EnumType.lua` 的 `TableName` 表（如 `TableName.HeroColor = "APS_hero_color"`）
+- 支持 AB 测试表（`GetABTestTableName` 自动切换 `xxx_B` 变体）
+
+### 读取 API（全局函数，均在 LocalController.lua 末尾定义）
+
+| 函数 | 用途 | 使用量 | 推荐度 |
+|------|------|--------|--------|
+| `GetTableData(TableName.X, id, "列名", 默认值)` | 取单个字段原始值（最高效，直接取列不产生临时数据） | ~2380 | ★ 首选 |
+| `GetTableNumber(TableName.X, id, "列名")` | 取字段并转 number | ~70 | 需数字时 |
+| `GetTableString(TableName.X, id, "列名")` | 取字段并转 string | ~27 | 需字符串时 |
+| `GetTableDataLine(TableName.X, id)` | 取整行访问器（LineData） | ~3 | 需整行时 |
+| `GetTable_array_s/i/f(TableName.X, id, "列名", 分隔符)` | 把 `"1,2,3"` 列拆成数组并**缓存** | 极少 | 仅个别列需拆数组时 |
+| `LocalController:instance():visitTable(TableName.X, function(id, lineData) ... end)` | 遍历整张表（回调返回 true 可中断） | ~279 | 批量初始化配置时 |
+
+### 典型用法
+
+```lua
+-- 1. 取单值（最常用）
+local para1 = GetTableData(TableName.ActivityPanel, activityId, "para1")
+local lv = GetTableNumber(TableName.HeroColor, 2, "star_up_1")
+
+-- 2. 遍历整表（Manager 初始化时批量读配置）
+LocalController:instance():visitTable(TableName.BattlePass, function(id, lineData)
+    local item = ActBattlePassTemplate.New()
+    item:InitData(lineData)              -- lineData:getValue("列名") / getIntValue / getStrValue
+end)
+
+-- 3. 取整行
+local line = GetTableDataLine(TableName.X, id)
+local v = line:getValue("列名")
+```
+
+### 规则
+
+1. **读配置一律走 `GetTableData` 系列全局函数**，不要手动 require `LuaDatatable.*`
+2. **取单值优先 `GetTableData`**（最高效），需要类型转换才用 `GetTableNumber`/`GetTableString`
+3. **批量读表用 `visitTable`**，配合 Template 类的 `InitData(lineData)` 解析成对象（见 DataCenter 规范）
+4. **表名用 `TableName.XXX` 常量**（`EnumType.lua` 定义），不要硬编码表名字符串
+5. **数组列用 `GetTable_array_*`**（带缓存），仅在个别列需拆分时用，不要滥用
+6. `visitTable` 回调签名是 `function(id, lineData)`，`lineData:getValue/getIntValue/getStrValue("列名")` 取字段

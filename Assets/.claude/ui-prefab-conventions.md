@@ -75,7 +75,6 @@ AnchorMin (0, 0)   AnchorMax (0, 1)   SizeDelta (宽, 0)   -- 竖向拉伸、固
 - **按钮用 `NewButton`**（封装了点击音效、防连点、灰化等）
 - **纯挡点击/透明区域用 `Empty4Raycast`**，不放带图空 Image（减 overdraw 省 drawcall）
 - 需要淡入淡出/整体禁用交互 → 加 `CanvasGroup`
-- **按钮子节点的文本（NewTMPText / TMP）必须关闭 `RaycastTarget`**（设为 false）。原因：`NewTMPText` 实现了 `IPointerClickHandler`，若子文本 RaycastTarget=1，点击 raycast 命中文本后 Unity 会把 PointerClick 派发给文本自身而非父按钮，导致按钮 onClick 永不触发。这是项目级的强制规则，所有按钮子文本一律 RaycastTarget=0。
 
 ---
 
@@ -214,4 +213,3 @@ UIXxxView (根, RectTransform 居中固定尺寸)
 8. **禁止按钮/文本随意造新尺寸**（复用 `UICommonSubPartNew` 档位）
 9. **禁止 prefab 存放路径与 Lua Config 的 PrefabPath 不一致**
 10. **禁止 prefab 目录结构脱离 Lua 模块目录的镜像关系**
-11. **禁止按钮子文本开启 RaycastTarget**（`NewTMPText` 实现了 `IPointerClickHandler`，子文本 RaycastTarget=1 会截走按钮的点击事件。所有按钮内的 Text/TMP 子节点必须 `m_RaycastTarget: 0`）
