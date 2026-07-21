@@ -47,28 +47,75 @@ end
 --- 初始化关卡数据
 --- @param state table 运行时状态
 function LianLianPlay.initData(state)
-    state.board = LianLianPlay.getGrid(state.part, state.level)
-    state.grid = state.board.grid
+    state.grid = LianLianPlay.getGrid(state.part)
     state.items = {}
     state.item_checked = {}
     state.hp = LianLianConst.HP_NUM
     state.revive_times = 0
     state.card_used = {}
+
+    -- Part 2 有概率生成锁定组
+    if state.part == 2 then
+        local rate = LianLianConst.LEVEL_LOCK_RATE[state.level or 0]
+        if rate == nil then rate = LianLianConst.LEVEL_LOCK_RATE[0] end
+        if rate > 0 and math.random() < rate then
+            LianLianPlay.setLockGroup(state.grid)
+        end
+    end
 end
 
---- 生成棋盘（委托给盘面生成子系统）
+--- 生成棋盘牌面 ID
 --- @param part number 当前关卡
---- @param level number 当前层级
---- @return table LianLianBoardResult（含 grid / layout / meta）
-function LianLianPlay.getGrid(part, level)
-    return LianLianBoardGenerator.generate(part, level or 0)
-end
+function LianLianPlay.getGrid(part)
+    local grid = LianLianGrid.create()
+    local ids = {}
 
---- 获取当前层级的难度参数集（委托给盘面生成子系统）
---- @param level number 当前层级
---- @return table 难度参数集
-function LianLianPlay.getDifficulty(level)
-    return LianLianBoardGenerator.getDifficulty(level or 0)
+    if part == 1 then
+        -- 教学关：6 对牌
+        local pairCount = #LianLianLevel[1] / 2
+        for i = 1, pairCount do
+            ids[#ids + 1] = LianLianItem.rndId()
+        end
+    else
+        -- 正式关：56 对牌
+        local pairCount = LianLianGrid.getLen() / 2
+        for i = 1, pairCount do
+            if i <= LianLianConst.KIND_MAX then
+                ids[#ids + 1] = i
+            else
+                ids[#ids + 1] = LianLianItem.rndId()
+            end
+        end
+    end
+
+    -- 复制成对并打乱
+    local pairedIds = {}
+    for _, id in ipairs(ids) do
+        pairedIds[#pairedIds + 1] = id
+        pairedIds[#pairedIds + 1] = id
+    end
+    -- Fisher-Yates 洗牌
+    for i = #pairedIds, 2, -1 do
+        local j = math.random(i)
+        pairedIds[i], pairedIds[j] = pairedIds[j], pairedIds[i]
+    end
+
+    if part == 1 then
+        -- 教学关：按指定位置放置
+        for _, pos in ipairs(LianLianLevel[1]) do
+            local key = pos.r .. "_" .. pos.c
+            grid[key].id = table.remove(pairedIds)
+        end
+    else
+        -- 正式关：填充内部区域
+        for key, cell in pairs(grid) do
+            if cell.r > 0 and cell.r < HEIGHT - 1 and cell.c > 0 and cell.c < WIDTH - 1 then
+                cell.id = table.remove(pairedIds)
+            end
+        end
+    end
+
+    return grid
 end
 
 --- Debug：按自定义 rows×cols 生成棋盘（只填内部左上角区域）
@@ -118,27 +165,7 @@ end
 
 --- Debug：自定义 rows×cols 初始化数据
 function LianLianPlay.initDataCustom(state, rows, cols)
-    local grid = LianLianPlay.getGridCustom(rows, cols)
-    -- 构造与正式流程一致的 board 结构，供 DrawBoard 使用
-    local LianLianBoardResult = require "Game.LianLian.DataCenter.Board.LianLianBoardResult"
-    local LianLianLevel = require "Game.LianLian.Config.LianLianLevel"
-    rows = math.min(math.max(rows or 1, 1), HEIGHT - 2)
-    cols = math.min(math.max(cols or 1, 1), WIDTH - 2)
-    local layout = {
-        gridRows = HEIGHT,
-        gridCols = WIDTH,
-        activeRows = rows,
-        activeCols = cols,
-        originRow = 1,
-        originCol = 1,
-    }
-    local meta = {
-        strategy = "custom",
-        direction = "",
-        enterList = LianLianLevel.enterList and LianLianLevel.enterList[2] or {},
-    }
-    state.board = LianLianBoardResult.new(grid, layout, meta)
-    state.grid = state.board.grid
+    state.grid = LianLianPlay.getGridCustom(rows, cols)
     state.items = {}
     state.item_checked = {}
     state.hp = LianLianConst.HP_NUM

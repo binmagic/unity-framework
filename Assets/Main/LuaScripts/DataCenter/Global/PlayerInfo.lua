@@ -35,6 +35,10 @@ local function __init(self)
     self.avatar = ""        -- 头像
     self.power = 0          -- 战力
 
+    -- 框架读表 AB 测试逻辑期望的成员（GetABTestTableName）
+    self.abTest = 0         -- AB 分组（0=A 组，不切换 B 表）
+    self.gmFlag = 0         -- GM 标记（0=非 GM，不走 GM 表）
+
     -- 盘面题材解锁数据（只存已解锁的类型，题材总数由 Theme_Config.type_count 驱动）
     -- 结构：{ [themeId] = { [typeIndex] = true, ... } }
     -- typeIndex 为题材内类型序号(1..type_count)；类型在游戏中逐个解锁，
@@ -51,6 +55,8 @@ local function __delete(self)
     self.vipExp = nil
     self.avatar = nil
     self.power = nil
+    self.abTest = nil
+    self.gmFlag = nil
     self.themeUnlock = nil
 end
 
@@ -105,6 +111,12 @@ local function IsThemeUnlocked(self, themeId)
     return GetUnlockedTypeCount(self, themeId) >= total
 end
 
+--- 获取 GM 标记（框架读表 AB 逻辑用；0=非 GM）
+--- @return number
+local function GetGMFlag(self)
+    return self.gmFlag or 0
+end
+
 --- 从网络下发数据解析填充
 --- @param message table 服务器下发的玩家数据
 local function Parse(self, message)
@@ -137,5 +149,6 @@ PlayerInfo.UnlockThemeType = UnlockThemeType
 PlayerInfo.IsThemeTypeUnlocked = IsThemeTypeUnlocked
 PlayerInfo.GetUnlockedTypeCount = GetUnlockedTypeCount
 PlayerInfo.IsThemeUnlocked = IsThemeUnlocked
+PlayerInfo.GetGMFlag = GetGMFlag
 
 return PlayerInfo

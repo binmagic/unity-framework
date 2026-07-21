@@ -28,4 +28,22 @@ function LianLianDebugCtrl:GetBoardInfo()
     return rows, cols, self.manager:getPart(), self.manager:getDirection()
 end
 
+--- 提示：高亮一对可消除的牌（复用现有道具逻辑）
+function LianLianDebugCtrl:UseTip()
+    self.manager = LianLianManager:GetInstance()
+    self.manager:useTip()
+end
+
+--- 重排：洗牌当前盘面（复用现有道具逻辑）
+function LianLianDebugCtrl:UseShuffle()
+    self.manager = LianLianManager:GetInstance()
+    self.manager:useShuffle()
+end
+
+--- 类型-1：图案种类数减 1，按当前行列/方向重新生成盘面
+function LianLianDebugCtrl:DecreaseKind()
+    self.manager = LianLianManager:GetInstance()
+    self.manager:decreaseKind()
+end
+
 return LianLianDebugCtrl

@@ -58,13 +58,37 @@ function LianLianManager:startGameCustom(rows, cols, part, moveType)
 
     self.state.part = part
     LianLianState.reset(self.state)
-    LianLianPlay.initDataCustom(self.state, rows, cols)
+    -- 记录本盘参数，供 decreaseKind 等重生复用
+    self.state.customRows = rows
+    self.state.customCols = cols
+    self.state.kindLimit = self.state.kindLimit or LianLianConst.KIND_MAX
+    LianLianPlay.initDataCustom(self.state, rows, cols, self.state.kindLimit)
     -- 指定了移动类型则固定使用，否则随机抽取
     if moveType ~= nil then
         self.state.direction = moveType
     else
         self.state.direction = self:rollBoardDirection()
     end
+    self.state.isPlaying = true
+    self.state.startTime = os.time() * 1000
+
+    EventManager:GetInstance():Broadcast("LianLian_GameStart", {
+        part = self.state.part,
+        direction = self.state.direction,
+    })
+end
+
+--- Debug：图案种类数减 1，用当前行列/方向重新生成盘面
+function LianLianManager:decreaseKind()
+    local cur = self.state.kindLimit or LianLianConst.KIND_MAX
+    self.state.kindLimit = math.max(cur - 1, 1)
+    local rows = self.state.customRows or LianLianConst.INTERIOR_ROWS
+    local cols = self.state.customCols or LianLianConst.INTERIOR_COLS
+    local direction = self.state.direction  -- reset 会清空，先保存
+
+    LianLianState.reset(self.state)
+    LianLianPlay.initDataCustom(self.state, rows, cols, self.state.kindLimit)
+    self.state.direction = direction
     self.state.isPlaying = true
     self.state.startTime = os.time() * 1000
 

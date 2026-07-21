@@ -17,6 +17,7 @@ UIWindowNames = {
     LianLianToast = "LianLianToast",
     LianLianTest = "LianLianTest",
     LianLianDebug = "LianLianDebug",
+    LianLianUnlock = "LianLianUnlock",
 }
 
 return ConstClass("UIWindowNames", UIWindowNames)

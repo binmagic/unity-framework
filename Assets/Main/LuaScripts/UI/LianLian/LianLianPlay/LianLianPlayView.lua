@@ -186,15 +186,16 @@ function LianLianPlayView:DrawBoard()
         self.lineContainer.transform:Set_localScale(s, s, 1)
     end
 
-    -- 从盘面描述对象取数据
+    -- 取棋盘数据：优先盘面描述对象 board.grid，回退到 manager:getGrid()
     local board = self.ctrl.manager:getBoard()
-    if not board then return end
+    local grid = board and board.grid or self.ctrl.manager:getGrid()
+    if not grid then return end
 
     -- 计算每张牌的入场错峰延迟（按 enterList 顺序），总时长与牌数无关
-    local delayByN = self:BuildEnterDelays(board)
+    local delayByN = self:BuildEnterDelays(grid)
 
     -- 逐个（异步）创建牌，每张牌实例化后立即按其延迟播放弹出动画
-    for key, cell in pairs(board.grid) do
+    for key, cell in pairs(grid) do
         if cell.id ~= 0 then
             self:CreateTile(cell, delayByN[cell.n] or 0)
         end
@@ -217,10 +218,10 @@ end
 -- 依据盘面 meta.enterList 计算每个非空格子的入场延迟：
 -- 按入场序列排名把延迟均摊到固定的错峰窗口内 → 总时长恒定，与牌数无关。
 -- @return table { [n] = delaySeconds }
-function LianLianPlayView:BuildEnterDelays(board)
+function LianLianPlayView:BuildEnterDelays(grid)
     -- 收集所有非空格子的 n
     local pending = {}   -- [n] = true
-    for _, cell in pairs(board.grid) do
+    for _, cell in pairs(grid) do
         if cell.id ~= 0 then pending[cell.n] = true end
     end
 

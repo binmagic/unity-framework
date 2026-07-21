@@ -16,6 +16,7 @@ local UIConfig = {
 	[UIWindowNames.LianLianToast] = "UI.LianLian.LianLianToast.Config",
 	[UIWindowNames.LianLianTest] = "UI.LianLian.LianLianTest.Config",
 	[UIWindowNames.LianLianDebug] = "UI.LianLian.LianLianDebug.Config",
+	[UIWindowNames.LianLianUnlock] = "UI.LianLian.LianLianUnlock.Config",
 }
 --[[
 local UIConfig = {}

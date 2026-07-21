@@ -3,6 +3,22 @@
 -- 左上角开关按钮 + 模态空面板
 --]]
 
+local LianLianTheme = require "Game.LianLian.DataCenter.LianLianTheme"
+local LianLianThemeElement = require "UI.LianLian.LianLianUnlock.LianLianThemeElement"
+
+-- 取玩家数据（解锁态存 PlayerInfo.themeUnlock）
+local function GetPlayer()
+    return LuaEntry and LuaEntry.Player
+end
+
+-- 元素展示区网格布局参数
+local PRE_THEME_ELEMENT = "Assets/Main/Prefabs/UI/LianLian/PreThemeElement.prefab"
+local EL_COLS = 6       -- 每行元素数
+local EL_CELL = 90      -- cell 尺寸
+local EL_GAP = 12       -- 间距
+local EL_START_X = -300 -- 第一列 x（相对 ElementArea 中心）
+local EL_START_Y = 200  -- 第一行 y（相对 ElementArea 中心）
+
 local LianLianDebugView = BaseClass("LianLianDebugView", UIBaseView)
 local base = UIBaseView
 
@@ -46,7 +62,15 @@ function LianLianDebugView:ComponentDefine()
     self.colInput = self:AddComponent(UITMPInput, "Panel/Content/ColInput")
     self.layerInput = self:AddComponent(UITMPInput, "Panel/Content/LayerInput")
     self.moveTypeDropdown = self:AddComponent(UITMPDropdown, "Panel/Content/MoveTypeDropdown")
+    self.themeDropdown = self:AddComponent(UITMPDropdown, "Panel/Content/ThemeDropdown")
+    self.elementArea = self:AddComponent(UIBaseContainer, "Panel/Content/ElementArea")
     self.genBtn = self:AddComponent(UIButton, "Panel/Content/GenBtn")
+    -- 玩法调试按钮：提示 / 重排 / 类型-1
+    self.tipBtn = self:AddComponent(UIButton, "Panel/Content/TipBtn")
+    self.shuffleBtn = self:AddComponent(UIButton, "Panel/Content/ShuffleBtn")
+    self.typeMinusBtn = self:AddComponent(UIButton, "Panel/Content/TypeMinusBtn")
+    -- 打开「解锁主题/元素」界面
+    self.unlockBtn = self:AddComponent(UIButton, "Panel/Content/UnlockBtn")
 
     -- 初始化移动类型下拉项
     if self.moveTypeDropdown then
@@ -56,6 +80,23 @@ function LianLianDebugView:ComponentDefine()
         end
         self.moveTypeDropdown:SetValueWithoutNotify(0)
     end
+
+    -- 初始化主题下拉项（从 Theme_Config 读，显示 name，传参用 id）
+    self.themeList = LianLianTheme.GetThemeList() or {}
+    if self.themeDropdown then
+        self.themeDropdown:Clear()
+        for _, theme in ipairs(self.themeList) do
+            self.themeDropdown:AddWithText(theme.name)
+        end
+        self.themeDropdown:SetValueWithoutNotify(0)
+        -- 切主题时刷新元素展示区
+        self.themeDropdown:SetOnValueChanged(BindCallback(self, self.OnThemeChanged))
+    end
+
+    -- 初始化元素展示区（按当前主题铺 PreThemeElement 网格）
+    self.elementCells = {}
+    self.selectedElementIndex = nil
+    self:RefreshElementArea()
 
     self._open = false
     if self.panel then self.panel:SetActive(false) end
@@ -67,6 +108,49 @@ function LianLianDebugView:ComponentDefine()
     if self.genBtn then
         self.genBtn:SetOnClick(BindCallback(self, self.OnGenClick))
     end
+    if self.tipBtn then
+        self.tipBtn:SetOnClick(BindCallback(self, self.OnTipClick))
+    end
+    if self.shuffleBtn then
+        self.shuffleBtn:SetOnClick(BindCallback(self, self.OnShuffleClick))
+    end
+    if self.typeMinusBtn then
+        self.typeMinusBtn:SetOnClick(BindCallback(self, self.OnTypeMinusClick))
+    end
+    if self.unlockBtn then
+        self.unlockBtn:SetOnClick(BindCallback(self, self.OnUnlockClick))
+    end
+end
+
+-- 打开「解锁主题/元素」界面
+-- 解锁：解锁 ElementArea 当前选中的元素（写入 PlayerInfo）；未选中则无效果
+function LianLianDebugView:OnUnlockClick()
+    if not self.selectedElementIndex then return end
+    local themeId = self:GetSelectedThemeId()
+    if not themeId then return end
+    local player = GetPlayer()
+    if not player then return end
+    -- 已解锁则不重复
+    if player:IsThemeTypeUnlocked(themeId, self.selectedElementIndex) then return end
+    player:UnlockThemeType(themeId, self.selectedElementIndex)
+    -- 刷新对应格子为激活（亮）
+    local cell = self.elementCells and self.elementCells[self.selectedElementIndex]
+    if cell then cell:SetActivated(true) end
+end
+
+-- 提示：高亮一对可消除的牌
+function LianLianDebugView:OnTipClick()
+    if self.ctrl then self.ctrl:UseTip() end
+end
+
+-- 重排：洗牌当前盘面
+function LianLianDebugView:OnShuffleClick()
+    if self.ctrl then self.ctrl:UseShuffle() end
+end
+
+-- 类型-1：图案种类数减 1 并重新生成
+function LianLianDebugView:OnTypeMinusClick()
+    if self.ctrl then self.ctrl:DecreaseKind() end
 end
 
 -- 点击 Gen：读取输入，委托 Ctrl 重新生成盘面（校验/生成在 Manager 内）
@@ -83,6 +167,80 @@ function LianLianDebugView:OnGenClick()
         if opt then moveType = opt.value end
     end
     self.ctrl:Regen(rows, cols, layer, moveType)
+end
+
+-- 取当前主题下拉选中的主题 id（传参用 id，非 index）
+function LianLianDebugView:GetSelectedThemeId()
+    if not self.themeDropdown or not self.themeList then return nil end
+    local idx = self.themeDropdown:GetValue() or 0
+    local theme = self.themeList[idx + 1]
+    return theme and theme.id
+end
+
+-- 切主题：重建元素展示区
+function LianLianDebugView:OnThemeChanged(index)
+    self:RefreshElementArea()
+end
+
+-- 重建元素展示区：按当前主题铺 PreThemeElement 网格
+function LianLianDebugView:RefreshElementArea()
+    if not self.elementArea then return end
+    self:ClearElementCells()
+    self.selectedElementIndex = nil
+
+    local themeId = self:GetSelectedThemeId()
+    if not themeId then return end
+    local count = LianLianTheme.GetElementCount(themeId)
+    for i = 1, count do
+        self:CreateElementCell(themeId, i)
+    end
+end
+
+-- 清空元素区已有 cell
+function LianLianDebugView:ClearElementCells()
+    if self.elementCells then
+        for _, cell in pairs(self.elementCells) do
+            if cell and cell.gameObject then
+                CS.UnityEngine.GameObject.Destroy(cell.gameObject)
+            end
+        end
+    end
+    self.elementCells = {}
+end
+
+-- 创建单个元素 cell（异步实例化 PreThemeElement）
+function LianLianDebugView:CreateElementCell(themeId, index)
+    local col = (index - 1) % EL_COLS
+    local row = math.floor((index - 1) / EL_COLS)
+    local x = EL_START_X + col * (EL_CELL + EL_GAP)
+    local y = EL_START_Y - row * (EL_CELL + EL_GAP)
+    local path = LianLianTheme.GetElementSpritePath(themeId, index)
+    -- 激活态 = PlayerInfo 是否已解锁该元素
+    local player = GetPlayer()
+    local activated = player and player:IsThemeTypeUnlocked(themeId, index) or false
+
+    self.elementArea:GameObjectInstantiateAsync(PRE_THEME_ELEMENT, function(request)
+        if request == nil or request.isError or request.gameObject == nil then return end
+        if not self.elementCells then return end
+        local cell = self.elementArea:AddComponent(LianLianThemeElement, request.gameObject)
+        cell:SetSize(EL_CELL, EL_CELL)
+        cell:SetPosition(x, y)
+        -- 已解锁=亮，未解锁=灰；点击出选中框
+        cell:SetData(index, path, activated, function(i) self:OnElementCellClick(i) end)
+        self.elementCells[index] = cell
+        if self.selectedElementIndex == index then cell:SetSelected(true) end
+    end, self.elementArea.transform)
+end
+
+-- 点击元素 cell：更新选中框
+function LianLianDebugView:OnElementCellClick(index)
+    if self.selectedElementIndex and self.elementCells[self.selectedElementIndex] then
+        self.elementCells[self.selectedElementIndex]:SetSelected(false)
+    end
+    self.selectedElementIndex = index
+    if self.elementCells[index] then
+        self.elementCells[index]:SetSelected(true)
+    end
 end
 
 function LianLianDebugView:OnToggleClick()
@@ -119,6 +277,7 @@ function LianLianDebugView:OnDisable()
 end
 
 function LianLianDebugView:OnDestroy()
+    self:ClearElementCells()
     base.OnDestroy(self)
 end
 
