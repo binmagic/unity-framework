@@ -344,7 +344,19 @@ end
 function LianLianPlayView:IsCellOccluded(r, c, layer)
     local higher = self.ctrl.manager:getGrid(layer + 1)
     if not higher then return false end
-    -- 覆盖下层(r,c) 4 象限的上层格
+
+    -- 规则A（fullClearReveal=true）：只要「上一层」还有任一活牌，本层就整体被遮挡；
+    -- 上一层全消后本层才亮。
+    if self.ctrl.manager:getFullClearReveal() then
+        for _, hcell in pairs(higher) do
+            if hcell.id and hcell.id ~= 0 then
+                return true
+            end
+        end
+        return false
+    end
+
+    -- 规则B（默认，逐格揭示）：覆盖下层(r,c) 4 象限的上层格，任一象限被活牌盖住即遮挡
     local quads = {
         { r - 1, c - 1 }, { r - 1, c }, { r, c - 1 }, { r, c },
     }
@@ -352,7 +364,6 @@ function LianLianPlayView:IsCellOccluded(r, c, layer)
         local hr, hc = rc[1], rc[2]
         if hr >= 1 and hc >= 1 then
             local hcell = higher[hr .. "_" .. hc]
-            -- 任一象限被上层活牌盖住 → 判定遮挡
             if hcell and hcell.id and hcell.id ~= 0 then
                 return true
             end
@@ -680,6 +691,12 @@ function LianLianPlayView:OnAddListener()
     self:AddUIListener("LianLian_Move", self.OnMove)
     self:AddUIListener("LianLian_MatchFail", self.OnMatchFail)
     self:AddUIListener("LianLian_GameStart", self.OnGameStart)
+    self:AddUIListener("LianLian_OcclusionRuleChanged", self.OnOcclusionRuleChanged)
+end
+
+-- 遮挡规则开关变更：实时重算全盘遮挡态
+function LianLianPlayView:OnOcclusionRuleChanged()
+    self:RefreshOcclusion()
 end
 
 -- 游戏开局（初次进 Play 或 Debug 重生）：重绘棋盘

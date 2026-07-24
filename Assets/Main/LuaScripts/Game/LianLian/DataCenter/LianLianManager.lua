@@ -16,6 +16,23 @@ local LianLianManager = BaseClass("LianLianManager", Singleton)
 
 function LianLianManager:__init()
     self.state = LianLianState.New()
+    -- 遮挡揭示规则开关：
+    --   true  = 需将「上一层」全部消除后，本层才从灰变亮可操作
+    --   false = 本层某格四角都无上层遮挡即可从灰变亮（默认，逐格揭示）
+    self.fullClearReveal = false
+end
+
+--- 取「是否需整层消除才揭示下层」开关
+function LianLianManager:getFullClearReveal()
+    return self.fullClearReveal and true or false
+end
+
+--- 设「是否需整层消除才揭示下层」开关；变更即广播，供 View 实时刷新遮挡态
+function LianLianManager:setFullClearReveal(v)
+    v = v and true or false
+    if self.fullClearReveal == v then return end
+    self.fullClearReveal = v
+    EventManager:GetInstance():Broadcast("LianLian_OcclusionRuleChanged", { fullClearReveal = v })
 end
 
 --- 开始新游戏

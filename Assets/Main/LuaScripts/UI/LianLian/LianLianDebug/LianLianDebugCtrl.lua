@@ -56,4 +56,16 @@ function LianLianDebugCtrl:DecreaseKind()
     self.manager:decreaseKind()
 end
 
+--- 读「全消揭示」遮挡规则开关
+function LianLianDebugCtrl:GetFullClearReveal()
+    self.manager = LianLianManager:GetInstance()
+    return self.manager:getFullClearReveal()
+end
+
+--- 设「全消揭示」遮挡规则开关（Manager 内部广播，PlayView 实时刷新遮挡）
+function LianLianDebugCtrl:SetFullClearReveal(v)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:setFullClearReveal(v)
+end
+
 return LianLianDebugCtrl

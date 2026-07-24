@@ -71,6 +71,9 @@ function LianLianDebugView:ComponentDefine()
     self.typeMinusBtn = self:AddComponent(UIButton, "Panel/Content/TypeMinusBtn")
     -- 打开「解锁主题/元素」界面
     self.unlockBtn = self:AddComponent(UIButton, "Panel/Content/UnlockBtn")
+    -- 遮挡规则 checkbox（复选按钮）+ 其文字节点
+    self.fullClearBtn = self:AddComponent(UIButton, "Panel/Content/FullClearBtn")
+    self.fullClearText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/FullClearBtn/Text")
 
     -- 初始化移动类型下拉项
     if self.moveTypeDropdown then
@@ -120,6 +123,25 @@ function LianLianDebugView:ComponentDefine()
     if self.unlockBtn then
         self.unlockBtn:SetOnClick(BindCallback(self, self.OnUnlockClick))
     end
+    if self.fullClearBtn then
+        self.fullClearBtn:SetOnClick(BindCallback(self, self.OnFullClearToggle))
+    end
+    -- 依 Manager 当前值刷新 checkbox 文案
+    self:RefreshFullClearLabel()
+end
+
+-- 刷新「全消揭示」复选按钮文案（依 Manager 实时值，经 Ctrl 读取）
+function LianLianDebugView:RefreshFullClearLabel()
+    if not self.fullClearText or not self.ctrl then return end
+    local on = self.ctrl:GetFullClearReveal()
+    self.fullClearText:SetText(on and "全消揭示:开" or "全消揭示:关")
+end
+
+-- 点击复选按钮：翻转开关（经 Ctrl→Manager；Manager 广播后 PlayView 实时刷新遮挡）
+function LianLianDebugView:OnFullClearToggle()
+    if not self.ctrl then return end
+    self.ctrl:SetFullClearReveal(not self.ctrl:GetFullClearReveal())
+    self:RefreshFullClearLabel()
 end
 
 -- 打开「解锁主题/元素」界面
