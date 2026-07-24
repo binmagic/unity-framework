@@ -57,6 +57,16 @@ local LianLianConst = {
         [3] = { "up", "down", "left", "right", "divide", "flock" },     -- 进阶：引入分散/聚拢
         [4] = { "", "up", "down", "left", "right", "divide", "flock" }, -- 熟练：全部（含无移动）
     },
+
+    -- 按分层(level)的完整盘面配置：rows/cols/kindLimit/方向池。
+    -- startGameByLevel(level) 只传一个 level，其余 4 项全从这里读；dirPool 随机抽一个方向。
+    -- layer：棋盘上叠几层元素（默认 1 = 单层）
+    LEVEL_BOARD_CONFIG = {
+        [1] = { rows = 4,  cols = 4, kindLimit = 4,  layer = 1, dirPool = { "" } },
+        [2] = { rows = 6,  cols = 6, kindLimit = 8,  layer = 1, dirPool = { "up", "down", "left", "right" } },
+        [3] = { rows = 8,  cols = 8, kindLimit = 14, layer = 2, dirPool = { "up", "down", "left", "right", "divide_left_right", "divide_up_down" } },
+        [4] = { rows = 14, cols = 8, kindLimit = 27, layer = 1, dirPool = { "up", "down", "left", "right", "divide_left_right", "divide_up_down", "flock_left_right", "flock_up_down" } },
+    },
 }
 
 return LianLianConst

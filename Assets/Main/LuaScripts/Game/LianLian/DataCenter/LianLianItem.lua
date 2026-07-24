@@ -172,7 +172,7 @@ end
 --- 删除指定位置的牌
 function LianLianItem.del(grid, pos)
     local key = pos.r .. "_" .. pos.c
-    grid[key].id = 0
+    if grid[key] then grid[key].id = 0 end
 end
 
 return LianLianItem

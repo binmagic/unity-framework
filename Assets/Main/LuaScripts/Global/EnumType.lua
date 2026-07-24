@@ -1211,6 +1211,7 @@ TableName =
 {
     -- 连连看
     Theme = "Theme_Config",     -- 主题/元素配置
+    C_Sound = "c_sound",        -- 声音配置
 }
 
 --EnumDestinationSignalType =
@@ -1335,7 +1336,7 @@ BuildingStateType =
 }
 
 --信用值是否限制玩家登录
----@class CreditStateType
+---@class CreditStateTypel
 --CreditStateType =
 --{
 --    Normal = 0,

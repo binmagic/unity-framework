@@ -12,8 +12,12 @@ function LianLianState.New()
     return {
         board = nil,            -- 盘面描述对象 LianLianBoardResult（含 grid/layout/meta）
         grid = {},              -- 棋盘数据 {["r_c"] = {r, c, id, ...}}，指向 board.grid
+        -- 多层：每层是一盘独立连连看 { [L] = {grid=, rows=, cols=, direction=, item_checked={}} }
+        -- layer=1(底层) 时 layers[1] 与旧单层字段等价；layerCount=1 即完全单层
+        layers = nil,
+        layerCount = 1,         -- 层数（1=单层）
         items = {},             -- 牌面 UI 节点引用
-        item_checked = {},      -- 当前选中的牌位列表
+        item_checked = {},      -- 当前选中的牌位列表（单层/兼容用）
         part = 1,               -- 当前关卡 (Part)
         hp = LianLianConst.HP_NUM,  -- 当前生命值
         revive_times = 0,       -- 本局已复活次数
@@ -30,6 +34,8 @@ end
 function LianLianState.reset(state)
     state.board = nil
     state.grid = {}
+    state.layers = nil
+    state.layerCount = 1
     state.items = {}
     state.item_checked = {}
     state.hp = LianLianConst.HP_NUM

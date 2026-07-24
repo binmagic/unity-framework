@@ -118,26 +118,25 @@ function LianLianPlay.getGrid(part)
     return grid
 end
 
---- Debug：按自定义 rows×cols 生成棋盘（只填内部左上角区域）
---- @param rows number 行数(1..14)
---- @param cols number 列数(1..8)
-function LianLianPlay.getGridCustom(rows, cols)
+--- 生成一个密铺的单层棋盘：左上角 rows×cols 区域填满成对牌
+--- @param rows number 行数(1..HEIGHT-2)
+--- @param cols number 列数(1..WIDTH-2)
+--- @param kindLimit number 图案种类数(1..KIND_MAX)
+--- @return table grid  { ["r_c"] = {r,c,id,...} }
+function LianLianPlay.getGridCustom(rows, cols, kindLimit)
     local grid = LianLianGrid.create()
     -- 限制范围
     rows = math.min(math.max(rows or 1, 1), HEIGHT - 2)
     cols = math.min(math.max(cols or 1, 1), WIDTH - 2)
+    kindLimit = math.min(math.max(kindLimit or LianLianConst.KIND_MAX, 1), LianLianConst.KIND_MAX)
 
     -- 牌数 = rows*cols，奇数则减 1（保证成对）
-    local total = rows * cols
-    local pairCount = math.floor(total / 2)
+    local pairCount = math.floor((rows * cols) / 2)
 
+    -- 用 kindLimit 循环取图案 id，控制盘面出现的图案种类数
     local ids = {}
     for i = 1, pairCount do
-        if i <= LianLianConst.KIND_MAX then
-            ids[#ids + 1] = i
-        else
-            ids[#ids + 1] = LianLianItem.rndId()
-        end
+        ids[#ids + 1] = ((i - 1) % kindLimit) + 1
     end
     local pairedIds = {}
     for _, id in ipairs(ids) do
@@ -150,12 +149,13 @@ function LianLianPlay.getGridCustom(rows, cols)
         pairedIds[i], pairedIds[j] = pairedIds[j], pairedIds[i]
     end
 
-    -- 填入内部左上角 rows×cols 区域（r∈[1,rows], c∈[1,cols]）
+    -- 填入左上角 rows×cols 区域（r∈[1,rows], c∈[1,cols]）
     for r = 1, rows do
         for c = 1, cols do
             local key = r .. "_" .. c
-            if grid[key] then
-                grid[key].id = table.remove(pairedIds) or 0
+            local cell = grid[key]
+            if cell then
+                cell.id = table.remove(pairedIds) or 0
             end
         end
     end
@@ -163,9 +163,35 @@ function LianLianPlay.getGridCustom(rows, cols)
     return grid
 end
 
---- Debug：自定义 rows×cols 初始化数据
-function LianLianPlay.initDataCustom(state, rows, cols)
-    state.grid = LianLianPlay.getGridCustom(rows, cols)
+--- 多层金字塔：每层是一盘独立的连连看（底大顶小，同心）
+--- 第 L 层(L=1 为底)尺寸 = (baseRows-(L-1)) × (baseCols-(L-1))，≥1 才生成
+--- 每层独立成对/洗牌/锁方向，互不影响；消除/移动/tip/shuffle 只作用于各自层
+--- @return table layers  { [L] = { grid=, rows=, cols=, direction=, item_checked={} } }
+function LianLianPlay.buildLayers(baseRows, baseCols, kindLimit, layerCount)
+    baseRows = math.min(math.max(math.floor(baseRows or 1), 1), HEIGHT - 2)
+    baseCols = math.min(math.max(math.floor(baseCols or 1), 1), WIDTH - 2)
+    kindLimit = math.min(math.max(math.floor(kindLimit or LianLianConst.KIND_MAX), 1), LianLianConst.KIND_MAX)
+    layerCount = math.max(math.floor(layerCount or 1), 1)
+
+    local layers = {}
+    for L = 1, layerCount do
+        local r = baseRows - (L - 1)
+        local c = baseCols - (L - 1)
+        if r < 1 or c < 1 then break end
+        layers[L] = {
+            grid = LianLianPlay.getGridCustom(r, c, kindLimit),
+            rows = r,
+            cols = c,
+            direction = "",              -- 每层独立方向（Manager 生成时按需 roll/指定）
+            item_checked = {},           -- 每层独立选中
+        }
+    end
+    return layers
+end
+
+--- Debug：自定义 rows×cols 初始化数据（单层，兼容旧调用）
+function LianLianPlay.initDataCustom(state, rows, cols, kindLimit)
+    state.grid = LianLianPlay.getGridCustom(rows, cols, kindLimit)
     state.items = {}
     state.item_checked = {}
     state.hp = LianLianConst.HP_NUM

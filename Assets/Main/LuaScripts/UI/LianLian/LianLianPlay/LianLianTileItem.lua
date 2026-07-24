@@ -55,6 +55,20 @@ function LianLianTileItem:SetData(pos, id, onClick)
     self:SetVisible(id ~= 0)
 end
 
+--- 换图案为新 id（多层消除后露出下一层用）：刷新 Face + 复位 checked/tip 态并保持可见
+function LianLianTileItem:SetFace(id)
+    self.id = id
+    self._checked = false
+    self._tip = false
+    if id and id > 0 then
+        if self.face then self.face:LoadSprite(GetSpritePath(tostring(id))) end
+        self:RefreshBg()
+        self:SetVisible(true)
+    else
+        self:SetVisible(false)
+    end
+end
+
 --- 刷新底图（依据 checked/tip 状态）
 function LianLianTileItem:RefreshBg()
     if not self.bg then return end
@@ -149,6 +163,23 @@ function LianLianTileItem:SetSize(w, h)
         self.rectTransform:Set_pivot(0.5, 0.5)
         self.rectTransform:Set_sizeDelta(w, h)
     end
+end
+
+--- 遮挡态：被上层元素盖住 → 置灰 + 禁用点击；露出 → 恢复
+function LianLianTileItem:SetOccluded(bOccluded)
+    self._occluded = bOccluded and true or false
+    -- 置灰 Face 与 Bg
+    local r, g, b = 0.45, 0.45, 0.45
+    if not self._occluded then r, g, b = 1, 1, 1 end
+    if self.face then self.face:SetColorRGBA(r, g, b, 1) end
+    if self.bg then self.bg:SetColorRGBA(r, g, b, 1) end
+    -- 禁用/启用点击
+    if self.button then self.button:SetEnabled(not self._occluded) end
+end
+
+--- 是否被遮挡（不可选）
+function LianLianTileItem:IsOccluded()
+    return self._occluded and true or false
 end
 
 --- 选中高亮（切换底图为 select）

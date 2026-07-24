@@ -158,15 +158,24 @@ function LianLianDebugView:OnGenClick()
     if not self.ctrl then return end
     local rows = self.rowInput and tonumber(self.rowInput:GetText()) or 14
     local cols = self.colInput and tonumber(self.colInput:GetText()) or 8
+    -- Layer 输入框 = 每格叠加层数
     local layer = self.layerInput and tonumber(self.layerInput:GetText()) or 1
-    -- 下拉选中的移动类型（GetValue 为 0 基索引）
+    -- 下拉选中的移动类型（GetValue 为 0 基索引）；「随机」项 value=nil
     local moveType = nil
     if self.moveTypeDropdown then
         local idx = self.moveTypeDropdown:GetValue() or 0
         local opt = MOVE_TYPE_OPTIONS[idx + 1]
         if opt then moveType = opt.value end
     end
-    self.ctrl:Regen(rows, cols, layer, moveType)
+
+    -- 选「随机」(moveType==nil)：从具体方向里随机抽一个；否则用选中的方向
+    if moveType == nil then
+        -- 具体方向项 = MOVE_TYPE_OPTIONS[2..#]（跳过第1项“随机”）
+        local pick = math.random(2, #MOVE_TYPE_OPTIONS)
+        moveType = MOVE_TYPE_OPTIONS[pick].value
+    end
+    -- 统一走直传版：行/列/方向/叠加层数 直接生成（叠加层数 = LayerInput）
+    self.ctrl:Regen(rows, cols, moveType, layer)
 end
 
 -- 取当前主题下拉选中的主题 id（传参用 id，非 index）

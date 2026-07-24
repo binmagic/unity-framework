@@ -9,6 +9,51 @@ local LianLianBase = require "Game.LianLian.DataCenter.Board.LianLianGenStrategy
 
 local LianLianCard = {}
 
+--- 区域重排：保留「剩余元素个数」不变，位置不保留，随机撒回整个 rows×cols 区域
+--- （空位也可能被占上）。id 多重集不变 → 成对关系仍可消。
+--- @param grid table 层棋盘
+--- @param rows number 该层行数
+--- @param cols number 该层列数
+function LianLianCard.reshuffleRegion(grid, rows, cols)
+    rows = rows or 1
+    cols = cols or 1
+    -- 1) 收集剩余元素的 id（保留个数与图案）
+    local ids = {}
+    for _, cell in pairs(grid) do
+        if cell.id and cell.id ~= 0 then
+            ids[#ids + 1] = cell.id
+        end
+    end
+    -- 打乱 id
+    for i = #ids, 2, -1 do
+        local j = math.random(i)
+        ids[i], ids[j] = ids[j], ids[i]
+    end
+
+    -- 2) 收集区域内所有格 key（含当前空格），打乱后取前 #ids 个安放
+    local cells = {}
+    for r = 1, rows do
+        for c = 1, cols do
+            local key = r .. "_" .. c
+            if grid[key] then cells[#cells + 1] = key end
+        end
+    end
+    for i = #cells, 2, -1 do
+        local j = math.random(i)
+        cells[i], cells[j] = cells[j], cells[i]
+    end
+
+    -- 3) 先全清区域，再把 ids 撒到打乱后的前 N 个格
+    for _, key in ipairs(cells) do
+        grid[key].id = 0
+    end
+    for i = 1, #ids do
+        local key = cells[i]
+        if not key then break end
+        grid[key].id = ids[i]
+    end
+end
+
 --- 获取道具持有数量
 --- @param cardList table 道具列表数据
 --- @param id number 道具 ID
