@@ -23,6 +23,18 @@ function LianLianManager:__init()
     self.fullClearReveal = false
     -- 当前主题 id（元素图池来源）；默认第 1 套主题
     self.themeId = 1
+    -- 死局自动重排开关：默认关（调试时保持真实盘面，不打乱）；正式需要时可置 true
+    self.autoReshuffleEnabled = false
+    -- 保证可解开关：默认开，生成时验证盘面可解（不可解则重洗重试）
+    self.ensureSolvable = true
+end
+
+--- 取/设「保证可解」开关（生成期读取，改后下次 Gen 生效）
+function LianLianManager:getEnsureSolvable()
+    return self.ensureSolvable and true or false
+end
+function LianLianManager:setEnsureSolvable(v)
+    self.ensureSolvable = v and true or false
 end
 
 --- 取/设当前主题 id
@@ -136,7 +148,7 @@ end
 --- @param poolMax number 元素 id 池上界（缺省=当前主题元素个数）
 function LianLianManager:buildAndSetLayers(rows, cols, kindCount, layerCount, direction, poolMax)
     poolMax = poolMax or self:getThemeElementCount()
-    local layers = LianLianPlay.buildLayers(rows, cols, kindCount, layerCount, poolMax)
+    local layers = LianLianPlay.buildLayers(rows, cols, kindCount, layerCount, poolMax, self:getEnsureSolvable())
     local count = 0
     for _, ly in pairs(layers) do
         ly.direction = direction or ""
@@ -284,6 +296,19 @@ function LianLianManager:getLayerCount()
     return self.state.layerCount or 1
 end
 
+--- 当前「可操作层」：从顶层往下找第一个还有牌(未清空)的层。
+--- 顶层消完后，可操作层自动下移到下一层。全空则返回 1。
+function LianLianManager:getTopActiveLayer()
+    local count = self.state.layerCount or 1
+    for L = count, 1, -1 do
+        local ld = self:getLayerData(L)
+        if ld and ld.grid and not LianLianItem.isAllEmpty(ld.grid) then
+            return L
+        end
+    end
+    return 1
+end
+
 --- 获取当前盘面行列数（从 grid 非空格子推算）
 --- @return number rows, number cols
 function LianLianManager:getBoardSize()
@@ -401,7 +426,9 @@ function LianLianManager:afterClear(layer)
 
     -- 移动方向：优先本层锁定方向，回退到全局
     local direction = (ld.direction and ld.direction ~= "") and ld.direction or self:getDirection()
-    local moveList = LianLianPlay.getMoveList(grid, direction)
+    -- 本层边界：让重力/移动只在本层 rows×cols 内进行，避免多层时牌滑出本层区域
+    local bounds = { rows = ld.rows, cols = ld.cols }
+    local moveList = LianLianPlay.getMoveList(grid, direction, bounds)
 
     -- 把牌面 id 按移动列表迁移到新格（数据层生效），再广播给 View 播滑动动画
     if #moveList > 0 then
@@ -419,9 +446,15 @@ function LianLianManager:afterClear(layer)
         return true
     end
 
-    -- 死局检测：本层还有牌但已无可连消的对子 → 自动重排该层，避免卡死留下无法消除的元素
+    -- 死局检测：本层还有牌但已无可连消的对子。
+    -- autoReshuffleEnabled 关（默认）时只打印、不重排，保持真实盘面便于调试。
     if not LianLianItem.isAllEmpty(grid) and not self:hasClearablePair(layer) then
-        self:autoReshuffle(layer)
+        if self.autoReshuffleEnabled then
+            print(string.format("[LianLian][盘面] 死局检测触发 → autoReshuffle layer=%d", layer))
+            self:autoReshuffle(layer)
+        else
+            print(string.format("[LianLian][盘面] 死局检测：layer=%d 无可连对子（自动重排已关，保持原盘面）", layer))
+        end
     end
 
     return false

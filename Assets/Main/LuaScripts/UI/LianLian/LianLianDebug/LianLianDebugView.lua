@@ -74,6 +74,9 @@ function LianLianDebugView:ComponentDefine()
     -- 遮挡规则 checkbox（复选按钮）+ 其文字节点
     self.fullClearBtn = self:AddComponent(UIButton, "Panel/Content/FullClearBtn")
     self.fullClearText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/FullClearBtn/Text")
+    -- 保证可解 checkbox（复选按钮）+ 其文字节点
+    self.solvableBtn = self:AddComponent(UIButton, "Panel/Content/SolvableBtn")
+    self.solvableText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/SolvableBtn/Text")
 
     -- 初始化移动类型下拉项
     if self.moveTypeDropdown then
@@ -126,8 +129,26 @@ function LianLianDebugView:ComponentDefine()
     if self.fullClearBtn then
         self.fullClearBtn:SetOnClick(BindCallback(self, self.OnFullClearToggle))
     end
+    if self.solvableBtn then
+        self.solvableBtn:SetOnClick(BindCallback(self, self.OnSolvableToggle))
+    end
     -- 依 Manager 当前值刷新 checkbox 文案
     self:RefreshFullClearLabel()
+    self:RefreshSolvableLabel()
+end
+
+-- 刷新「保证可解」复选按钮文案（依 Manager 实时值，经 Ctrl 读取）
+function LianLianDebugView:RefreshSolvableLabel()
+    if not self.solvableText or not self.ctrl then return end
+    local on = self.ctrl:GetEnsureSolvable()
+    self.solvableText:SetText(on and "保证可解:开" or "保证可解:关")
+end
+
+-- 点击复选按钮：翻转「保证可解」开关（改后下次 Gen 生效）
+function LianLianDebugView:OnSolvableToggle()
+    if not self.ctrl then return end
+    self.ctrl:SetEnsureSolvable(not self.ctrl:GetEnsureSolvable())
+    self:RefreshSolvableLabel()
 end
 
 -- 刷新「全消揭示」复选按钮文案（依 Manager 实时值，经 Ctrl 读取）

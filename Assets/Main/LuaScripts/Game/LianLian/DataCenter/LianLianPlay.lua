@@ -118,13 +118,69 @@ function LianLianPlay.getGrid(part)
     return grid
 end
 
+--- 判断盘面是否「可解」：克隆一份，贪心反复消除任一可连对子，直到无对子。
+--- 若能完全清空，则该消除顺序本身就是一个可行解 → 盘面可解。
+--- （只读原 grid，不修改它。）
+--- @return boolean
+function LianLianPlay.isSolvable(grid)
+    -- 克隆一份「代理 grid」：拷贝 r/c/id，getPair/getClearPath 只读这些字段
+    local sim = {}
+    for key, cell in pairs(grid) do
+        sim[key] = { r = cell.r, c = cell.c, id = cell.id }
+    end
+    while true do
+        local pair = LianLianItem.getPair(sim, function(g, a, b)
+            return LianLianGrid.getClearPath(g, a, b)
+        end)
+        if not pair then break end
+        -- 移除这一对
+        sim[pair[1].r .. "_" .. pair[1].c].id = 0
+        sim[pair[2].r .. "_" .. pair[2].c].id = 0
+    end
+    -- 全清则可解
+    for _, cell in pairs(sim) do
+        if cell.id ~= 0 then return false end
+    end
+    return true
+end
+
+--- 按当前 chosen 元素池，把成对牌洗乱后填入左上角 rows×cols 区域（内部工具）
+local function fillGridOnce(grid, rows, cols, chosen, kindCount)
+    -- 先清空整盘
+    for _, cell in pairs(grid) do cell.id = 0 end
+    -- 牌数 = rows*cols，奇数则减 1（保证成对）
+    local pairCount = math.floor((rows * cols) / 2)
+    local ids = {}
+    for i = 1, pairCount do
+        ids[#ids + 1] = chosen[((i - 1) % kindCount) + 1]
+    end
+    local pairedIds = {}
+    for _, id in ipairs(ids) do
+        pairedIds[#pairedIds + 1] = id
+        pairedIds[#pairedIds + 1] = id
+    end
+    -- 洗牌
+    for i = #pairedIds, 2, -1 do
+        local j = math.random(i)
+        pairedIds[i], pairedIds[j] = pairedIds[j], pairedIds[i]
+    end
+    -- 填入左上角 rows×cols 区域
+    for r = 1, rows do
+        for c = 1, cols do
+            local cell = grid[r .. "_" .. c]
+            if cell then cell.id = table.remove(pairedIds) or 0 end
+        end
+    end
+end
+
 --- 生成一个密铺的单层棋盘：左上角 rows×cols 区域填满成对牌
 --- @param rows number 行数(1..HEIGHT-2)
 --- @param cols number 列数(1..WIDTH-2)
 --- @param kindCount number 使用的元素种类数（本盘实际出现多少种不同元素）
 --- @param poolMax number 可选元素 id 池上界（默认 KIND_MAX；一般传主题元素个数）
+--- @param ensureSolvable boolean 是否保证可解（true 时验证+重洗重试，最多 30 次）
 --- @return table grid  { ["r_c"] = {r,c,id,...} }
-function LianLianPlay.getGridCustom(rows, cols, kindCount, poolMax)
+function LianLianPlay.getGridCustom(rows, cols, kindCount, poolMax, ensureSolvable)
     local grid = LianLianGrid.create()
     -- 限制范围
     rows = math.min(math.max(rows or 1, 1), HEIGHT - 2)
@@ -143,34 +199,18 @@ function LianLianPlay.getGridCustom(rows, cols, kindCount, poolMax)
     local chosen = {}
     for i = 1, kindCount do chosen[i] = pool[i] end
 
-    -- 牌数 = rows*cols，奇数则减 1（保证成对）
-    local pairCount = math.floor((rows * cols) / 2)
-
-    -- 在选中的 kindCount 种元素里循环取 id → 保证实际种类数不超过 kindCount
-    local ids = {}
-    for i = 1, pairCount do
-        ids[#ids + 1] = chosen[((i - 1) % kindCount) + 1]
-    end
-    local pairedIds = {}
-    for _, id in ipairs(ids) do
-        pairedIds[#pairedIds + 1] = id
-        pairedIds[#pairedIds + 1] = id
-    end
-    -- 洗牌
-    for i = #pairedIds, 2, -1 do
-        local j = math.random(i)
-        pairedIds[i], pairedIds[j] = pairedIds[j], pairedIds[i]
-    end
-
-    -- 填入左上角 rows×cols 区域（r∈[1,rows], c∈[1,cols]）
-    for r = 1, rows do
-        for c = 1, cols do
-            local key = r .. "_" .. c
-            local cell = grid[key]
-            if cell then
-                cell.id = table.remove(pairedIds) or 0
+    if ensureSolvable then
+        -- 验证+重试：不可解就重洗重填，最多 30 次；都失败用最后一次并打日志
+        local MAX_TRY = 30
+        for attempt = 1, MAX_TRY do
+            fillGridOnce(grid, rows, cols, chosen, kindCount)
+            if LianLianPlay.isSolvable(grid) then break end
+            if attempt == MAX_TRY then
+                print("[LianLian][盘面] 保证可解重试 30 次仍未命中，使用最后一次结果")
             end
         end
+    else
+        fillGridOnce(grid, rows, cols, chosen, kindCount)
     end
 
     return grid
@@ -182,7 +222,8 @@ end
 --- @return table layers  { [L] = { grid=, rows=, cols=, direction=, item_checked={} } }
 --- @param kindCount number 每层使用的元素种类数（本盘实际出现多少种不同元素）
 --- @param poolMax number 可选元素 id 池上界（一般传主题元素个数）
-function LianLianPlay.buildLayers(baseRows, baseCols, kindCount, layerCount, poolMax)
+--- @param ensureSolvable boolean 是否保证每层可解
+function LianLianPlay.buildLayers(baseRows, baseCols, kindCount, layerCount, poolMax, ensureSolvable)
     baseRows = math.min(math.max(math.floor(baseRows or 1), 1), HEIGHT - 2)
     baseCols = math.min(math.max(math.floor(baseCols or 1), 1), WIDTH - 2)
     layerCount = math.max(math.floor(layerCount or 1), 1)
@@ -194,7 +235,7 @@ function LianLianPlay.buildLayers(baseRows, baseCols, kindCount, layerCount, poo
         if r < 1 or c < 1 then break end
         layers[L] = {
             -- 每层各自随机挑 kindCount 种元素（不超过 poolMax）
-            grid = LianLianPlay.getGridCustom(r, c, kindCount, poolMax),
+            grid = LianLianPlay.getGridCustom(r, c, kindCount, poolMax, ensureSolvable),
             rows = r,
             cols = c,
             direction = "",              -- 每层独立方向（Manager 生成时按需 roll/指定）
@@ -337,24 +378,25 @@ end
 --- @param grid table 棋盘数据
 --- @param direction string 移动方向
 --- @return table 移动列表 {{oldRc, newRc}, ...}
-function LianLianPlay.getMoveList(grid, direction)
+--- @param bounds table|nil { rows, cols } 本层有效区域边界；缺省用全局满盘边界
+function LianLianPlay.getMoveList(grid, direction, bounds)
     if direction == "" then return {} end
 
     if direction:find("^flock") then
-        return LianLianPlay._getFlockList(grid, direction)
+        return LianLianPlay._getFlockList(grid, direction, bounds)
     elseif direction:find("^divide") then
-        return LianLianPlay._getDivideList(grid, direction)
+        return LianLianPlay._getDivideList(grid, direction, bounds)
     else
-        return LianLianPlay._getMoveList(grid, direction)
+        return LianLianPlay._getMoveList(grid, direction, bounds)
     end
 end
 
 --- 单方向移动列表
-function LianLianPlay._getMoveList(grid, direction)
+function LianLianPlay._getMoveList(grid, direction, bounds)
     local list = {}
     for _, cell in pairs(grid) do
         if cell.id ~= 0 then
-            local emptyNum = LianLianPlay._getEmptyNum(grid, cell, direction)
+            local emptyNum = LianLianPlay._getEmptyNum(grid, cell, direction, bounds)
             if emptyNum > 0 then
                 local newRc
                 if direction == "up" then
@@ -383,34 +425,34 @@ function LianLianPlay._getMoveList(grid, direction)
 end
 
 --- 分散移动列表
-function LianLianPlay._getDivideList(grid, direction)
+function LianLianPlay._getDivideList(grid, direction, bounds)
     local listA = {}
     local listB = {}
 
     for _, cell in pairs(grid) do
         if cell.id ~= 0 then
             if direction == "divide_up_down" then
-                if LianLianPlay._isDirection(cell, "up") then
-                    local n = LianLianPlay._getEmptyNum(grid, cell, "up")
+                if LianLianPlay._isDirection(cell, "up", bounds) then
+                    local n = LianLianPlay._getEmptyNum(grid, cell, "up", bounds)
                     if n > 0 then
                         listA[#listA + 1] = { oldRc = cell.r .. "_" .. cell.c, newRc = (cell.r - n) .. "_" .. cell.c }
                     end
                 end
-                if LianLianPlay._isDirection(cell, "down") then
-                    local n = LianLianPlay._getEmptyNum(grid, cell, "down")
+                if LianLianPlay._isDirection(cell, "down", bounds) then
+                    local n = LianLianPlay._getEmptyNum(grid, cell, "down", bounds)
                     if n > 0 then
                         listB[#listB + 1] = { oldRc = cell.r .. "_" .. cell.c, newRc = (cell.r + n) .. "_" .. cell.c }
                     end
                 end
             elseif direction == "divide_left_right" then
-                if LianLianPlay._isDirection(cell, "left") then
-                    local n = LianLianPlay._getEmptyNum(grid, cell, "left")
+                if LianLianPlay._isDirection(cell, "left", bounds) then
+                    local n = LianLianPlay._getEmptyNum(grid, cell, "left", bounds)
                     if n > 0 then
                         listA[#listA + 1] = { oldRc = cell.r .. "_" .. cell.c, newRc = cell.r .. "_" .. (cell.c - n) }
                     end
                 end
-                if LianLianPlay._isDirection(cell, "right") then
-                    local n = LianLianPlay._getEmptyNum(grid, cell, "right")
+                if LianLianPlay._isDirection(cell, "right", bounds) then
+                    local n = LianLianPlay._getEmptyNum(grid, cell, "right", bounds)
                     if n > 0 then
                         listB[#listB + 1] = { oldRc = cell.r .. "_" .. cell.c, newRc = cell.r .. "_" .. (cell.c + n) }
                     end
@@ -427,34 +469,34 @@ function LianLianPlay._getDivideList(grid, direction)
 end
 
 --- 聚拢移动列表
-function LianLianPlay._getFlockList(grid, direction)
+function LianLianPlay._getFlockList(grid, direction, bounds)
     local listA = {}
     local listB = {}
 
     for _, cell in pairs(grid) do
         if cell.id ~= 0 then
             if direction == "flock_up_down" then
-                if LianLianPlay._isDirection(cell, "up") then
-                    local n = LianLianPlay._getEmptyNum(grid, cell, "flock_up")
+                if LianLianPlay._isDirection(cell, "up", bounds) then
+                    local n = LianLianPlay._getEmptyNum(grid, cell, "flock_up", bounds)
                     if n > 0 then
                         listA[#listA + 1] = { oldRc = cell.r .. "_" .. cell.c, newRc = (cell.r + n) .. "_" .. cell.c }
                     end
                 end
-                if LianLianPlay._isDirection(cell, "down") then
-                    local n = LianLianPlay._getEmptyNum(grid, cell, "flock_down")
+                if LianLianPlay._isDirection(cell, "down", bounds) then
+                    local n = LianLianPlay._getEmptyNum(grid, cell, "flock_down", bounds)
                     if n > 0 then
                         listB[#listB + 1] = { oldRc = cell.r .. "_" .. cell.c, newRc = (cell.r - n) .. "_" .. cell.c }
                     end
                 end
             elseif direction == "flock_left_right" then
-                if LianLianPlay._isDirection(cell, "left") then
-                    local n = LianLianPlay._getEmptyNum(grid, cell, "flock_left")
+                if LianLianPlay._isDirection(cell, "left", bounds) then
+                    local n = LianLianPlay._getEmptyNum(grid, cell, "flock_left", bounds)
                     if n > 0 then
                         listA[#listA + 1] = { oldRc = cell.r .. "_" .. cell.c, newRc = cell.r .. "_" .. (cell.c + n) }
                     end
                 end
-                if LianLianPlay._isDirection(cell, "right") then
-                    local n = LianLianPlay._getEmptyNum(grid, cell, "flock_right")
+                if LianLianPlay._isDirection(cell, "right", bounds) then
+                    local n = LianLianPlay._getEmptyNum(grid, cell, "flock_right", bounds)
                     if n > 0 then
                         listB[#listB + 1] = { oldRc = cell.r .. "_" .. cell.c, newRc = cell.r .. "_" .. (cell.c - n) }
                     end
@@ -470,14 +512,18 @@ function LianLianPlay._getFlockList(grid, direction)
 end
 
 --- 计算指定方向上的空位数
-function LianLianPlay._getEmptyNum(grid, cell, direction)
+--- @param bounds table|nil { rows, cols } 本层有效区域边界；缺省用全局满盘边界(HEIGHT-2/WIDTH-2)
+function LianLianPlay._getEmptyNum(grid, cell, direction, bounds)
+    -- 本层边界（下界/右界）：多层时为本层 rows/cols，缺省回退全局满盘
+    local maxR = (bounds and bounds.rows) or (HEIGHT - 2)
+    local maxC = (bounds and bounds.cols) or (WIDTH - 2)
     local count = 0
     if direction == "up" then
         for r = 1, cell.r - 1 do
             if LianLianItem.isEmpty(grid, { r = r, c = cell.c }) then count = count + 1 end
         end
     elseif direction == "down" then
-        for r = HEIGHT - 2, cell.r + 1, -1 do
+        for r = maxR, cell.r + 1, -1 do
             if LianLianItem.isEmpty(grid, { r = r, c = cell.c }) then count = count + 1 end
         end
     elseif direction == "left" then
@@ -485,23 +531,23 @@ function LianLianPlay._getEmptyNum(grid, cell, direction)
             if LianLianItem.isEmpty(grid, { r = cell.r, c = c }) then count = count + 1 end
         end
     elseif direction == "right" then
-        for c = WIDTH - 2, cell.c + 1, -1 do
+        for c = maxC, cell.c + 1, -1 do
             if LianLianItem.isEmpty(grid, { r = cell.r, c = c }) then count = count + 1 end
         end
     elseif direction == "flock_up" then
-        for r = math.floor(HEIGHT / 2) - 1, cell.r + 1, -1 do
+        for r = math.floor(maxR / 2) - 1, cell.r + 1, -1 do
             if LianLianItem.isEmpty(grid, { r = r, c = cell.c }) then count = count + 1 end
         end
     elseif direction == "flock_down" then
-        for r = math.ceil(HEIGHT / 2), cell.r - 1 do
+        for r = math.ceil(maxR / 2), cell.r - 1 do
             if LianLianItem.isEmpty(grid, { r = r, c = cell.c }) then count = count + 1 end
         end
     elseif direction == "flock_left" then
-        for c = math.floor(WIDTH / 2) - 1, cell.c + 1, -1 do
+        for c = math.floor(maxC / 2) - 1, cell.c + 1, -1 do
             if LianLianItem.isEmpty(grid, { r = cell.r, c = c }) then count = count + 1 end
         end
     elseif direction == "flock_right" then
-        for c = math.ceil(WIDTH / 2), cell.c - 1 do
+        for c = math.ceil(maxC / 2), cell.c - 1 do
             if LianLianItem.isEmpty(grid, { r = cell.r, c = c }) then count = count + 1 end
         end
     end
@@ -509,9 +555,13 @@ function LianLianPlay._getEmptyNum(grid, cell, direction)
 end
 
 --- 判断牌位是否在指定方向的半区
-function LianLianPlay._isDirection(cell, direction)
-    local halfW = WIDTH / 2
-    local halfH = HEIGHT / 2
+--- @param bounds table|nil { rows, cols } 本层边界；缺省用全局满盘中线
+function LianLianPlay._isDirection(cell, direction, bounds)
+    local maxR = (bounds and bounds.rows) or (HEIGHT - 2)
+    local maxC = (bounds and bounds.cols) or (WIDTH - 2)
+    -- 半区中线：本层区域 [1..maxR]/[1..maxC] 的中点
+    local halfW = (maxC + 1) / 2
+    local halfH = (maxR + 1) / 2
     if direction == "up" then return cell.r < halfH
     elseif direction == "down" then return cell.r >= halfH
     elseif direction == "left" then return cell.c < halfW

@@ -37,23 +37,22 @@ function LianLianDebugCtrl:GetBoardInfo()
     return rows, cols, self.manager:getPart(), self.manager:getDirection()
 end
 
---- 提示：高亮一对可消除的牌（复用现有道具逻辑）
+--- 提示：高亮「当前可操作层」的一对可消除的牌（顶层消完后自动下移到下一层）
 function LianLianDebugCtrl:UseTip()
     self.manager = LianLianManager:GetInstance()
-    self.manager:useTip()
+    self.manager:useTip(self.manager:getTopActiveLayer())
 end
 
---- 重排：洗牌「最上层」的棋盘（多层时取最高层，单层即第1层）
+--- 重排：洗牌「当前可操作层」的棋盘（顶层消完后自动下移到下一层）
 function LianLianDebugCtrl:UseShuffle()
     self.manager = LianLianManager:GetInstance()
-    local topLayer = self.manager:getLayerCount() or 1
-    self.manager:useShuffle(topLayer)
+    self.manager:useShuffle(self.manager:getTopActiveLayer())
 end
 
---- 类型-1：图案种类数减 1，按当前行列/方向重新生成盘面
+--- 类型-1：合并「当前可操作层」的一种元素（顶层消完后自动下移到下一层）
 function LianLianDebugCtrl:DecreaseKind()
     self.manager = LianLianManager:GetInstance()
-    self.manager:decreaseKind()
+    self.manager:decreaseKind(self.manager:getTopActiveLayer())
 end
 
 --- 读「全消揭示」遮挡规则开关
@@ -66,6 +65,18 @@ end
 function LianLianDebugCtrl:SetFullClearReveal(v)
     self.manager = LianLianManager:GetInstance()
     self.manager:setFullClearReveal(v)
+end
+
+--- 读「保证可解」开关
+function LianLianDebugCtrl:GetEnsureSolvable()
+    self.manager = LianLianManager:GetInstance()
+    return self.manager:getEnsureSolvable()
+end
+
+--- 设「保证可解」开关（改后下次 Gen 生效）
+function LianLianDebugCtrl:SetEnsureSolvable(v)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:setEnsureSolvable(v)
 end
 
 return LianLianDebugCtrl

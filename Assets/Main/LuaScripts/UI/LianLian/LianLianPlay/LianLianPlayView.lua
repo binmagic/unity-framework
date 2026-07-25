@@ -509,16 +509,13 @@ end
 
 function LianLianPlayView:ShowTip(pair)
     if not pair then return end
+    -- 先清掉上一次的提示，再高亮本次这一对
+    self:HideTip()
     for _, pos in ipairs(pair) do
         local tile = self:GetTile(pos)
         if tile then tile:SetTip(true) end
     end
-    -- 一段时间后取消提示
-    self:CancelTipTimer()
-    self._tipTimer = TimerManager:GetInstance():GetTimer(2, function()
-        self:HideTip()
-    end, self, true, false, false)
-    self._tipTimer:Start()
+    -- 不自动还原：提示常驻，直到任何盘面操作触发 HideTip
 end
 
 function LianLianPlayView:HideTip()
@@ -570,6 +567,7 @@ end
 function LianLianPlayView:OnPlayClear(data)
     if not data then return end
     local layer = data.layer or 1
+    self:HideTip()   -- 消除是盘面操作：还原提示底图
     self:ClearLines()
     self:DrawLine(data.pathLine, layer)
 
@@ -599,6 +597,7 @@ end
 -- 棋盘移动：未消元素从旧位滑到新位（DOTween），动画中锁输入；只作用事件所属层
 function LianLianPlayView:OnMove(data)
     local layer = (data and data.layer) or 1
+    self:HideTip()   -- 移动是盘面操作：还原提示底图
     if not data or not data.moveList or #data.moveList == 0 then
         self:UpdateBoard(layer)
         return
@@ -713,6 +712,8 @@ function LianLianPlayView:OnHpUpdate(data)
 end
 
 function LianLianPlayView:OnShowChecked(pos)
+    -- 任何点击选中都算盘面操作：还原提示底图
+    self:HideTip()
     self:ShowChecked(pos)
 end
 
@@ -728,6 +729,7 @@ function LianLianPlayView:OnShowTip(data)
 end
 
 function LianLianPlayView:OnItemUpdate(data)
+    self:HideTip()   -- 洗牌/重排/类型-1 是盘面操作：还原提示底图
     -- 洗牌/重排只作用某层；带 layer 则只刷该层，否则全刷
     self:UpdateBoard(data and data.layer)
     self:UpdateCardCounts()
