@@ -121,22 +121,35 @@ end
 --- 生成一个密铺的单层棋盘：左上角 rows×cols 区域填满成对牌
 --- @param rows number 行数(1..HEIGHT-2)
 --- @param cols number 列数(1..WIDTH-2)
---- @param kindLimit number 图案种类数(1..KIND_MAX)
+--- @param kindCount number 使用的元素种类数（本盘实际出现多少种不同元素）
+--- @param poolMax number 可选元素 id 池上界（默认 KIND_MAX；一般传主题元素个数）
 --- @return table grid  { ["r_c"] = {r,c,id,...} }
-function LianLianPlay.getGridCustom(rows, cols, kindLimit)
+function LianLianPlay.getGridCustom(rows, cols, kindCount, poolMax)
     local grid = LianLianGrid.create()
     -- 限制范围
     rows = math.min(math.max(rows or 1, 1), HEIGHT - 2)
     cols = math.min(math.max(cols or 1, 1), WIDTH - 2)
-    kindLimit = math.min(math.max(kindLimit or LianLianConst.KIND_MAX, 1), LianLianConst.KIND_MAX)
+    poolMax = math.min(math.max(math.floor(poolMax or LianLianConst.KIND_MAX), 1), LianLianConst.KIND_MAX)
+    -- 种类数默认用满整个池；不超过池上界
+    kindCount = math.min(math.max(math.floor(kindCount or poolMax), 1), poolMax)
+
+    -- 从 [1..poolMax] 随机挑 kindCount 个「不同」的元素 id（随机用哪些元素）
+    local pool = {}
+    for i = 1, poolMax do pool[i] = i end
+    for i = poolMax, 2, -1 do
+        local j = math.random(i)
+        pool[i], pool[j] = pool[j], pool[i]
+    end
+    local chosen = {}
+    for i = 1, kindCount do chosen[i] = pool[i] end
 
     -- 牌数 = rows*cols，奇数则减 1（保证成对）
     local pairCount = math.floor((rows * cols) / 2)
 
-    -- 用 kindLimit 循环取图案 id，控制盘面出现的图案种类数
+    -- 在选中的 kindCount 种元素里循环取 id → 保证实际种类数不超过 kindCount
     local ids = {}
     for i = 1, pairCount do
-        ids[#ids + 1] = ((i - 1) % kindLimit) + 1
+        ids[#ids + 1] = chosen[((i - 1) % kindCount) + 1]
     end
     local pairedIds = {}
     for _, id in ipairs(ids) do
@@ -167,10 +180,11 @@ end
 --- 第 L 层(L=1 为底)尺寸 = (baseRows-(L-1)) × (baseCols-(L-1))，≥1 才生成
 --- 每层独立成对/洗牌/锁方向，互不影响；消除/移动/tip/shuffle 只作用于各自层
 --- @return table layers  { [L] = { grid=, rows=, cols=, direction=, item_checked={} } }
-function LianLianPlay.buildLayers(baseRows, baseCols, kindLimit, layerCount)
+--- @param kindCount number 每层使用的元素种类数（本盘实际出现多少种不同元素）
+--- @param poolMax number 可选元素 id 池上界（一般传主题元素个数）
+function LianLianPlay.buildLayers(baseRows, baseCols, kindCount, layerCount, poolMax)
     baseRows = math.min(math.max(math.floor(baseRows or 1), 1), HEIGHT - 2)
     baseCols = math.min(math.max(math.floor(baseCols or 1), 1), WIDTH - 2)
-    kindLimit = math.min(math.max(math.floor(kindLimit or LianLianConst.KIND_MAX), 1), LianLianConst.KIND_MAX)
     layerCount = math.max(math.floor(layerCount or 1), 1)
 
     local layers = {}
@@ -179,11 +193,14 @@ function LianLianPlay.buildLayers(baseRows, baseCols, kindLimit, layerCount)
         local c = baseCols - (L - 1)
         if r < 1 or c < 1 then break end
         layers[L] = {
-            grid = LianLianPlay.getGridCustom(r, c, kindLimit),
+            -- 每层各自随机挑 kindCount 种元素（不超过 poolMax）
+            grid = LianLianPlay.getGridCustom(r, c, kindCount, poolMax),
             rows = r,
             cols = c,
             direction = "",              -- 每层独立方向（Manager 生成时按需 roll/指定）
             item_checked = {},           -- 每层独立选中
+            kindCount = kindCount,       -- 本层使用的元素种类数（供单层重生/类型-1）
+            poolMax = poolMax,           -- 本层元素池上界
         }
     end
     return layers

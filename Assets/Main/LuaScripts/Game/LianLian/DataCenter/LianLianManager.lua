@@ -11,6 +11,7 @@ local LianLianItem = require "Game.LianLian.DataCenter.LianLianItem"
 local LianLianPlay = require "Game.LianLian.DataCenter.LianLianPlay"
 local LianLianCard = require "Game.LianLian.DataCenter.LianLianCard"
 local LianLianState = require "Game.LianLian.DataCenter.LianLianState"
+local LianLianTheme = require "Game.LianLian.DataCenter.LianLianTheme"
 
 local LianLianManager = BaseClass("LianLianManager", Singleton)
 
@@ -20,6 +21,24 @@ function LianLianManager:__init()
     --   true  = 需将「上一层」全部消除后，本层才从灰变亮可操作
     --   false = 本层某格四角都无上层遮挡即可从灰变亮（默认，逐格揭示）
     self.fullClearReveal = false
+    -- 当前主题 id（元素图池来源）；默认第 1 套主题
+    self.themeId = 1
+end
+
+--- 取/设当前主题 id
+function LianLianManager:getThemeId()
+    return self.themeId or 1
+end
+function LianLianManager:setThemeId(id)
+    self.themeId = tonumber(id) or 1
+end
+
+--- 取当前主题的元素总数（元素种类默认值 & 随机取用的池上界）
+function LianLianManager:getThemeElementCount()
+    local n = LianLianTheme.GetElementCount(self:getThemeId())
+    n = math.floor(tonumber(n) or LianLianConst.KIND_MAX)
+    -- 不超过图案 id 上界
+    return math.min(math.max(n, 1), LianLianConst.KIND_MAX)
 end
 
 --- 取「是否需整层消除才揭示下层」开关
@@ -43,13 +62,29 @@ function LianLianManager:startGame(part)
     LianLianPlay.initData(self.state)
     -- 按 level 随机抽本盘移动方向并锁定；教学关 part 1 强制无移动
     self.state.direction = self:rollBoardDirection()
+
+    -- 正式/新手关也走「单层」的 layers 结构，统一玩法代码路径（避免 compat 别名 bug）
+    self.state.layers = {
+        [1] = {
+            grid = self.state.grid,
+            rows = LianLianConst.INTERIOR_ROWS,
+            cols = LianLianConst.INTERIOR_COLS,
+            direction = self.state.direction,
+            item_checked = self.state.item_checked,
+        },
+    }
+    self.state.layerCount = 1
+
     self.state.isPlaying = true
     self.state.startTime = os.time() * 1000
+
+    self:dumpBoardLog(string.format("startGame part=%d direction=%s", self.state.part, tostring(self.state.direction)))
 
     -- 广播游戏开始事件
     EventManager:GetInstance():Broadcast("LianLian_GameStart", {
         part = self.state.part,
         direction = self.state.direction,
+        layerCount = self.state.layerCount,
     })
 end
 
@@ -62,27 +97,29 @@ end
 --- Debug：直传版——全部外部传入，直接生成（不查 LEVEL_BOARD_CONFIG/池）
 --- @param rows number 行数(1..INTERIOR_ROWS)
 --- @param cols number 列数(1..INTERIOR_COLS)
---- @param kindLimit number 图案种类数(1..KIND_MAX)
+--- @param kindCount number 每层使用的元素种类数；缺省=当前主题元素个数；随机取用哪些元素
 --- @param direction string 移动方向("" / up / down / left / right / divide_* / flock_*)
 --- @param layer number 每格叠加层数(默认1=单层)
-function LianLianManager:startGameCustom(rows, cols, kindLimit, direction, layer)
+function LianLianManager:startGameCustom(rows, cols, kindCount, direction, layer)
     -- 校验并 clamp 参数（盘面生成规则在 Manager 侧统一管理）
     rows = math.floor(tonumber(rows) or LianLianConst.INTERIOR_ROWS)
     cols = math.floor(tonumber(cols) or LianLianConst.INTERIOR_COLS)
-    kindLimit = math.floor(tonumber(kindLimit) or LianLianConst.KIND_MAX)
     local layerCount = math.max(math.floor(tonumber(layer) or 1), 1)
     rows = math.min(math.max(rows, 1), LianLianConst.INTERIOR_ROWS)
     cols = math.min(math.max(cols, 1), LianLianConst.INTERIOR_COLS)
-    kindLimit = math.min(math.max(kindLimit, 1), LianLianConst.KIND_MAX)
+    -- 元素池上界 = 当前主题元素个数；种类数缺省用满整池，不超过池上界
+    local poolMax = self:getThemeElementCount()
+    kindCount = math.floor(tonumber(kindCount) or poolMax)
+    kindCount = math.min(math.max(kindCount, 1), poolMax)
 
     LianLianState.reset(self.state)
     -- 记录本盘参数，供 decreaseKind 等重生复用
     self.state.customRows = rows
     self.state.customCols = cols
-    self.state.kindLimit = kindLimit
+    self.state.kindLimit = kindCount
     self.state.boardLayer = layerCount
 
-    self:buildAndSetLayers(rows, cols, kindLimit, layerCount, direction or "")
+    self:buildAndSetLayers(rows, cols, kindCount, layerCount, direction or "", poolMax)
     self.state.direction = direction or ""
     self.state.isPlaying = true
     self.state.startTime = os.time() * 1000
@@ -96,8 +133,10 @@ end
 
 --- 生成多层独立盘并写入 state（每层一盘连连看，底大顶小；state.grid 指向底层做兼容）
 --- @param direction string 各层统一使用的移动方向（"" 表示无移动）
-function LianLianManager:buildAndSetLayers(rows, cols, kindLimit, layerCount, direction)
-    local layers = LianLianPlay.buildLayers(rows, cols, kindLimit, layerCount)
+--- @param poolMax number 元素 id 池上界（缺省=当前主题元素个数）
+function LianLianManager:buildAndSetLayers(rows, cols, kindCount, layerCount, direction, poolMax)
+    poolMax = poolMax or self:getThemeElementCount()
+    local layers = LianLianPlay.buildLayers(rows, cols, kindCount, layerCount, poolMax)
     local count = 0
     for _, ly in pairs(layers) do
         ly.direction = direction or ""
@@ -107,6 +146,45 @@ function LianLianManager:buildAndSetLayers(rows, cols, kindLimit, layerCount, di
     self.state.layerCount = count
     -- 兼容旧路径：state.grid 指向底层 grid（getBoardSize/getBoard 回退/单层 View）
     self.state.grid = layers[1] and layers[1].grid or {}
+
+    -- 打印生成参数与各层结果，便于调试
+    self:dumpBoardLog(string.format("buildLayers rows=%d cols=%d kindCount=%s layerCount=%d poolMax=%d dir=%s themeId=%d",
+        rows, cols, tostring(kindCount), count, poolMax, tostring(direction or ""), self:getThemeId()))
+end
+
+--- 打印当前盘面各层的生成结果（尺寸/牌数/实际用到的元素种类及分布）
+--- @param tag string 触发来源标签（如 buildLayers / decreaseKind / reshuffle）
+function LianLianManager:dumpBoardLog(tag)
+    local layers = self.state.layers
+    if not layers then return end
+    print(string.format("[LianLian][盘面] %s", tostring(tag)))
+    -- 按层序输出
+    local maxL = self.state.layerCount or 1
+    for L = 1, maxL do
+        local ly = layers[L]
+        if ly then
+            local cnt = {}          -- id -> 个数
+            local total = 0
+            for _, cell in pairs(ly.grid) do
+                if cell.id and cell.id ~= 0 then
+                    cnt[cell.id] = (cnt[cell.id] or 0) + 1
+                    total = total + 1
+                end
+            end
+            -- 组装「id:个数」列表（按 id 升序）
+            local ids = {}
+            for id in pairs(cnt) do ids[#ids + 1] = id end
+            table.sort(ids)
+            local parts = {}
+            for _, id in ipairs(ids) do
+                parts[#parts + 1] = string.format("%d×%d", id, cnt[id])
+            end
+            print(string.format("  [层%d] size=%dx%d kindCount=%s poolMax=%s 剩余牌=%d 种类=%d 分布{%s}",
+                L, ly.rows or -1, ly.cols or -1,
+                tostring(ly.kindCount), tostring(ly.poolMax),
+                total, #ids, table.concat(parts, ",")))
+        end
+    end
 end
 
 --- Debug：配置池版——只传 level，rows/cols/kindLimit/方向全从 LEVEL_BOARD_CONFIG 读
@@ -135,30 +213,51 @@ function LianLianManager:startGameByLevel(level)
     self:startGameCustom(conf.rows, conf.cols, conf.kindLimit, dir, conf.layer)
 end
 
---- Debug：图案种类数减 1，用当前行列/方向重新生成盘面
-function LianLianManager:decreaseKind()
-    local cur = self.state.kindLimit or LianLianConst.KIND_MAX
-    local newKind = math.max(cur - 1, 1)
-    local rows = self.state.customRows or LianLianConst.INTERIOR_ROWS
-    local cols = self.state.customCols or LianLianConst.INTERIOR_COLS
-    local layerCount = self.state.boardLayer or 1
-    local direction = self.state.direction  -- reset 会清空，先保存
+--- Debug：图案种类数减 1，只作用「当前可操作层」（顶层）。
+--- 不重新生成盘面：保留所有元素的位置和总数，只把「某一种」元素全部并入「另一种」，
+--- 从而种类数 -1。因每种本就是偶数个，合并后仍为偶数，成对性不破坏。
+--- 只剩 1 种时不再减少。
+--- @param layer number 可选，指定层；缺省=顶层(可操作层)
+function LianLianManager:decreaseKind(layer)
+    layer = layer or self:getLayerCount() or 1
+    local ld = self:getLayerData(layer)
+    if not ld then return end
 
-    LianLianState.reset(self.state)
-    self.state.kindLimit = newKind
-    self.state.customRows = rows
-    self.state.customCols = cols
-    self.state.boardLayer = layerCount
-    self:buildAndSetLayers(rows, cols, newKind, layerCount, direction)
-    self.state.direction = direction
-    self.state.isPlaying = true
-    self.state.startTime = os.time() * 1000
+    -- 统计当前盘面实际存在的元素种类
+    local kinds = {}          -- id -> true
+    local idList = {}
+    for _, cell in pairs(ld.grid) do
+        if cell.id and cell.id ~= 0 and not kinds[cell.id] then
+            kinds[cell.id] = true
+            idList[#idList + 1] = cell.id
+        end
+    end
+    -- 只剩 1 种（或空）时不再减少
+    if #idList <= 1 then return end
 
-    EventManager:GetInstance():Broadcast("LianLian_GameStart", {
-        part = self.state.part,
-        direction = self.state.direction,
-        layerCount = self.state.layerCount,
-    })
+    -- 随机挑一个「源种类」并入随机的「目标种类」（两者不同）
+    local si = math.random(#idList)
+    local srcId = idList[si]
+    local ti = math.random(#idList - 1)
+    if ti >= si then ti = ti + 1 end   -- 跳过 src，保证目标不同
+    local dstId = idList[ti]
+
+    -- 把源种类的所有格子改成目标 id：位置/总数不变，种类 -1
+    self:cancelChecked(layer)
+    for _, cell in pairs(ld.grid) do
+        if cell.id == srcId then
+            cell.id = dstId
+        end
+    end
+    -- 更新记录的种类数（若有）
+    if ld.kindCount then ld.kindCount = math.max(ld.kindCount - 1, 1) end
+    ld.item_checked = {}
+    if layer == 1 then self.state.grid = ld.grid end
+
+    self:dumpBoardLog(string.format("decreaseKind layer=%d 合并 %d→%d 剩余种类=%d", layer, srcId, dstId, #idList - 1))
+
+    -- 复用洗牌事件让 View 整体重刷该层（含遮挡）
+    EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer })
 end
 
 --- 取指定层的运行数据（layer 缺省=1）；多层未初始化时回退到单层兼容视图
@@ -320,7 +419,38 @@ function LianLianManager:afterClear(layer)
         return true
     end
 
+    -- 死局检测：本层还有牌但已无可连消的对子 → 自动重排该层，避免卡死留下无法消除的元素
+    if not LianLianItem.isAllEmpty(grid) and not self:hasClearablePair(layer) then
+        self:autoReshuffle(layer)
+    end
+
     return false
+end
+
+--- 本层是否还存在「可连线消除」的对子
+function LianLianManager:hasClearablePair(layer)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return false end
+    local pair = LianLianItem.getPair(ld.grid, function(grid, a, b)
+        return LianLianGrid.getClearPath(grid, a, b)
+    end)
+    return pair ~= nil
+end
+
+--- 死局时自动重排本层（保留剩余元素个数，随机撒回），直到出现可消对子（有限次兜底）
+function LianLianManager:autoReshuffle(layer)
+    layer = layer or 1
+    local ld = self:getLayerData(layer)
+    if not ld then return end
+    local rows = ld.rows or self.state.customRows or LianLianConst.INTERIOR_ROWS
+    local cols = ld.cols or self.state.customCols or LianLianConst.INTERIOR_COLS
+    for _ = 1, 20 do
+        LianLianCard.reshuffleRegion(ld.grid, rows, cols)
+        if self:hasClearablePair(layer) then break end
+    end
+    if layer == 1 then self.state.grid = ld.grid end
+    self:dumpBoardLog(string.format("autoReshuffle(死局重排) layer=%d", layer))
+    EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer })
 end
 
 --- 是否所有层都已清空
