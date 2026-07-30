@@ -27,6 +27,21 @@ function LianLianManager:__init()
     self.autoReshuffleEnabled = false
     -- 保证可解开关：默认开，生成时验证盘面可解（不可解则重洗重试）
     self.ensureSolvable = true
+    -- 无限生成开关：默认关。开启后全清不弹结算，用当前关卡设定重新生成盘面
+    self.infiniteRegen = false
+    -- 棋盘格线显示开关：默认关。开启后为棋盘画红色细网格线（调试用）
+    self.showGridLine = false
+end
+
+--- 取/设「棋盘格线显示」开关；变更即广播，供 PlayView 实时刷新
+function LianLianManager:getShowGridLine()
+    return self.showGridLine and true or false
+end
+function LianLianManager:setShowGridLine(v)
+    v = v and true or false
+    if self.showGridLine == v then return end
+    self.showGridLine = v
+    EventManager:GetInstance():Broadcast("LianLian_GridLineChanged", { on = v })
 end
 
 --- 取/设「保证可解」开关（生成期读取，改后下次 Gen 生效）
@@ -35,6 +50,14 @@ function LianLianManager:getEnsureSolvable()
 end
 function LianLianManager:setEnsureSolvable(v)
     self.ensureSolvable = v and true or false
+end
+
+--- 取/设「无限生成」开关：开启后全清不弹结算，用当前关卡设定重新生成
+function LianLianManager:getInfiniteRegen()
+    return self.infiniteRegen and true or false
+end
+function LianLianManager:setInfiniteRegen(v)
+    self.infiniteRegen = v and true or false
 end
 
 --- 取/设当前主题 id
@@ -532,6 +555,24 @@ end
 
 --- 胜利
 function LianLianManager:win()
+    -- 无限生成：不弹结算，用当前关卡设定重新生成盘面
+    if self.infiniteRegen then
+        print("[LianLian][盘面] 无限生成：全清后按当前设定重新生成")
+        if self.state.customRows then
+            -- Debug 直传盘面：用保存的 行/列/种类/方向/层 参数重生
+            self:startGameCustom(
+                self.state.customRows,
+                self.state.customCols,
+                self.state.kindLimit,
+                self.state.direction,
+                self.state.boardLayer)
+        else
+            -- 正式/新手关：按当前关卡重开
+            self:startGame(self.state.part)
+        end
+        return
+    end
+
     self.state.isPlaying = false
     self.state.endTime = os.time() * 1000
 

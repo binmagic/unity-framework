@@ -79,4 +79,28 @@ function LianLianDebugCtrl:SetEnsureSolvable(v)
     self.manager:setEnsureSolvable(v)
 end
 
+--- 读「无限生成」开关
+function LianLianDebugCtrl:GetInfiniteRegen()
+    self.manager = LianLianManager:GetInstance()
+    return self.manager:getInfiniteRegen()
+end
+
+--- 设「无限生成」开关（开启后全清不弹结算，按当前设定重生）
+function LianLianDebugCtrl:SetInfiniteRegen(v)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:setInfiniteRegen(v)
+end
+
+--- 读「棋盘格线显示」开关
+function LianLianDebugCtrl:GetShowGridLine()
+    self.manager = LianLianManager:GetInstance()
+    return self.manager:getShowGridLine()
+end
+
+--- 设「棋盘格线显示」开关（Manager 广播后 PlayView 实时刷新）
+function LianLianDebugCtrl:SetShowGridLine(v)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:setShowGridLine(v)
+end
+
 return LianLianDebugCtrl

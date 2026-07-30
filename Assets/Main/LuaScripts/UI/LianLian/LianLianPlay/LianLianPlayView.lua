@@ -79,6 +79,7 @@ function LianLianPlayView:DataDestroy()
     self:CancelOcclusionTimer()
     self:KillEnterAnim()
     self:ClearLines()
+    self:ClearGridLines()
     self.tileItemsByLayer = {}
     self._heartText = nil
 end
@@ -239,6 +240,9 @@ function LianLianPlayView:DrawBoard()
         end, self, true, false, false)
         self._occTimer:Start()
     end
+
+    -- 按当前开关补画棋盘格线（重生盘面后保持）
+    self:RefreshGridLines()
 end
 
 function LianLianPlayView:CancelOcclusionTimer()
@@ -431,6 +435,7 @@ end
 -- 格距固定 = 160（连线资源原生尺寸），连线 sizeDelta 恒 160×160 不缩放；屏幕适配靠容器整体 localScale。
 local LINE_SEG_PREFAB = "Assets/Main/Prefabs/UI/LianLian/PreLineSegment.prefab"
 local LINE_STRAIGHT = "Assets/_Art_LianLian/Line/line_1"   -- 半边直线：从中心向下延伸
+local LINE_CORNER = "Assets/_Art_LianLian/Line/line_5"     -- 拐角图：一张图覆盖 L 形转角
 local LINE_OVERLAP = 3     -- 半直线沿延伸方向外移的像素，令相邻半条在格边重叠、消除接缝
 
 -- 直线方向 → Z轴旋转角度（line_1 默认向下延伸=0°）
@@ -440,12 +445,64 @@ local DIR_VEC = {
     top = { 0, 1 }, bottom = { 0, -1 }, left = { -1, 0 }, right = { 1, 0 },
 }
 
+-- 拐角(两条垂直半直线)的方向组合 → line_5 旋转角度。
+-- 约定 line_5 默认(0°)连接「下 + 右」(bottom+right, └ 形的镜像即 ┌ 朝右下)。
+-- 其余三种由 90° 步进旋转得到；若实机方向不对，调整这里的角度即可。
+-- line_5 默认(0°)连接「上 + 左」；实机在此基础上整体 +180° 才对齐
+local CORNER_ANGLE = {
+    top_left = 0,
+    right_top = 270,
+    bottom_right = 180,
+    left_bottom = 90,
+}
+
+-- 判断节点是否为拐角：恰好两个连通方向且互相垂直；返回归一化的组合 key
+local function GetCornerKey(node)
+    local dirs = {}
+    for _, d in ipairs({ "top", "right", "bottom", "left" }) do
+        if node[d] == 1 then dirs[#dirs + 1] = d end
+    end
+    if #dirs ~= 2 then return nil end
+    local a, b = dirs[1], dirs[2]
+    -- 排除对向直线(top+bottom / left+right)，只保留垂直组合
+    if (a == "top" and b == "bottom") or (a == "bottom" and b == "top") then return nil end
+    if (a == "left" and b == "right") or (a == "right" and b == "left") then return nil end
+    -- 归一化为 CORNER_ANGLE 里的四种 key 之一（key 名 = 实际显示的拐角方向）
+    -- 注：方向标志集合与屏幕视觉是对角关系，故命名取「对角」以匹配实际显示
+    local set = { [a] = true, [b] = true }
+    if set.bottom and set.right then return "top_left" end
+    if set.left and set.bottom then return "right_top" end
+    if set.top and set.left then return "bottom_right" end
+    if set.right and set.top then return "left_bottom" end
+    return nil
+end
+
 function LianLianPlayView:DrawLine(pathLine, layer)
     self:ClearLines()
     if not pathLine or #pathLine == 0 then return end
     self._lineSegments = {}
+    self._segCount = 0
+    self._segSeen = {}     -- half-edge 判重表（仅在重复时打印告警）
+    self._segDup = 0
     for _, node in ipairs(pathLine) do
         self:CreateLineSegments(node, layer or 1)
+    end
+    self._segSeen = nil
+end
+
+-- 记录一条「半边(half-edge)」并检测视觉重复。
+-- 一段线覆盖的是「格心(r,c) → 某条边(dir)」这半条边。视觉重叠 = 同一条 half-edge 被画两次，
+-- 无论它由直线段、拐角臂、还是相邻格反向画出（锚点/sprite 不同也算重复）。
+-- 归一化：half-edge 唯一标识 = 格坐标 + 方向（不合并到整边，保留半边粒度）。
+-- @param src string 段来源描述
+function LianLianPlayView:_TrackHalfEdge(r, c, dir, src)
+    self._segSeen = self._segSeen or {}
+    local key = string.format("%d_%d_%s", r, c, dir)
+    if self._segSeen[key] then
+        self._segDup = (self._segDup or 0) + 1
+        print(string.format("[LianLian][重复半边!] half-edge=%s 本次来源=%s 先前来源=%s", key, src, self._segSeen[key]))
+    else
+        self._segSeen[key] = src
     end
 end
 
@@ -454,19 +511,62 @@ end
 -- 所有半直线尺寸恒为 RENDER_CELL×RENDER_CELL（不缩放），沿延伸方向外移 LINE_OVERLAP 消缝。
 function LianLianPlayView:CreateLineSegments(node, layer)
     local cx, cy = self:GridToAnchor({ r = node.r, c = node.c }, layer or 1)
+    -- 拐角格：用一张 line_5 拐角图（旋转对应方向），而不是两条 line_1 直线拼接
+    local cornerKey = GetCornerKey(node)
+    if cornerKey then
+        local angle = CORNER_ANGLE[cornerKey]
+        -- 拐角图锚点直接放格心，不再为对准转角点做偏移（该偏移会把整图推向邻格、右臂 overshoot 与邻格直线重叠）。
+        -- line_5 的肘部(两臂交点)在图片「图心上方 67px」(像素实测)，而肘部才该落在格心。
+        -- 故图心放在 格心 − rotate((0,67), angle)，使肘部对准格心；偏移随拐角角度旋转。
+        local ELBOW = 67
+        local rad = math.rad(angle)
+        local ox = -(-ELBOW * math.sin(rad))   -- = ELBOW*sin(angle)
+        local oy = -(ELBOW * math.cos(rad))    -- = -ELBOW*cos(angle)
+        local fx = math.floor(cx + ox + 0.5)
+        local fy = math.floor(cy + oy + 0.5)
+        -- 参考：本拐角连通的两条边，各自「边中点」目标坐标(格心±半格)。
+        -- 拐角肘部应落在格心(cx,cy)、两臂分别伸向这两个边中点，用于对照实际显示。
+        local half = RENDER_CELL / 2
+        local ref = {}
+        for _, d in ipairs({ "top", "right", "bottom", "left" }) do
+            if node[d] == 1 then
+                local v = DIR_VEC[d]
+                ref[#ref + 1] = string.format("%s->(%.0f,%.0f)", d, cx + v[1] * half, cy + v[2] * half)
+            end
+        end
+        self._segCount = (self._segCount or 0) + 1
+        local segTag = string.format("第%d段_拐角_行%d_列%d_类型%s", self._segCount, node.r, node.c, tostring(cornerKey))
+        print(string.format("[LianLian][连线段] 连线名称=Line_%s 类型=拐角 拐角类型=%s 节点=(行%d,列%d) 旋转角度=%d 格心=(%.1f,%.1f) 图落点=(%d,%d) 偏移=(%.1f,%.1f) 两臂目标=%s 格距=%d",
+            segTag, tostring(cornerKey), node.r, node.c, angle, cx, cy, fx, fy, ox, oy, table.concat(ref, " "), RENDER_CELL))
+        -- 拐角覆盖它连通的两条 half-edge，各自登记判重
+        for _, d in ipairs({ "top", "right", "bottom", "left" }) do
+            if node[d] == 1 then
+                self:_TrackHalfEdge(node.r, node.c, d, string.format("拐角(%d,%d)%s", node.r, node.c, tostring(cornerKey)))
+            end
+        end
+        self:SpawnLine(LINE_CORNER, fx, fy, RENDER_CELL, RENDER_CELL, angle, segTag)
+        return
+    end
+    -- 直线/端点格：每个连通方向放一条 line_1 半直线（中心→该边）
     for dir, angle in pairs(DIR_ANGLE) do
         if node[dir] == 1 then
             local v = DIR_VEC[dir]
             local x = cx + v[1] * LINE_OVERLAP
             local y = cy + v[2] * LINE_OVERLAP
-            self:SpawnLine(LINE_STRAIGHT, x, y, RENDER_CELL, RENDER_CELL, angle)
+            self._segCount = (self._segCount or 0) + 1
+            local segTag = string.format("第%d段_直线_行%d_列%d_方向%s", self._segCount, node.r, node.c, dir)
+            print(string.format("[LianLian][连线段] 连线名称=Line_%s 类型=直线 方向=%s 节点=(行%d,列%d) 旋转角度=%d 格心=(%.1f,%.1f) 落点=(%.1f,%.1f) 格距=%d",
+                segTag, dir, node.r, node.c, angle, cx, cy, x, y, RENDER_CELL))
+            self:_TrackHalfEdge(node.r, node.c, dir, string.format("直线(%d,%d)%s", node.r, node.c, dir))
+            self:SpawnLine(LINE_STRAIGHT, x, y, RENDER_CELL, RENDER_CELL, angle, segTag)
         end
     end
 end
 
 -- 实例化一个线段 Image（异步，在 Lines 容器里）
 -- spritePath: 完整资产路径（如 LINE_STRAIGHT）
-function LianLianPlayView:SpawnLine(spritePath, x, y, w, h, angle)
+-- @param segTag string|nil 段标签（用于给 GameObject 命名 + 打印，便于对照日志）
+function LianLianPlayView:SpawnLine(spritePath, x, y, w, h, angle, segTag)
     if not self.lineContainer then return end
     self.lineContainer:GameObjectInstantiateAsync(LINE_SEG_PREFAB, function(request)
         if request == nil or request.isError or request.gameObject == nil then return end
@@ -474,7 +574,10 @@ function LianLianPlayView:SpawnLine(spritePath, x, y, w, h, angle)
             CS.UnityEngine.GameObject.Destroy(request.gameObject)
             return
         end
-        local img = self.lineContainer:AddComponent(UIImage, request.gameObject)
+        local go = request.gameObject
+        -- 命名 GameObject 便于在 Hierarchy 对照日志
+        if segTag then go.name = "Line_" .. segTag end
+        local img = self.lineContainer:AddComponent(UIImage, go)
         local rt = img.rectTransform
         if rt then
             rt:Set_anchorMin(0.5, 0.5)
@@ -485,7 +588,7 @@ function LianLianPlayView:SpawnLine(spritePath, x, y, w, h, angle)
             rt:Set_localEulerAngles(0, 0, angle)
         end
         img:LoadSprite(spritePath)
-        self._lineSegments[#self._lineSegments + 1] = request.gameObject
+        self._lineSegments[#self._lineSegments + 1] = go
     end, self.lineContainer.transform)
 end
 
@@ -496,6 +599,83 @@ function LianLianPlayView:ClearLines()
         end
     end
     self._lineSegments = nil
+end
+
+-- 棋盘格线粗细（未缩放的基准像素）
+local GRID_LINE_THICK = 2
+
+-- 生成一条棋盘红线（复用 PreLineSegment 纯色 Image，染红、拉成细线）
+function LianLianPlayView:SpawnGridLine(x, y, w, h)
+    if not self.lineContainer then return end
+    self.lineContainer:GameObjectInstantiateAsync(LINE_SEG_PREFAB, function(request)
+        if request == nil or request.isError or request.gameObject == nil then return end
+        if not self._gridLines then
+            CS.UnityEngine.GameObject.Destroy(request.gameObject)
+            return
+        end
+        local go = request.gameObject
+        go.name = "GridLine"
+        local img = self.lineContainer:AddComponent(UIImage, go)
+        local rt = img.rectTransform
+        if rt then
+            rt:Set_anchorMin(0.5, 0.5)
+            rt:Set_anchorMax(0.5, 0.5)
+            rt:Set_pivot(0.5, 0.5)
+            rt:Set_sizeDelta(w, h)
+            rt:Set_anchoredPosition(x, y)
+            rt:Set_localEulerAngles(0, 0, 0)
+        end
+        if img.SetColorRGBA then img:SetColorRGBA(1, 0, 0, 1) end   -- 红色
+        self._gridLines[#self._gridLines + 1] = go
+    end, self.lineContainer.transform)
+end
+
+-- 画棋盘格线：按底层 base rows×cols 画竖线(cols+1)+横线(rows+1)，红色细线
+function LianLianPlayView:DrawGridLines()
+    self:ClearGridLines()
+    self._gridLines = {}
+    local cols = self._boardCols or LianLianConst.INTERIOR_COLS
+    local rows = self._boardRows or LianLianConst.INTERIOR_ROWS
+    local cell = self._cell or RENDER_CELL
+    local totalW = cols * cell
+    local totalH = rows * cell
+    -- 网格线以 Board 中心为原点：竖线 x ∈ [-totalW/2, +totalW/2] 均分 cols 段
+    local x0 = -totalW / 2
+    local y0 = -totalH / 2
+    -- 竖线（cols+1 条）：全高 totalH
+    for c = 0, cols do
+        local x = x0 + c * cell
+        self:SpawnGridLine(x, 0, GRID_LINE_THICK, totalH)
+    end
+    -- 横线（rows+1 条）：全宽 totalW
+    for r = 0, rows do
+        local y = y0 + r * cell
+        self:SpawnGridLine(0, y, totalW, GRID_LINE_THICK)
+    end
+end
+
+function LianLianPlayView:ClearGridLines()
+    if self._gridLines then
+        for _, go in ipairs(self._gridLines) do
+            if go then CS.UnityEngine.GameObject.Destroy(go) end
+        end
+    end
+    self._gridLines = nil
+end
+
+-- 依 Manager 开关刷新棋盘格线：开→画，关→清
+function LianLianPlayView:RefreshGridLines()
+    local on = self.ctrl and self.ctrl.manager and self.ctrl.manager:getShowGridLine()
+    if on then
+        self:DrawGridLines()
+    else
+        self:ClearGridLines()
+    end
+end
+
+-- Debug 开关变更事件：实时刷新格线
+function LianLianPlayView:OnGridLineChanged()
+    self:RefreshGridLines()
 end
 
 function LianLianPlayView:ShowChecked(pos)
@@ -691,6 +871,7 @@ function LianLianPlayView:OnAddListener()
     self:AddUIListener("LianLian_MatchFail", self.OnMatchFail)
     self:AddUIListener("LianLian_GameStart", self.OnGameStart)
     self:AddUIListener("LianLian_OcclusionRuleChanged", self.OnOcclusionRuleChanged)
+    self:AddUIListener("LianLian_GridLineChanged", self.OnGridLineChanged)
 end
 
 -- 遮挡规则开关变更：实时重算全盘遮挡态

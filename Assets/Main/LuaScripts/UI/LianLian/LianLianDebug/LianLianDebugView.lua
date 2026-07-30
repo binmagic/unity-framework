@@ -77,6 +77,12 @@ function LianLianDebugView:ComponentDefine()
     -- 保证可解 checkbox（复选按钮）+ 其文字节点
     self.solvableBtn = self:AddComponent(UIButton, "Panel/Content/SolvableBtn")
     self.solvableText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/SolvableBtn/Text")
+    -- 无限生成 checkbox（复选按钮）+ 其文字节点
+    self.infiniteBtn = self:AddComponent(UIButton, "Panel/Content/InfiniteBtn")
+    self.infiniteText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/InfiniteBtn/Text")
+    -- 棋盘格线 checkbox（复选按钮）+ 其文字节点
+    self.gridLineBtn = self:AddComponent(UIButton, "Panel/Content/GridLineBtn")
+    self.gridLineText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/GridLineBtn/Text")
 
     -- 初始化移动类型下拉项
     if self.moveTypeDropdown then
@@ -132,9 +138,45 @@ function LianLianDebugView:ComponentDefine()
     if self.solvableBtn then
         self.solvableBtn:SetOnClick(BindCallback(self, self.OnSolvableToggle))
     end
+    if self.infiniteBtn then
+        self.infiniteBtn:SetOnClick(BindCallback(self, self.OnInfiniteToggle))
+    end
+    if self.gridLineBtn then
+        self.gridLineBtn:SetOnClick(BindCallback(self, self.OnGridLineToggle))
+    end
     -- 依 Manager 当前值刷新 checkbox 文案
     self:RefreshFullClearLabel()
     self:RefreshSolvableLabel()
+    self:RefreshInfiniteLabel()
+    self:RefreshGridLineLabel()
+end
+
+-- 刷新「棋盘格线」复选按钮文案（依 Manager 实时值，经 Ctrl 读取）
+function LianLianDebugView:RefreshGridLineLabel()
+    if not self.gridLineText or not self.ctrl then return end
+    local on = self.ctrl:GetShowGridLine()
+    self.gridLineText:SetText(on and "棋盘格线:开" or "棋盘格线:关")
+end
+
+-- 点击复选按钮：翻转「棋盘格线」开关（Manager 广播后 PlayView 实时刷新）
+function LianLianDebugView:OnGridLineToggle()
+    if not self.ctrl then return end
+    self.ctrl:SetShowGridLine(not self.ctrl:GetShowGridLine())
+    self:RefreshGridLineLabel()
+end
+
+-- 刷新「无限生成」复选按钮文案（依 Manager 实时值，经 Ctrl 读取）
+function LianLianDebugView:RefreshInfiniteLabel()
+    if not self.infiniteText or not self.ctrl then return end
+    local on = self.ctrl:GetInfiniteRegen()
+    self.infiniteText:SetText(on and "无限生成:开" or "无限生成:关")
+end
+
+-- 点击复选按钮：翻转「无限生成」开关（开启后全清不弹结算，按当前设定重生）
+function LianLianDebugView:OnInfiniteToggle()
+    if not self.ctrl then return end
+    self.ctrl:SetInfiniteRegen(not self.ctrl:GetInfiniteRegen())
+    self:RefreshInfiniteLabel()
 end
 
 -- 刷新「保证可解」复选按钮文案（依 Manager 实时值，经 Ctrl 读取）
