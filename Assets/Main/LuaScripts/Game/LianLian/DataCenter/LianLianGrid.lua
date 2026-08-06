@@ -25,6 +25,7 @@ function LianLianGrid.create()
                 c = c,
                 n = r * WIDTH + c,
                 id = 0,
+                specialType = nil,   -- 特殊元素类型（nil=普通牌）；与 id 正交，id 管图案、specialType 管特殊行为
             }
         end
     end

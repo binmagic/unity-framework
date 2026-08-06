@@ -80,6 +80,7 @@ function LianLianPlayView:DataDestroy()
     self:KillEnterAnim()
     self:ClearLines()
     self:ClearGridLines()
+    self:CancelRocketFx()
     self.tileItemsByLayer = {}
     self._heartText = nil
 end
@@ -325,6 +326,7 @@ function LianLianPlayView:CreateTile(cell, popDelay, layer)
         tile:SetSize(sz, sz)
         tile:SetPosition(ax, ay)
         tile:SetData(pos, cell.id, function(p) self.ctrl:OnTileClick(p) end)
+        tile:SetSpecial(cell.specialType)   -- 特殊元素装扮（普通牌 nil 无效果）
         tiles[n] = tile
         -- 高层后实例化，天然叠在上面（同容器按创建顺序渲染）
         -- 按错峰延迟播放缩放弹出
@@ -735,6 +737,7 @@ function LianLianPlayView:UpdateBoardLayer(layer)
         else
             if tile then
                 tile:SetData({ r = cell.r, c = cell.c, layer = layer }, cell.id, function(p) self.ctrl:OnTileClick(p) end)
+                tile:SetSpecial(cell.specialType)   -- 刷新特殊元素装扮
                 tile:SetVisible(true)
             else
                 self:CreateTile(cell, 0, layer)
@@ -872,6 +875,121 @@ function LianLianPlayView:OnAddListener()
     self:AddUIListener("LianLian_GameStart", self.OnGameStart)
     self:AddUIListener("LianLian_OcclusionRuleChanged", self.OnOcclusionRuleChanged)
     self:AddUIListener("LianLian_GridLineChanged", self.OnGridLineChanged)
+    self:AddUIListener("LianLian_RocketFx", self.OnRocketFx)
+end
+
+-- Ease 名 → Ease 枚举（供 FX 参数用字符串指定缓动）
+local EASE_MAP = {
+    InQuad = Ease.InQuad, OutQuad = Ease.OutQuad, Linear = Ease.Linear,
+    InBack = Ease.InBack, OutBack = Ease.OutBack,
+}
+
+-- 火箭特效：从「发射源格 origin」为每个目标格发一枚火箭飞过去，抵达后爆炸并「逐格消除」该目标。
+-- 数据未预先清除——由本函数在每枚火箭抵达时调 manager:clearCells 清对应格（表现与消除同步）。
+-- data = { layer, origin={r,c}, targets={ {r,c},... }, fx={...表现参数} }
+function LianLianPlayView:OnRocketFx(data)
+    if not data then return end
+    local layer = data.layer or 1
+    local targets = data.targets or {}
+    local fx = data.fx or {}
+    print(string.format("[LianLian][火箭] layer=%d 目标格=%d origin=(%s,%s)",
+        layer, #targets, tostring(data.origin and data.origin.r), tostring(data.origin and data.origin.c)))
+
+    if #targets == 0 or not self.boardContainer then
+        self:UpdateBoard(layer)
+        return
+    end
+
+    -- 发射起点：origin 格中心（无 origin 兜底棋盘中心）
+    local sx, sy = 0, 0
+    if data.origin then sx, sy = self:GridToAnchor({ r = data.origin.r, c = data.origin.c }, layer) end
+
+    self:CancelRocketFx()
+    self._rocketFxGos = {}
+
+    -- 每个目标格发一枚火箭（枚数 = 目标数），抵达时清该格
+    for _, tgt in ipairs(targets) do
+        local tx, ty = self:GridToAnchor({ r = tgt.r, c = tgt.c }, layer)
+        self:SpawnRocket(sx, sy, tx, ty, fx, function()
+            -- 抵达并爆炸后：消除该目标格（逐格）
+            self.ctrl.manager:clearCells(layer, { { r = tgt.r, c = tgt.c } })
+        end)
+    end
+end
+
+-- 生成一枚火箭图，从 (sx,sy) 飞到 (tx,ty)，抵达后爆炸销毁并回调 onHit
+-- @param fx table 表现参数（rocketSprite/rocketSize/flyDuration/flyEase/explodeScale/explodeDur/explodeHold）
+function LianLianPlayView:SpawnRocket(sx, sy, tx, ty, fx, onHit)
+    fx = fx or {}
+    local sprite = fx.rocketSprite or "Assets/_Art_LianLian/ItemSprites/item_special/rocket.png"
+    local size = fx.rocketSize or 80
+    local flyDur = fx.flyDuration or 0.35
+    local ease = EASE_MAP[fx.flyEase] or Ease.InQuad
+    local exScale = fx.explodeScale or 1.6
+    local exDur = fx.explodeDur or 0.12
+    local exHold = fx.explodeHold or 0.14
+
+    self.boardContainer:GameObjectInstantiateAsync(TILE_PREFAB, function(request)
+        if request == nil or request.isError or request.gameObject == nil then return end
+        if not self._rocketFxGos then
+            CS.UnityEngine.GameObject.Destroy(request.gameObject)
+            return
+        end
+        local go = request.gameObject
+        go.name = "RocketFx"
+        local img = self.boardContainer:AddComponent(UIImage, go)
+        local rt = img.rectTransform
+        if rt then
+            rt:Set_anchorMin(0.5, 0.5)
+            rt:Set_anchorMax(0.5, 0.5)
+            rt:Set_pivot(0.5, 0.5)
+            rt:Set_sizeDelta(size, size)
+            rt:Set_anchoredPosition(sx, sy)
+        end
+        img:LoadSprite(sprite)
+        self._rocketFxGos[#self._rocketFxGos + 1] = go
+
+        -- 朝向目标（火箭头指向飞行方向）
+        local dx, dy = tx - sx, ty - sy
+        local ang = 0
+        if math.atan2 then
+            ang = math.deg(math.atan2(dy, dx)) - 90
+        else
+            ang = math.deg(math.atan(dy, dx)) - 90
+        end
+        if rt then rt:Set_localEulerAngles(0, 0, ang) end
+
+        -- 飞行 tween（非链式写法，稳妥）
+        local flyTween = DOTween.To(function(t)
+            if rt then rt:Set_anchoredPosition(sx + dx * t, sy + dy * t) end
+        end, 0, 1, flyDur)
+        flyTween:SetEase(ease)
+        flyTween:OnComplete(function()
+            -- 抵达：爆炸（放大）后销毁 + 回调消除该格
+            if go then
+                if go.transform then
+                    go.transform:DOScale(Vector3.New(exScale, exScale, 1), exDur)
+                end
+                local killTimer = TimerManager:GetInstance():GetTimer(exHold, function()
+                    if go then CS.UnityEngine.GameObject.Destroy(go) end
+                    if onHit then onHit() end   -- 爆炸后消除目标格
+                end, self, true, false, false)
+                killTimer:Start()
+            elseif onHit then
+                onHit()
+            end
+        end)
+    end, self.boardContainer.transform)
+end
+
+-- 清理进行中的火箭特效 GameObject
+function LianLianPlayView:CancelRocketFx()
+    if self._rocketFxGos then
+        for _, go in ipairs(self._rocketFxGos) do
+            if go then CS.UnityEngine.GameObject.Destroy(go) end
+        end
+    end
+    self._rocketFxGos = nil
 end
 
 -- 遮挡规则开关变更：实时重算全盘遮挡态

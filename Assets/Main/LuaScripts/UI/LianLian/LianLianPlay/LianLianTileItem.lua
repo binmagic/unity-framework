@@ -3,6 +3,8 @@
 -- 双层结构：Bg(底图 bg/select/tip) + Face(图案 1..27)
 --]]
 
+local LianLianSpecial = require "Game.LianLian.Special.LianLianSpecialRegistry"
+
 local LianLianTileItem = BaseClass("LianLianTileItem", UIBaseContainer)
 local base = UIBaseContainer
 
@@ -41,7 +43,11 @@ function LianLianTileItem:SetData(pos, id, onClick)
 
     -- 加载底图和图案
     if self.bg then self.bg:LoadSprite(GetSpritePath("bg")) end
-    if self.face and id > 0 then self.face:LoadSprite(GetSpritePath(tostring(id))) end
+    -- 普通图案(id 在普通段)才走 item_%d 路径；特殊 id(如火箭 1001)无对应图，
+    -- 交给随后的 SetSpecial→onShow 换成专属图（否则会去加载不存在的 item_1/1001）。
+    if self.face and id > 0 and not LianLianSpecial.isSpecialId(id) then
+        self.face:LoadSprite(GetSpritePath(tostring(id)))
+    end
 
     if self.button then
         self.button:SetOnClick(function()
@@ -51,8 +57,36 @@ function LianLianTileItem:SetData(pos, id, onClick)
 
     self._checked = false
     self._tip = false
+    self._specialType = nil
     self:HideLines()
     self:SetVisible(id ~= 0)
+end
+
+--- 设置/清除特殊元素显示：调用注册表 onShow 钩子装扮本 tile（角标/变色/特效挂载）
+--- @param specialType string|nil nil=普通牌（还原默认外观）
+function LianLianTileItem:SetSpecial(specialType)
+    self._specialType = specialType
+    local def = LianLianSpecial.get(specialType)
+    if def and def.onShow then
+        def.onShow(self, { pos = self.pos, id = self.id, specialType = specialType })
+    end
+    -- 注：普通牌(def=nil)不做额外处理；各特殊元素的 onShow 负责自身外观，
+    -- 若需要"还原"逻辑由具体 def 自行处理（框架不假设默认外观结构）。
+end
+
+--- 播放特殊元素消除特效（调用注册表 playClearFx 钩子）
+function LianLianTileItem:PlaySpecialClearFx()
+    local def = LianLianSpecial.get(self._specialType)
+    if def and def.playClearFx then
+        def.playClearFx(self)
+    end
+end
+
+--- 供特殊元素 onShow 用：把 Face 换成任意完整路径的图（不走皮肤 item_%d 路径）
+function LianLianTileItem:SetFaceSprite(fullPath)
+    if self.face and fullPath then
+        self.face:LoadSprite(fullPath)
+    end
 end
 
 --- 换图案为新 id（多层消除后露出下一层用）：刷新 Face + 复位 checked/tip 态并保持可见

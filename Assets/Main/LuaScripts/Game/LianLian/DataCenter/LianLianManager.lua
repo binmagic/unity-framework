@@ -12,6 +12,8 @@ local LianLianPlay = require "Game.LianLian.DataCenter.LianLianPlay"
 local LianLianCard = require "Game.LianLian.DataCenter.LianLianCard"
 local LianLianState = require "Game.LianLian.DataCenter.LianLianState"
 local LianLianTheme = require "Game.LianLian.DataCenter.LianLianTheme"
+local LianLianSpecial = require "Game.LianLian.Special.LianLianSpecialRegistry"
+require "Game.LianLian.Special.LianLianSpecialTypes"   -- 触发各特殊元素类型自注册
 
 local LianLianManager = BaseClass("LianLianManager", Singleton)
 
@@ -31,6 +33,16 @@ function LianLianManager:__init()
     self.infiniteRegen = false
     -- 棋盘格线显示开关：默认关。开启后为棋盘画红色细网格线（调试用）
     self.showGridLine = false
+    -- 扣血开关：默认开。关闭后配对失败不扣血、不触发失败结算（调试用）
+    self.hpEnabled = true
+end
+
+--- 取/设「扣血」开关（关闭后 loseHp 空转，便于调试不被踢到复活/失败页）
+function LianLianManager:getHpEnabled()
+    return self.hpEnabled ~= false
+end
+function LianLianManager:setHpEnabled(v)
+    self.hpEnabled = v and true or false
 end
 
 --- 取/设「棋盘格线显示」开关；变更即广播，供 PlayView 实时刷新
@@ -382,7 +394,17 @@ function LianLianManager:checkTile(index, pos)
     local layer = pos.layer or 1
     local ld = self:getLayerData(layer)
     if ld then ld.item_checked[index] = pos end
+    -- 记录最近点击格，供 Debug「把选中格改成特殊元素」定位
+    self._lastClickPos = { r = pos.r, c = pos.c, layer = layer }
     EventManager:GetInstance():Broadcast("LianLian_ItemShowChecked", pos)
+end
+
+--- Debug：把「最近点击的格子」设为某特殊类型（未点过则无效果）
+--- @param stype string|nil 特殊类型；nil=还原普通
+function LianLianManager:setLastClickSpecial(stype)
+    local p = self._lastClickPos
+    if not p then return end
+    self:setCellSpecial(p.layer, p.r, p.c, stype)
 end
 
 --- 取消某层选中（layer 缺省=1）
@@ -391,6 +413,209 @@ function LianLianManager:cancelChecked(layer)
     local ld = self:getLayerData(layer)
     if ld then ld.item_checked = {} end
     EventManager:GetInstance():Broadcast("LianLian_ItemHideChecked", { layer = layer })
+end
+
+-- ============ 特殊元素辅助（框架接入点） ============
+
+--- 取格子的特殊类型（nil=普通）
+function LianLianManager:getCellSpecial(grid, pos)
+    local cell = grid[pos.r .. "_" .. pos.c]
+    return cell and cell.specialType or nil
+end
+
+--- 清除格子的特殊类型（消除后与 id 一同清空）
+function LianLianManager:clearCellSpecial(grid, pos)
+    local cell = grid[pos.r .. "_" .. pos.c]
+    if cell then cell.specialType = nil end
+end
+
+--- 特殊配对钩子：任一格是特殊元素且其 canMatch 有实现，则用它裁决；否则返回 nil（用默认 isSameId）
+function LianLianManager:specialCanMatch(grid, a, b)
+    local sa = self:getCellSpecial(grid, a)
+    local sb = self:getCellSpecial(grid, b)
+    for _, st in ipairs({ sa, sb }) do
+        local def = LianLianSpecial.get(st)
+        if def and def.canMatch then
+            local r = def.canMatch(grid, a, b)
+            if r ~= nil then return r end
+        end
+    end
+    return nil
+end
+
+--- 某格特殊元素被消除时触发其 onCleared（连锁效果；def 内可再调 Manager 追加消除）
+function LianLianManager:fireSpecialCleared(layer, pos, stype)
+    local def = LianLianSpecial.get(stype)
+    if def and def.onCleared then
+        def.onCleared(self, layer, pos, {})
+    end
+end
+
+--- 设置某格的特殊类型（Debug 改元素用），改后广播刷新该层显示
+--- @param stype string|nil 特殊类型，nil=还原普通牌
+function LianLianManager:setCellSpecial(layer, r, c, stype)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return end
+    local cell = ld.grid[r .. "_" .. c]
+    if not cell or cell.id == 0 then return end   -- 只改有牌的格子
+
+    if stype then
+        -- 设为特殊元素：cell.id 换成该类型专属 id（先存原图案 id 供还原）
+        local def = LianLianSpecial.get(stype)
+        print(string.format("[LianLian][GM] setCellSpecial (%d,%d) stype=%s def=%s def.id=%s 改前id=%s",
+            r, c, tostring(stype), tostring(def), def and tostring(def.id) or "nil", tostring(cell.id)))
+        if def and def.id then
+            cell._originId = cell._originId or cell.id
+            cell.id = def.id
+        end
+        cell.specialType = stype
+        print(string.format("[LianLian][GM] setCellSpecial 改后 cell.id=%s specialType=%s",
+            tostring(cell.id), tostring(cell.specialType)))
+    else
+        -- 还原普通：id 回到原图案，清除特殊标记
+        if cell._originId then
+            cell.id = cell._originId
+            cell._originId = nil
+        end
+        cell.specialType = nil
+    end
+    EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer or 1 })
+end
+
+-- ============ 通用盘面原子操作（与具体特殊元素无关，供任意元素/道具复用） ============
+
+--- 查询本层现存的所有图案种类 id（去重）
+--- @param layer number 作用层
+--- @return table 数组 { id, id, ... }
+function LianLianManager:getKinds(layer)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return {} end
+    -- 只统计「普通图案」种类（id < SPECIAL_ID_BASE）；特殊元素 id 不算普通种类，
+    -- 避免火箭等随机选类时把特殊元素当普通类误消。
+    local seen, kinds = {}, {}
+    for _, cell in pairs(ld.grid) do
+        if cell.id and cell.id ~= 0 and cell.id < LianLianConst.SPECIAL_ID_BASE and not seen[cell.id] then
+            seen[cell.id] = true
+            kinds[#kinds + 1] = cell.id
+        end
+    end
+    return kinds
+end
+
+--- 清除本层指定的「若干类」元素（中性操作，不关心调用者是谁）：
+--- 把这些 id 的所有格子清空(id=0/specialType=nil)，刷新显示并做收尾判定(胜利/死局)。
+--- @param layer number 作用层
+--- @param kindList table 要清除的 id 列表（数组或以 id 为 key 的集合皆可）
+--- @return table 被清除的格子坐标 { {r=,c=}, ... }（供调用方做特效定位）
+function LianLianManager:clearKinds(layer, kindList)
+    layer = layer or 1
+    local ld = self:getLayerData(layer)
+    if not ld or not kindList then return {} end
+    local grid = ld.grid
+
+    -- 归一化成 id->true 集合（兼容传数组或集合）
+    local chosen = {}
+    if kindList[1] ~= nil then
+        for _, id in ipairs(kindList) do chosen[id] = true end
+    else
+        for id, v in pairs(kindList) do if v then chosen[id] = true end end
+    end
+
+    -- 清除并收集坐标
+    local cleared = {}
+    for _, cell in pairs(grid) do
+        if cell.id and cell.id ~= 0 and chosen[cell.id] then
+            cleared[#cleared + 1] = { r = cell.r, c = cell.c }
+            cell.id = 0
+            cell.specialType = nil
+        end
+    end
+
+    -- 刷新显示 + 收尾判定（胜利/死局）
+    EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer })
+    self:checkEndAfterBatchClear(layer)
+    return cleared
+end
+
+--- 中性操作：随机挑本层若干个「普通元素」格子（不含特殊元素、不含空格）
+--- @param layer number 作用层
+--- @param count number 要挑几个格
+--- @param excludeSet table|nil 可选，排除的格 key 集合（如触发火箭自身的格）
+--- @return table 数组 { {r=,c=}, ... }（不足 count 则返回全部）
+function LianLianManager:pickRandomCells(layer, count, excludeSet)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return {} end
+
+    -- 按普通 id 分组候选格（排除特殊 id/空格/excludeSet）
+    local byId = {}
+    for _, cell in pairs(ld.grid) do
+        if cell.id and cell.id ~= 0 and cell.id < LianLianConst.SPECIAL_ID_BASE then
+            local key = cell.r .. "_" .. cell.c
+            if not (excludeSet and excludeSet[key]) then
+                byId[cell.id] = byId[cell.id] or {}
+                local list = byId[cell.id]
+                list[#list + 1] = { r = cell.r, c = cell.c }
+            end
+        end
+    end
+
+    -- 每个 id 内组成「整对」：同 id 两张即可配对；奇数张丢掉多的 1 张
+    local pairs_ = {}   -- 每个元素是一对 { {r,c}, {r,c} }
+    for _, list in pairs(byId) do
+        -- 组内打乱，保证多于一对时随机取哪两张
+        for i = #list, 2, -1 do
+            local j = math.random(i)
+            list[i], list[j] = list[j], list[i]
+        end
+        local pairNum = math.floor(#list / 2)
+        for p = 1, pairNum do
+            pairs_[#pairs_ + 1] = { list[p * 2 - 1], list[p * 2] }
+        end
+    end
+
+    -- 打乱所有对，取前 floor(count/2) 对，展平成格列表（格数为偶数、≤count）
+    for i = #pairs_, 2, -1 do
+        local j = math.random(i)
+        pairs_[i], pairs_[j] = pairs_[j], pairs_[i]
+    end
+    local wantPairs = math.min(math.floor((count or 0) / 2), #pairs_)
+    local picked = {}
+    for p = 1, wantPairs do
+        picked[#picked + 1] = pairs_[p][1]
+        picked[#picked + 1] = pairs_[p][2]
+    end
+    return picked
+end
+
+--- 中性操作：清除「指定的具体格子」（不是按类），刷新显示 + 收尾判定。
+--- 供火箭等"逐格命中"的特殊元素在命中时调用（可单格调用，实现逐个爆炸消除）。
+--- @param layer number 作用层
+--- @param cells table 要清除的格 { {r=,c=}, ... }（单格也用数组包一层）
+function LianLianManager:clearCells(layer, cells)
+    layer = layer or 1
+    local ld = self:getLayerData(layer)
+    if not ld or not cells then return end
+    local grid = ld.grid
+    for _, pos in ipairs(cells) do
+        local cell = grid[pos.r .. "_" .. pos.c]
+        if cell and cell.id ~= 0 then
+            cell.id = 0
+            cell.specialType = nil
+        end
+    end
+    EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer })
+    self:checkEndAfterBatchClear(layer)
+end
+
+--- 批量清除后的统一收尾判定（胜利/死局），供 clearKinds/clearCells 复用
+function LianLianManager:checkEndAfterBatchClear(layer)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return end
+    if self:isAllLayersEmpty() then
+        self:win()
+    elseif not LianLianItem.isAllEmpty(ld.grid) and not self:hasClearablePair(layer or 1) then
+        if self.autoReshuffleEnabled then self:autoReshuffle(layer or 1) end
+    end
 end
 
 --- 执行消除判定（只在 layer 层内判定/消除）
@@ -414,8 +639,17 @@ function LianLianManager:doClear(layer)
         return false, nil
     end
 
-    -- 检查是否相同 ID
-    if not LianLianItem.isSameId(grid, a, b) then
+    -- 配对判定：特殊元素可用 canMatch 钩子覆盖默认 isSameId（返回 nil=用默认）
+    print(string.format("[LianLian][配对] A(%d,%d)id=%s special=%s  B(%d,%d)id=%s special=%s",
+        a.r, a.c, tostring(grid[a.r.."_"..a.c] and grid[a.r.."_"..a.c].id),
+        tostring(grid[a.r.."_"..a.c] and grid[a.r.."_"..a.c].specialType),
+        b.r, b.c, tostring(grid[b.r.."_"..b.c] and grid[b.r.."_"..b.c].id),
+        tostring(grid[b.r.."_"..b.c] and grid[b.r.."_"..b.c].specialType)))
+    local matched = self:specialCanMatch(grid, a, b)
+    if matched == nil then
+        matched = LianLianItem.isSameId(grid, a, b)
+    end
+    if not matched then
         self:cancelChecked(layer)
         self:loseHp()
         return false, nil
@@ -429,15 +663,68 @@ function LianLianManager:doClear(layer)
         return false, nil
     end
 
+    -- 消除前先记下两格的特殊类型（del 后 grid 上取不到），供 onCleared 连锁触发
+    local specialA = self:getCellSpecial(grid, a)
+    local specialB = self:getCellSpecial(grid, b)
+
     -- 消除成功
     LianLianItem.del(grid, a)
     LianLianItem.del(grid, b)
+    self:clearCellSpecial(grid, a)
+    self:clearCellSpecial(grid, b)
     self:cancelChecked(layer)
+
+    -- 特殊元素被消除的连锁效果（炸周围/解冻邻格…，可能追加消除）
+    -- 一对牌若是「相同特殊类型」（如两个火箭配对），整体只触发一次 onCleared，避免效果翻倍；
+    -- 类型不同则各触发各的。
+    if specialA and specialA == specialB then
+        self:fireSpecialCleared(layer, a, specialA)
+    else
+        self:fireSpecialCleared(layer, a, specialA)
+        self:fireSpecialCleared(layer, b, specialB)
+    end
+
+    -- 消除后打印本层棋盘元素信息，便于调试
+    self:dumpBoardElements(layer, string.format("消除(%d,%d)+(%d,%d)", a.r, a.c, b.r, b.c))
 
     -- 生成连线数据
     local pathLine = LianLianGrid.getPathLine(path)
 
     return true, pathLine
+end
+
+--- 打印某层棋盘上现存元素信息（按 行_列=id[special] 列出 + 种类统计），调试用
+function LianLianManager:dumpBoardElements(layer, tag)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return end
+    local grid = ld.grid
+    local cells = {}          -- 按 r,c 排序输出
+    local kindCnt = {}        -- id -> 个数
+    local total = 0
+    for _, cell in pairs(grid) do
+        if cell.id and cell.id ~= 0 then
+            local mark = cell.specialType and ("[" .. tostring(cell.specialType) .. "]") or ""
+            cells[#cells + 1] = { r = cell.r, c = cell.c, s = string.format("%d_%d=%d%s", cell.r, cell.c, cell.id, mark) }
+            kindCnt[cell.id] = (kindCnt[cell.id] or 0) + 1
+            total = total + 1
+        end
+    end
+    table.sort(cells, function(x, y)
+        if x.r ~= y.r then return x.r < y.r end
+        return x.c < y.c
+    end)
+    local parts = {}
+    for _, c in ipairs(cells) do parts[#parts + 1] = c.s end
+    -- 种类统计（按 id 升序）
+    local ids = {}
+    for id in pairs(kindCnt) do ids[#ids + 1] = id end
+    table.sort(ids)
+    local kparts = {}
+    for _, id in ipairs(ids) do kparts[#kparts + 1] = string.format("%d×%d", id, kindCnt[id]) end
+
+    print(string.format("[LianLian][盘面元素] %s layer=%d 剩余=%d 种类=%d 分布{%s}",
+        tostring(tag), layer or 1, total, #ids, table.concat(kparts, ",")))
+    print(string.format("[LianLian][盘面元素]   格子: %s", table.concat(parts, " ")))
 end
 
 --- 消除后的处理（移动 + 胜利判定），只作用在 layer 层
@@ -522,6 +809,9 @@ end
 
 --- 扣减生命值
 function LianLianManager:loseHp()
+    -- 扣血关闭时（调试）直接空转：不扣血、不触发失败结算
+    if self.hpEnabled == false then return end
+
     self.state.hp = self.state.hp - 1
     EventManager:GetInstance():Broadcast("LianLian_HpUpdate", { hp = self.state.hp })
 

@@ -21,7 +21,8 @@ local LianLianConst = {
     TOTAL_PAIRS = 56,       -- 满格对数
 
     -- 牌面
-    KIND_MAX = 27,          -- 图案种类数
+    KIND_MAX = 27,          -- 图案种类数（普通图案 id 范围 1..KIND_MAX）
+    SPECIAL_ID_BASE = 1000, -- 特殊元素专属 id 段基址（>=此值为特殊 id，远离普通 1..27，避免冲突）
 
     -- 道具
     CARD_MAX = 3,           -- 每种道具持有上限

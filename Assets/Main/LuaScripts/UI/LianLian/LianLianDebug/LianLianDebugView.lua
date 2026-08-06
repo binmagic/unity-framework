@@ -83,6 +83,12 @@ function LianLianDebugView:ComponentDefine()
     -- 棋盘格线 checkbox（复选按钮）+ 其文字节点
     self.gridLineBtn = self:AddComponent(UIButton, "Panel/Content/GridLineBtn")
     self.gridLineText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/GridLineBtn/Text")
+    -- 设火箭：把最近点击的盘面格设为火箭（再点=还原普通）
+    self.rocketBtn = self:AddComponent(UIButton, "Panel/Content/RocketBtn")
+    self.rocketText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/RocketBtn/Text")
+    -- 扣血 checkbox（复选按钮）+ 其文字节点
+    self.hpBtn = self:AddComponent(UIButton, "Panel/Content/HpBtn")
+    self.hpText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/HpBtn/Text")
 
     -- 初始化移动类型下拉项
     if self.moveTypeDropdown then
@@ -144,11 +150,39 @@ function LianLianDebugView:ComponentDefine()
     if self.gridLineBtn then
         self.gridLineBtn:SetOnClick(BindCallback(self, self.OnGridLineToggle))
     end
+    if self.rocketBtn then
+        self.rocketBtn:SetOnClick(BindCallback(self, self.OnRocketClick))
+    end
+    if self.hpBtn then
+        self.hpBtn:SetOnClick(BindCallback(self, self.OnHpToggle))
+    end
     -- 依 Manager 当前值刷新 checkbox 文案
     self:RefreshFullClearLabel()
     self:RefreshSolvableLabel()
     self:RefreshInfiniteLabel()
     self:RefreshGridLineLabel()
+    self:RefreshHpLabel()
+    if self.rocketText then self.rocketText:SetText("设为火箭") end
+end
+
+-- 刷新「扣血」复选按钮文案
+function LianLianDebugView:RefreshHpLabel()
+    if not self.hpText or not self.ctrl then return end
+    local on = self.ctrl:GetHpEnabled()
+    self.hpText:SetText(on and "扣血:开" or "扣血:关")
+end
+
+-- 点击复选按钮：翻转「扣血」开关
+function LianLianDebugView:OnHpToggle()
+    if not self.ctrl then return end
+    self.ctrl:SetHpEnabled(not self.ctrl:GetHpEnabled())
+    self:RefreshHpLabel()
+end
+
+-- 点击：把最近点击的盘面格设为火箭特殊元素（先在盘面点一张牌选中，再点此按钮）
+function LianLianDebugView:OnRocketClick()
+    if not self.ctrl then return end
+    self.ctrl:ApplySpecialToSelected("rocket")
 end
 
 -- 刷新「棋盘格线」复选按钮文案（依 Manager 实时值，经 Ctrl 读取）

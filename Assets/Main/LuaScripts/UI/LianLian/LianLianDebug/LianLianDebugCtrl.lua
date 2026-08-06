@@ -103,4 +103,33 @@ function LianLianDebugCtrl:SetShowGridLine(v)
     self.manager:setShowGridLine(v)
 end
 
+--- 取所有已注册的特殊元素类型（供 Debug 下拉展示）
+--- @return table 数组 { {type=, name=}, ... }
+function LianLianDebugCtrl:GetSpecialTypeList()
+    local LianLianSpecial = require "Game.LianLian.Special.LianLianSpecialRegistry"
+    local list = {}
+    for _, def in ipairs(LianLianSpecial.all()) do
+        list[#list + 1] = { type = def.type, name = def.name or def.type }
+    end
+    return list
+end
+
+--- 把「最近点击的盘面格」设为某特殊类型（stype=nil 还原普通）
+function LianLianDebugCtrl:ApplySpecialToSelected(stype)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:setLastClickSpecial(stype)
+end
+
+--- 读「扣血」开关
+function LianLianDebugCtrl:GetHpEnabled()
+    self.manager = LianLianManager:GetInstance()
+    return self.manager:getHpEnabled()
+end
+
+--- 设「扣血」开关（关闭后配对失败不扣血、不弹失败/复活页）
+function LianLianDebugCtrl:SetHpEnabled(v)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:setHpEnabled(v)
+end
+
 return LianLianDebugCtrl
