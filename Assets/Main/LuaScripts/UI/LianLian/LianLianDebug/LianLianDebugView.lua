@@ -89,6 +89,9 @@ function LianLianDebugView:ComponentDefine()
     -- 扣血 checkbox（复选按钮）+ 其文字节点
     self.hpBtn = self:AddComponent(UIButton, "Panel/Content/HpBtn")
     self.hpText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/HpBtn/Text")
+    -- 设藤蔓：把最近点击的盘面格设/清藤蔓
+    self.vineBtn = self:AddComponent(UIButton, "Panel/Content/VineBtn")
+    self.vineText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/VineBtn/Text")
 
     -- 初始化移动类型下拉项
     if self.moveTypeDropdown then
@@ -156,6 +159,9 @@ function LianLianDebugView:ComponentDefine()
     if self.hpBtn then
         self.hpBtn:SetOnClick(BindCallback(self, self.OnHpToggle))
     end
+    if self.vineBtn then
+        self.vineBtn:SetOnClick(BindCallback(self, self.OnVineClick))
+    end
     -- 依 Manager 当前值刷新 checkbox 文案
     self:RefreshFullClearLabel()
     self:RefreshSolvableLabel()
@@ -163,6 +169,13 @@ function LianLianDebugView:ComponentDefine()
     self:RefreshGridLineLabel()
     self:RefreshHpLabel()
     if self.rocketText then self.rocketText:SetText("设为火箭") end
+    if self.vineText then self.vineText:SetText("设为藤蔓") end
+end
+
+-- 点击：给最近点击的盘面格切换藤蔓修饰器（有→清除、无→添加）
+function LianLianDebugView:OnVineClick()
+    if not self.ctrl then return end
+    self.ctrl:ToggleModifierOnSelected("vine")
 end
 
 -- 刷新「扣血」复选按钮文案

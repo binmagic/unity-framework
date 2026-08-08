@@ -4,6 +4,7 @@
 --]]
 
 local LianLianSpecial = require "Game.LianLian.Special.LianLianSpecialRegistry"
+local LianLianModifier = require "Game.LianLian.Special.LianLianModifierRegistry"
 
 local LianLianTileItem = BaseClass("LianLianTileItem", UIBaseContainer)
 local base = UIBaseContainer
@@ -21,6 +22,8 @@ function LianLianTileItem:OnCreate()
     -- 底图 + 图案
     self.bg = self:AddComponent(UIImage, "Bg")
     self.face = self:AddComponent(UIImage, "Face")
+    -- 藤蔓覆盖层（Face 之上，prefab 里的 Vine 节点；缺节点则为 nil，SetVined 里兜底）
+    self.vine = self:AddComponent(UIImage, "Vine")
 
     -- 按钮（根节点 NewButton）
     self.button = self:AddComponent(UIButton, "")
@@ -58,6 +61,8 @@ function LianLianTileItem:SetData(pos, id, onClick)
     self._checked = false
     self._tip = false
     self._specialType = nil
+    self._modBlocked = false
+    if self.vine then self.vine:SetActive(false) end   -- 默认无修饰器覆盖
     self:HideLines()
     self:SetVisible(id ~= 0)
 end
@@ -207,13 +212,52 @@ function LianLianTileItem:SetOccluded(bOccluded)
     if not self._occluded then r, g, b = 1, 1, 1 end
     if self.face then self.face:SetColorRGBA(r, g, b, 1) end
     if self.bg then self.bg:SetColorRGBA(r, g, b, 1) end
-    -- 禁用/启用点击
-    if self.button then self.button:SetEnabled(not self._occluded) end
+    -- 禁用/启用点击（遮挡 或 被修饰器禁选 都不可点）
+    if self.button then self.button:SetEnabled(not self._occluded and not self._modBlocked) end
 end
 
 --- 是否被遮挡（不可选）
 function LianLianTileItem:IsOccluded()
     return self._occluded and true or false
+end
+
+--- 供修饰器 def.onShow 调用：在覆盖层显示一张图（可选着色）。
+--- @param sprite string 图路径
+--- @param r,g,b,a number|nil 可选着色（占位用；正式图可不传）
+function LianLianTileItem:ShowModifierSprite(sprite, r, g, b, a)
+    if not self.vine then return end
+    self.vine:LoadSprite(sprite)
+    if r then self.vine:SetColorRGBA(r, g, b, a or 1) end
+    self.vine:SetActive(true)
+end
+
+--- 刷新格子修饰器外观：遍历 mods 调各 def.onShow 装扮；并按 blocksSelect 禁用点击。
+--- @param mods table|nil cell.mods = { [type]=state }
+function LianLianTileItem:SetModifiers(mods)
+    -- 先清空覆盖层
+    if self.vine then self.vine:SetActive(false) end
+    self._modBlocked = false
+
+    if mods and next(mods) then
+        for mtype, state in pairs(mods) do
+            local def = LianLianModifier.get(mtype)
+            if def then
+                if def.onShow then def.onShow(self, state) end
+                if def.blocksSelect and def.blocksSelect(nil, state) then
+                    self._modBlocked = true
+                end
+            end
+        end
+    end
+    -- 有"禁选"修饰器时禁用点击；否则恢复（除非仍被遮挡）
+    if self.button then
+        self.button:SetEnabled(not self._modBlocked and not self._occluded)
+    end
+end
+
+--- 是否被修饰器标记为不可选
+function LianLianTileItem:IsModBlocked()
+    return self._modBlocked and true or false
 end
 
 --- 选中高亮（切换底图为 select）

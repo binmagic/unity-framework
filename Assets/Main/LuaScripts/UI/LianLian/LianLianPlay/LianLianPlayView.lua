@@ -327,6 +327,7 @@ function LianLianPlayView:CreateTile(cell, popDelay, layer)
         tile:SetPosition(ax, ay)
         tile:SetData(pos, cell.id, function(p) self.ctrl:OnTileClick(p) end)
         tile:SetSpecial(cell.specialType)   -- 特殊元素装扮（普通牌 nil 无效果）
+        tile:SetModifiers(cell.mods)        -- 格子修饰器覆盖（无修饰器 nil 无效果）
         tiles[n] = tile
         -- 高层后实例化，天然叠在上面（同容器按创建顺序渲染）
         -- 按错峰延迟播放缩放弹出
@@ -732,12 +733,16 @@ function LianLianPlayView:UpdateBoardLayer(layer)
     if not grid then return end
     for _, cell in pairs(grid) do
         local tile = tiles[cell.n]
-        if cell.id == 0 then
+        local hasMod = cell.mods and next(cell.mods) ~= nil
+        if cell.id == 0 and not hasMod then
+            -- 空格且无修饰器：隐藏
             if tile then tile:SetVisible(false) end
         else
+            -- 有牌 或 空格带修饰器（如藤蔓障碍，需显示覆盖层）
             if tile then
                 tile:SetData({ r = cell.r, c = cell.c, layer = layer }, cell.id, function(p) self.ctrl:OnTileClick(p) end)
                 tile:SetSpecial(cell.specialType)   -- 刷新特殊元素装扮
+                tile:SetModifiers(cell.mods)        -- 刷新格子修饰器覆盖
                 tile:SetVisible(true)
             else
                 self:CreateTile(cell, 0, layer)

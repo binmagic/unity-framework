@@ -5,6 +5,7 @@
 --]]
 
 local LianLianConst = require "Game.LianLian.Config.LianLianConst"
+local LianLianModifier = require "Game.LianLian.Special.LianLianModifierRegistry"
 
 local WIDTH = LianLianConst.GRID_WIDTH
 local HEIGHT = LianLianConst.GRID_HEIGHT
@@ -26,6 +27,7 @@ function LianLianGrid.create()
                 n = r * WIDTH + c,
                 id = 0,
                 specialType = nil,   -- 特殊元素类型（nil=普通牌）；与 id 正交，id 管图案、specialType 管特殊行为
+                mods = nil,          -- 格子修饰器集合 { [type]=state }（藤蔓/冰冻/石头…）；与 id 正交，可盖有牌格或空格
             }
         end
     end
@@ -125,7 +127,9 @@ end
 function LianLianGrid.isVaildPath(grid, path)
     for _, pos in ipairs(path) do
         local key = pos.r .. "_" .. pos.c
-        if grid[key] and grid[key].id ~= 0 then
+        -- 有牌(id~=0)或被修饰器阻挡(藤蔓/石头…)的格都阻挡连线穿过
+        local cell = grid[key]
+        if cell and (cell.id ~= 0 or LianLianModifier.cellBlocksPath(cell)) then
             return false
         end
     end

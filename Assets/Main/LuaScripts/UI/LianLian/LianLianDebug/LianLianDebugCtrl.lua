@@ -120,6 +120,12 @@ function LianLianDebugCtrl:ApplySpecialToSelected(stype)
     self.manager:setLastClickSpecial(stype)
 end
 
+--- 给「最近点击的盘面格」切换某修饰器（有则清、无则加），默认藤蔓
+function LianLianDebugCtrl:ToggleModifierOnSelected(mtype)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:toggleLastClickModifier(mtype or "vine")
+end
+
 --- 读「扣血」开关
 function LianLianDebugCtrl:GetHpEnabled()
     self.manager = LianLianManager:GetInstance()

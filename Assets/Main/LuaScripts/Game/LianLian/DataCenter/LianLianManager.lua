@@ -14,6 +14,8 @@ local LianLianState = require "Game.LianLian.DataCenter.LianLianState"
 local LianLianTheme = require "Game.LianLian.DataCenter.LianLianTheme"
 local LianLianSpecial = require "Game.LianLian.Special.LianLianSpecialRegistry"
 require "Game.LianLian.Special.LianLianSpecialTypes"   -- 触发各特殊元素类型自注册
+local LianLianModifier = require "Game.LianLian.Special.LianLianModifierRegistry"
+require "Game.LianLian.Special.LianLianModifierTypes"  -- 触发各格子修饰器自注册
 
 local LianLianManager = BaseClass("LianLianManager", Singleton)
 
@@ -482,6 +484,80 @@ function LianLianManager:setCellSpecial(layer, r, c, stype)
     EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer or 1 })
 end
 
+-- ============ 格子修饰器（藤蔓/冰冻/石头…：持续状态，挡连线/禁选/相邻消除响应） ============
+
+--- 设置/清除某格的某个修饰器（state=nil 清除；缺省用 def.defaultState 或 true）
+--- @param mtype string 修饰器类型（vine/ice/…）
+--- @param state any|nil 状态；nil=清除该修饰器
+function LianLianManager:setCellModifier(layer, r, c, mtype, state)
+    local ld = self:getLayerData(layer or 1)
+    if not ld or not mtype then return end
+    local cell = ld.grid[r .. "_" .. c]
+    if not cell then return end
+    if state == nil then
+        -- 清除
+        if cell.mods then
+            cell.mods[mtype] = nil
+            if next(cell.mods) == nil then cell.mods = nil end
+        end
+    else
+        cell.mods = cell.mods or {}
+        cell.mods[mtype] = state
+    end
+    EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer or 1 })
+end
+
+--- Debug：给「最近点击的格」切换某修饰器（有则清、无则加 defaultState）
+function LianLianManager:toggleLastClickModifier(mtype)
+    local p = self._lastClickPos
+    if not p or not mtype then return end
+    local ld = self:getLayerData(p.layer or 1)
+    if not ld then return end
+    local cell = ld.grid[p.r .. "_" .. p.c]
+    if not cell then return end
+    local has = cell.mods and cell.mods[mtype] ~= nil
+    if has then
+        self:setCellModifier(p.layer, p.r, p.c, mtype, nil)
+    else
+        local def = LianLianModifier.get(mtype)
+        local st = def and def.defaultState
+        if st == nil then st = true end
+        self:setCellModifier(p.layer, p.r, p.c, mtype, st)
+    end
+end
+
+--- 相邻消除通知：传入本次被消除的格，通知其上下左右相邻格上的每个修饰器
+--- onNeighborCleared（返回 nil=解除；否则更新为新 state），供藤蔓断裂/冰冻递减等。
+--- @param cells table { {r,c}, ... }
+function LianLianManager:notifyNeighborsCleared(layer, cells)
+    local ld = self:getLayerData(layer or 1)
+    if not ld or not cells then return end
+    local grid = ld.grid
+    local DIRS = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } }
+    local changed = false
+    for _, pos in ipairs(cells) do
+        for _, d in ipairs(DIRS) do
+            local nb = grid[(pos.r + d[1]) .. "_" .. (pos.c + d[2])]
+            if nb and nb.mods then
+                for mtype, state in pairs(nb.mods) do
+                    local def = LianLianModifier.get(mtype)
+                    if def and def.onNeighborCleared then
+                        local newState = def.onNeighborCleared(self, layer, { r = nb.r, c = nb.c }, state)
+                        if newState ~= state then
+                            nb.mods[mtype] = newState   -- nil=解除；数字/true=更新
+                            changed = true
+                        end
+                    end
+                end
+                if next(nb.mods) == nil then nb.mods = nil end
+            end
+        end
+    end
+    if changed then
+        EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer or 1 })
+    end
+end
+
 -- ============ 通用盘面原子操作（与具体特殊元素无关，供任意元素/道具复用） ============
 
 --- 查询本层现存的所有图案种类 id（去重）
@@ -639,6 +715,14 @@ function LianLianManager:doClear(layer)
         return false, nil
     end
 
+    -- 修饰器拦截：被藤蔓/冰冻等标记为不可选的格，视为无效点击（不扣血）
+    local ca = grid[a.r .. "_" .. a.c]
+    local cb = grid[b.r .. "_" .. b.c]
+    if LianLianModifier.cellBlocksSelect(ca) or LianLianModifier.cellBlocksSelect(cb) then
+        self:cancelChecked(layer)
+        return false, nil
+    end
+
     -- 配对判定：特殊元素可用 canMatch 钩子覆盖默认 isSameId（返回 nil=用默认）
     print(string.format("[LianLian][配对] A(%d,%d)id=%s special=%s  B(%d,%d)id=%s special=%s",
         a.r, a.c, tostring(grid[a.r.."_"..a.c] and grid[a.r.."_"..a.c].id),
@@ -683,6 +767,9 @@ function LianLianManager:doClear(layer)
         self:fireSpecialCleared(layer, a, specialA)
         self:fireSpecialCleared(layer, b, specialB)
     end
+
+    -- 相邻消除通知：本次消除的两格，通知相邻格修饰器（藤蔓断裂/冰冻递减等）
+    self:notifyNeighborsCleared(layer, { a, b })
 
     -- 消除后打印本层棋盘元素信息，便于调试
     self:dumpBoardElements(layer, string.format("消除(%d,%d)+(%d,%d)", a.r, a.c, b.r, b.c))
