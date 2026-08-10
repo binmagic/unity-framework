@@ -16,6 +16,8 @@ local LianLianSpecial = require "Game.LianLian.Special.LianLianSpecialRegistry"
 require "Game.LianLian.Special.LianLianSpecialTypes"   -- 触发各特殊元素类型自注册
 local LianLianModifier = require "Game.LianLian.Special.LianLianModifierRegistry"
 require "Game.LianLian.Special.LianLianModifierTypes"  -- 触发各格子修饰器自注册
+local LianLianConsequence = require "Game.LianLian.Special.LianLianConsequenceRegistry"
+require "Game.LianLian.Special.LianLianConsequenceTypes" -- 触发各消除后果自注册
 
 local LianLianManager = BaseClass("LianLianManager", Singleton)
 
@@ -37,6 +39,8 @@ function LianLianManager:__init()
     self.showGridLine = false
     -- 扣血开关：默认开。关闭后配对失败不扣血、不触发失败结算（调试用）
     self.hpEnabled = true
+    -- 本关启用的 C 类消除后果集合 { [ctype]=true }；由关卡配置注入，缺省空=不启用任何后果
+    self._enabledConsequences = {}
 end
 
 --- 取/设「扣血」开关（关闭后 loseHp 空转，便于调试不被踢到复活/失败页）
@@ -162,6 +166,8 @@ function LianLianManager:startGameCustom(rows, cols, kindCount, direction, layer
     kindCount = math.min(math.max(kindCount, 1), poolMax)
 
     LianLianState.reset(self.state)
+    -- Debug 直开默认不启用任何 C 类后果（保持纯净盘面）；startGameByLevel 会按关卡配置再注入
+    self:setEnabledConsequences(nil)
     -- 记录本盘参数，供 decreaseKind 等重生复用
     self.state.customRows = rows
     self.state.customCols = cols
@@ -172,6 +178,9 @@ function LianLianManager:startGameCustom(rows, cols, kindCount, direction, layer
     self.state.direction = direction or ""
     self.state.isPlaying = true
     self.state.startTime = os.time() * 1000
+
+    -- 开局重置已启用后果的内部状态（Debug 直开：启用集为空则空转）
+    self:fireGameStartConsequences(1)
 
     EventManager:GetInstance():Broadcast("LianLian_GameStart", {
         part = self.state.part,
@@ -260,6 +269,10 @@ function LianLianManager:startGameByLevel(level)
     end
     -- 复用直传版生成逻辑（rows/cols/kindLimit/direction/layer 全来自配置）
     self:startGameCustom(conf.rows, conf.cols, conf.kindLimit, dir, conf.layer)
+    -- 注入本关启用的 C 类后果（须在 startGameCustom 之后，因其会清空启用集）
+    self:setEnabledConsequences(conf.consequences)
+    -- 启用集变了，重新触发开局重置（限步初始化步数等）
+    self:fireGameStartConsequences(1)
 end
 
 --- Debug：图案种类数减 1，只作用「当前可操作层」（顶层）。
@@ -558,6 +571,206 @@ function LianLianManager:notifyNeighborsCleared(layer, cells)
     end
 end
 
+-- ============ 消除后果（C 类：每次消除后的全局规则，如稀有度掉落/连击） ============
+
+--- 每次成功消除后调用：累计计数并广播给所有已注册的消除后果
+--- @param cells table 本次被消除的格 { a, b }
+function LianLianManager:fireAfterMatch(layer, cells)
+    layer = layer or 1
+    self._matchCount = self._matchCount or {}
+    self._matchCount[layer] = (self._matchCount[layer] or 0) + 1
+    local count = self._matchCount[layer]
+    local ctx = {
+        cells = cells,
+        matchCount = count,
+        comboCount = nil,   -- 预留：连击数
+        -- 通用周期助手：每 n 对触发一次（消除各后果里重复的取模判断）
+        everyN = function(n) return n and n > 0 and count > 0 and count % n == 0 end,
+    }
+    for _, def in ipairs(LianLianConsequence.all()) do
+        -- 只触发「本关启用列表」里的后果（方案 B：关卡准入）
+        if self._enabledConsequences[def.type] and def.onAfterMatch then
+            def.onAfterMatch(self, layer, ctx)
+        end
+    end
+end
+
+--- 开局：遍历本关启用的后果调 onGameStart，重置其内部状态（限步重置步数/潮汐清计数）
+function LianLianManager:fireGameStartConsequences(layer)
+    layer = layer or 1
+    self._matchCount = self._matchCount or {}
+    self._matchCount[layer] = 0
+    for _, def in ipairs(LianLianConsequence.all()) do
+        if self._enabledConsequences[def.type] and def.onGameStart then
+            def.onGameStart(self, layer)
+        end
+    end
+end
+
+--- 设置本关启用的 C 类后果列表（数组 → set）；nil/空=不启用任何后果
+--- @param list table|nil 形如 { "rare_drop", ... }
+function LianLianManager:setEnabledConsequences(list)
+    local set = {}
+    if list then
+        for _, ctype in ipairs(list) do set[ctype] = true end
+    end
+    self._enabledConsequences = set
+end
+
+--- 读某后果是否启用（Debug 用）
+function LianLianManager:isConsequenceEnabled(ctype)
+    return ctype ~= nil and self._enabledConsequences[ctype] == true
+end
+
+--- 开/关某个后果（Debug 用，不影响其它已启用项）
+function LianLianManager:setConsequenceEnabled(ctype, on)
+    if ctype == nil then return end
+    self._enabledConsequences[ctype] = on and true or nil
+end
+
+-- ---- 限步目标服务（供 StepLimit 后果用）----
+
+--- 初始化步数目标（开局重置）
+function LianLianManager:initStepGoal(limit)
+    self.state.stepLimit = math.max(math.floor(tonumber(limit) or 0), 0)
+    self.state.stepUsed = 0
+    EventManager:GetInstance():Broadcast("LianLian_StepUpdate", {
+        left = self.state.stepLimit, limit = self.state.stepLimit,
+    })
+end
+
+--- 消耗步数并广播剩余；返回剩余步数
+function LianLianManager:consumeStep(k)
+    if not self.state.stepLimit then return nil end
+    self.state.stepUsed = (self.state.stepUsed or 0) + (k or 1)
+    local left = self:getStepLeft()
+    EventManager:GetInstance():Broadcast("LianLian_StepUpdate", {
+        left = left, limit = self.state.stepLimit,
+    })
+    return left
+end
+
+--- 剩余步数
+function LianLianManager:getStepLeft()
+    if not self.state.stepLimit then return nil end
+    return math.max(self.state.stepLimit - (self.state.stepUsed or 0), 0)
+end
+
+-- ---- 潮汐服务（供 Tide 后果用）----
+
+--- 盘面整体下移 n 行，顶部补 n 行成对新牌；溢出底边的牌丢弃。
+--- 搬运整格内容（id/specialType/mods），特殊元素与修饰器随之移动。
+function LianLianManager:tideShiftDown(layer, n)
+    n = math.max(math.floor(tonumber(n) or 1), 1)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return end
+    local grid = ld.grid
+    local W = LianLianConst.GRID_WIDTH
+    local H = LianLianConst.GRID_HEIGHT
+
+    -- 从底部往上搬：新行 r 的内容 = 原行 (r-n) 的内容
+    for r = H - 1, 0, -1 do
+        for c = 0, W - 1 do
+            local dst = grid[r .. "_" .. c]
+            if dst then
+                local srcR = r - n
+                if srcR >= 0 then
+                    local src = grid[srcR .. "_" .. c]
+                    dst.id = src and src.id or 0
+                    dst.specialType = src and src.specialType or nil
+                    dst._originId = src and src._originId or nil
+                    dst.mods = src and src.mods or nil
+                else
+                    -- 顶部 n 行：清空，稍后补新牌
+                    dst.id = 0
+                    dst.specialType = nil
+                    dst._originId = nil
+                    dst.mods = nil
+                end
+            end
+        end
+    end
+
+    -- 顶部 n 行补成对新牌（用本层现存种类，保证可配对）
+    self:fillTopRows(layer, n)
+
+    EventManager:GetInstance():Broadcast("LianLian_ItemUpdate", { shuffle = true, layer = layer or 1 })
+    self:checkEndAfterBatchClear(layer or 1)
+end
+
+--- 顶部 n 行填成对新牌（内部，供 tideShiftDown 用）
+function LianLianManager:fillTopRows(layer, n)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return end
+    local grid = ld.grid
+    local W = LianLianConst.GRID_WIDTH
+    -- 用本层现存普通种类；没有则用 1..kindLimit
+    local kinds = self:getKinds(layer)
+    if #kinds == 0 then
+        local km = self.state.kindLimit or LianLianConst.KIND_MAX
+        for i = 1, km do kinds[i] = i end
+    end
+    -- 收集顶部 n 行的内部可填格（避开边框列 0 与 W-1）
+    local slots = {}
+    for r = 0, n - 1 do
+        for c = 1, W - 2 do
+            slots[#slots + 1] = grid[r .. "_" .. c]
+        end
+    end
+    -- 成对生成 id 列表（偶数个）
+    local pairCount = math.floor(#slots / 2)
+    local ids = {}
+    for i = 1, pairCount do
+        local id = kinds[((i - 1) % #kinds) + 1]
+        ids[#ids + 1] = id
+        ids[#ids + 1] = id
+    end
+    for i = #ids, 2, -1 do
+        local j = math.random(i)
+        ids[i], ids[j] = ids[j], ids[i]
+    end
+    for _, cell in ipairs(slots) do
+        cell.id = table.remove(ids) or 0
+        cell.specialType = nil
+        cell._originId = nil
+        cell.mods = nil
+    end
+end
+
+--- 把指定普通格刷成道具（特殊元素）；已是特殊/空格则跳过。供掉落等后果调用。
+function LianLianManager:dropPropAt(layer, r, c, stype)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return end
+    local cell = ld.grid[r .. "_" .. c]
+    if not cell or cell.id == 0 then return end       -- 只刷有牌的普通格
+    if cell.specialType then return end               -- 已是特殊元素则跳过
+    self:setCellSpecial(layer, r, c, stype)           -- 复用：换专属 id + specialType + 刷新
+end
+
+--- 随机挑本层若干个「普通元素格」（不成对、不含特殊/空格），供掉落等按格取用。
+--- 与 pickRandomCells（按对选）不同：这里纯随机取 N 个，不保证成对。
+function LianLianManager:pickCellsLoose(layer, count, excludeSet)
+    local ld = self:getLayerData(layer or 1)
+    if not ld then return {} end
+    local pool = {}
+    for _, cell in pairs(ld.grid) do
+        if cell.id and cell.id ~= 0 and cell.id < LianLianConst.SPECIAL_ID_BASE and not cell.specialType then
+            local key = cell.r .. "_" .. cell.c
+            if not (excludeSet and excludeSet[key]) then
+                pool[#pool + 1] = { r = cell.r, c = cell.c }
+            end
+        end
+    end
+    for i = #pool, 2, -1 do
+        local j = math.random(i)
+        pool[i], pool[j] = pool[j], pool[i]
+    end
+    local n = math.min(count or 0, #pool)
+    local picked = {}
+    for i = 1, n do picked[i] = pool[i] end
+    return picked
+end
+
 -- ============ 通用盘面原子操作（与具体特殊元素无关，供任意元素/道具复用） ============
 
 --- 查询本层现存的所有图案种类 id（去重）
@@ -770,6 +983,9 @@ function LianLianManager:doClear(layer)
 
     -- 相邻消除通知：本次消除的两格，通知相邻格修饰器（藤蔓断裂/冰冻递减等）
     self:notifyNeighborsCleared(layer, { a, b })
+
+    -- 消除后果（C 类：稀有度掉落/连击等，与具体元素无关）
+    self:fireAfterMatch(layer, { a, b })
 
     -- 消除后打印本层棋盘元素信息，便于调试
     self:dumpBoardElements(layer, string.format("消除(%d,%d)+(%d,%d)", a.r, a.c, b.r, b.c))

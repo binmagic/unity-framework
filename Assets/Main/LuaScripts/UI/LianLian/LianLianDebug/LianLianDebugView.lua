@@ -92,6 +92,15 @@ function LianLianDebugView:ComponentDefine()
     -- 设藤蔓：把最近点击的盘面格设/清藤蔓
     self.vineBtn = self:AddComponent(UIButton, "Panel/Content/VineBtn")
     self.vineText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/VineBtn/Text")
+    -- 掉落 checkbox（开关稀有度掉落 C 类后果）
+    self.dropBtn = self:AddComponent(UIButton, "Panel/Content/DropBtn")
+    self.dropText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/DropBtn/Text")
+    -- 限步 checkbox
+    self.stepBtn = self:AddComponent(UIButton, "Panel/Content/StepBtn")
+    self.stepText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/StepBtn/Text")
+    -- 潮汐 checkbox
+    self.tideBtn = self:AddComponent(UIButton, "Panel/Content/TideBtn")
+    self.tideText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/TideBtn/Text")
 
     -- 初始化移动类型下拉项
     if self.moveTypeDropdown then
@@ -162,14 +171,61 @@ function LianLianDebugView:ComponentDefine()
     if self.vineBtn then
         self.vineBtn:SetOnClick(BindCallback(self, self.OnVineClick))
     end
+    if self.dropBtn then
+        self.dropBtn:SetOnClick(BindCallback(self, self.OnDropToggle))
+    end
+    if self.stepBtn then
+        self.stepBtn:SetOnClick(BindCallback(self, self.OnStepToggle))
+    end
+    if self.tideBtn then
+        self.tideBtn:SetOnClick(BindCallback(self, self.OnTideToggle))
+    end
     -- 依 Manager 当前值刷新 checkbox 文案
     self:RefreshFullClearLabel()
     self:RefreshSolvableLabel()
     self:RefreshInfiniteLabel()
     self:RefreshGridLineLabel()
     self:RefreshHpLabel()
+    self:RefreshDropLabel()
+    self:RefreshConsequenceLabel("step_limit", self.stepText, "限步")
+    self:RefreshConsequenceLabel("tide", self.tideText, "潮汐")
     if self.rocketText then self.rocketText:SetText("设为火箭") end
     if self.vineText then self.vineText:SetText("设为藤蔓") end
+end
+
+-- 通用：刷新某 C 类后果 checkbox 文案
+function LianLianDebugView:RefreshConsequenceLabel(ctype, textComp, label)
+    if not textComp or not self.ctrl then return end
+    local on = self.ctrl:GetConsequenceEnabled(ctype)
+    textComp:SetText(label .. (on and ":开" or ":关"))
+end
+
+-- 点击：翻转「限步」后果
+function LianLianDebugView:OnStepToggle()
+    if not self.ctrl then return end
+    self.ctrl:SetConsequenceEnabled("step_limit", not self.ctrl:GetConsequenceEnabled("step_limit"))
+    self:RefreshConsequenceLabel("step_limit", self.stepText, "限步")
+end
+
+-- 点击：翻转「潮汐」后果
+function LianLianDebugView:OnTideToggle()
+    if not self.ctrl then return end
+    self.ctrl:SetConsequenceEnabled("tide", not self.ctrl:GetConsequenceEnabled("tide"))
+    self:RefreshConsequenceLabel("tide", self.tideText, "潮汐")
+end
+
+-- 刷新「掉落」复选按钮文案
+function LianLianDebugView:RefreshDropLabel()
+    if not self.dropText or not self.ctrl then return end
+    local on = self.ctrl:GetDropEnabled()
+    self.dropText:SetText(on and "掉落:开" or "掉落:关")
+end
+
+-- 点击复选按钮：翻转「稀有度掉落」后果开关
+function LianLianDebugView:OnDropToggle()
+    if not self.ctrl then return end
+    self.ctrl:SetDropEnabled(not self.ctrl:GetDropEnabled())
+    self:RefreshDropLabel()
 end
 
 -- 点击：给最近点击的盘面格切换藤蔓修饰器（有→清除、无→添加）

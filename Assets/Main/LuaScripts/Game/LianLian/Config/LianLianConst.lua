@@ -66,7 +66,7 @@ local LianLianConst = {
         [1] = { rows = 4,  cols = 4, kindLimit = 4,  layer = 1, dirPool = { "" } },
         [2] = { rows = 6,  cols = 6, kindLimit = 8,  layer = 1, dirPool = { "up", "down", "left", "right" } },
         [3] = { rows = 8,  cols = 8, kindLimit = 14, layer = 2, dirPool = { "up", "down", "left", "right", "divide_left_right", "divide_up_down" } },
-        [4] = { rows = 14, cols = 8, kindLimit = 27, layer = 1, dirPool = { "up", "down", "left", "right", "divide_left_right", "divide_up_down", "flock_left_right", "flock_up_down" } },
+        [4] = { rows = 14, cols = 8, kindLimit = 27, layer = 1, dirPool = { "up", "down", "left", "right", "divide_left_right", "divide_up_down", "flock_left_right", "flock_up_down" }, consequences = { "rare_drop" } },
     },
 }
 

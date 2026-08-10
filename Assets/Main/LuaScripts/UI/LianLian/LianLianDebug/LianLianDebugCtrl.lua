@@ -138,4 +138,29 @@ function LianLianDebugCtrl:SetHpEnabled(v)
     self.manager:setHpEnabled(v)
 end
 
+--- 读「稀有度掉落」后果是否启用
+function LianLianDebugCtrl:GetDropEnabled()
+    self.manager = LianLianManager:GetInstance()
+    return self.manager:isConsequenceEnabled("rare_drop")
+end
+
+--- 开/关「稀有度掉落」C 类后果（Debug 测试用）
+function LianLianDebugCtrl:SetDropEnabled(v)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:setConsequenceEnabled("rare_drop", v)
+end
+
+--- 通用：读某 C 类后果是否启用
+function LianLianDebugCtrl:GetConsequenceEnabled(ctype)
+    self.manager = LianLianManager:GetInstance()
+    return self.manager:isConsequenceEnabled(ctype)
+end
+
+--- 通用：开/关某 C 类后果，并立即触发一次开局重置（限步初始化步数等）
+function LianLianDebugCtrl:SetConsequenceEnabled(ctype, v)
+    self.manager = LianLianManager:GetInstance()
+    self.manager:setConsequenceEnabled(ctype, v)
+    if v then self.manager:fireGameStartConsequences(1) end
+end
+
 return LianLianDebugCtrl
