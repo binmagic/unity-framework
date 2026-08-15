@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 Tayx.Graphy 性能面板与 VEngine 的 InstanceRequest 异步加载
+ * [OUTPUT]: 对外提供 ProfilerGraph 单例,按需实例化/切换 Graphy 性能图表的显隐
+ * [POS]: GFX/Console 的第三方性能图表包装,独立于 IMGUI 调试台,聚焦帧率/内存/音频的可视化监控
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using Tayx.Graphy;
 using UnityEngine;
 

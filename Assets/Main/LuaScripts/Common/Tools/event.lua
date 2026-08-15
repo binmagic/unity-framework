@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 list 的 ilist 迭代与 Logger.LogError,依赖 Time 心跳;基于 xpcall 保护回调
+-- [OUTPUT]: 对外提供全局 event 构造器(可挂多监听、__call 触发)、UpdateBeat 等心跳事件与全局 Update 帧入口
+-- [POS]: Common/Tools 的多播事件与帧心跳基座(源自 tolua 已本地改造),以 list 存监听器并 xpcall 隔离异常,是 Update 驱动与轻量事件的底层
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --------------------------------------------------------------------------------
 --      Copyright (c) 2015 - 2016 , 蒙占志(topameng) topameng@gmail.com
 --      All rights reserved.

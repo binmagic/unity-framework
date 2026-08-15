@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 RawImage 及其材质关键字(_Layer_N)开关机制
+ * [OUTPUT]: 对外提供 UIFormBlurEffect 组件,以 ShowBlurImage/HideBlurImage 按层级开启或关闭界面背景模糊
+ * [POS]: UIExtension 的窗口背景虚化组件,通过实例化独立材质并启用层级关键字实现按 UI 层数叠加的模糊效果
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 

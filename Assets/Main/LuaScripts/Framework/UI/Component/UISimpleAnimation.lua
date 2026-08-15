@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.SimpleAnimation 原生动画组件
+-- [OUTPUT]: 对外提供 UISimpleAnimation 组件类，含 Play/Stop/Rewind 播放控制、IsPlaying/HasState 状态查询、PlayAnimationReturnTime/GetAnimationReturnTime 取时长、Enable
+-- [POS]: Component 层对 SimpleAnimation（Legacy Animation 增强）的 Lua 封装，用于播放 AnimationClip；与 UIAnimator（状态机）互补
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UISimpleAnimation:UIBaseContainer
 local UISimpleAnimation = BaseClass("UISimpleAnimation", UIBaseContainer)
 local base = UIBaseContainer

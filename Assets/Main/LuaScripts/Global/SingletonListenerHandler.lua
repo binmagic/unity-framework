@@ -1,8 +1,15 @@
+--[[
+-- [INPUT]: 依赖 Framework 的 BaseClass/Singleton、EventManager 单例、TimerManager 单例，依赖 App/Logger
+-- [OUTPUT]: 对外提供 SingletonListenerHandler 类（继承 Singleton），暴露与 ListenerHandler 一致的成组监听接口
+-- [POS]: Global 模块的单例版事件监听基类，供全局唯一存在的管理器复用同一套自动清理的订阅逻辑，是 ListenerHandler 的单例孪生
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 ---
 --- Created by liujiang.
 --- DateTime: 2025/05/23 11:44
 ---
---- 
+---
 
 ---@class SingletonListenerHandler:Singleton
 local SingletonListenerHandler = BaseClass("SingletonListenerHandler", Singleton)

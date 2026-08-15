@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 BaseMessage 收发骨架；广泛聚合设备/全局/设置/本地化/SDK 信息（GameEntry.Device/GlobalData/Setting/Localization/Sdk/Resource/Timer/Lua），依赖 SmartFox2X 的 LoginRequest、StringUtils 加密、EmulatorDetect 模拟器检测
+ * [OUTPUT]: 对外提供 LoginMessage 类（消息号 login），组装完整登录请求（设备指纹、安全码 OneCode/CoreV、版本、渠道等），响应处理已下沉至 Lua
+ * [POS]: Network 消息定义层中最重的一员，是登录握手入口；由 MessageFactory 注册分发，登录成功后触发 Lua 侧 LuaEntry:onMessage 重建玩家数据
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 using EmulatorDetect;

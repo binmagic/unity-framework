@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 继承 UnityEngine.UI.Text，依赖 GameEntry.Resource 异步加载 TexturePacker 生成的 EmojiData 二进制图集，依赖 ArabicSupport.ArabicFixer 做 RTL 修正，用正则与 UTF32 编码识别 emoji
+ * [OUTPUT]: 对外提供 EmojiText 组件，把文本中的 Unicode emoji 替换为图集精灵内联渲染，并支持超长文本省略号截断
+ * [POS]: EmojiText 模块的核心渲染器，重写 Text 的 OnPopulateMesh/text setter，用第二套 UV(uv1) 采样 emoji 图集，是聊天等富文本场景的表情显示组件
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;

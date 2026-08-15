@@ -1,4 +1,10 @@
 --[[
+-- [INPUT]: 依赖 CS 侧 string.split_ss_array 快速分割;基于原生 string 库扩展,部分函数处理富文本/十六进制/多字节截断
+-- [OUTPUT]: 挂载到全局 string 表的一批扩展方法(split/IsNullOrEmpty/SubStrByNum/GetBytes/PrintHex/富文本解析等)
+-- [POS]: Common 的 string 语言级扩展,把项目高频字符串操作直接注入原生 string 命名空间,重点覆盖分割与多字节安全截断
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+--[[
 -- added by wsh @ 2017-12-18
 -- string扩展工具类，对string不支持的功能执行扩展
 --]]

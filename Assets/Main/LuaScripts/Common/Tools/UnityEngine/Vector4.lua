@@ -6,6 +6,12 @@
 -- added by wsh @ 2017-12-28
 -- 注意：
 -- 1、已经被修改，别从tolua轻易替换来做升级
+--[[
+-- [INPUT]: 依赖 Mathf 做裁剪/开方,回填 CS.UnityEngine.Vector4
+-- [OUTPUT]: 对外提供纯 Lua 版 Vector4(xyzw 构造、点乘/模长/Lerp、运算符重载)
+-- [POS]: Common/Tools/UnityEngine 的四维向量结构体封装(源自 tolua),用于 Shader 参数/齐次坐标等需要四分量的数据传递
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 local clamp	= Mathf.Clamp
 local sqrt	= Mathf.Sqrt

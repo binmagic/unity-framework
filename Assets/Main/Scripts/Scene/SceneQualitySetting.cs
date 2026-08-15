@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 SystemInfo/Screen 与 URP 渲染资产,依赖 GameFramework
+ * [OUTPUT]: 对外提供 SceneQualitySetting 静态类,按设备内存等条件设定分辨率与画质档位
+ * [POS]: Scene 层的运行时画质策略,依机型自适应降档,与 GFX 的 QualitySettingGFXPanel(手动调试)互为策略与工具
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using GameFramework;
 using UnityEngine;

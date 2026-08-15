@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Input 轮询鼠标按键与坐标
+ * [OUTPUT]: 对外提供 InputControl 组件及 EVENT_MOUSE_DOWN/UP/DRAG/CLICK 四个事件与配套委托类型，把原始鼠标输入归类为按下/抬起/拖拽/点击
+ * [POS]: UIExtension 的底层输入分发器，用移动阈值区分点击与拖拽后向订阅者派发语义化事件，是地图拖拽等自定义交互的输入源
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 
 public delegate void MouseDownEvent(Vector2 mousePosition);

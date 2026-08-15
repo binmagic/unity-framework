@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 Sfs2X 的 SFSObject 数据结构与反射,依赖 XLua 的 LuaAPI 栈操作
+ * [OUTPUT]: 对外提供 SFSObjectExtention 扩展方法,把 SmartFox 消息对象高效读入/暴露给 Lua
+ * [POS]: XLua/Support 的网络消息桥,让 Lua 直接消费 SFSObject 而少走装箱,与 MessageExtension(C# 取值)分层协作
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Reflection;

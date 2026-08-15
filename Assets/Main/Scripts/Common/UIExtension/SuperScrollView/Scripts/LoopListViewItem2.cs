@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 MonoBehaviour/RectTransform，回指所属 LoopListView2，标注 XLua 供 Lua 侧填充数据
+ * [OUTPUT]: 对外提供 LoopListViewItem2 组件，暴露 item 索引/ID 与 UserObject/Int/String 等业务数据挂载点及吸附距离
+ * [POS]: SuperScrollView 的列表单元格实例，承载单个 item 的复用身份与用户数据，由 ItemPool 池化、被 LoopListView2 定位与回收
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

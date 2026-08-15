@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖同节点 Image 的材质,按时间轴切换材质 _Color_time 参数
+ * [OUTPUT]: 对外提供 UIImageLightAnim 组件(周期性触发图片高光/流光表现)
+ * [POS]: UIGuideArrow 模块的辅助高亮特效,独立于箭头移动状态机,给引导目标图片加节律性光效以吸引注意
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 

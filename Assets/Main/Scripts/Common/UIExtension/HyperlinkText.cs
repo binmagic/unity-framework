@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 继承 UnityEngine.UI.Text 并实现 IPointerClickHandler，依赖正则解析 <a href> 标签，用 VertexHelper 顶点计算超链接文本的包围框
+ * [OUTPUT]: 对外提供 HyperlinkText 组件及 onHrefClick 事件，把富文本中的超链接渲染为可点击蓝色文字，点中时回调链接名
+ * [POS]: UIExtension 的富文本交互组件，重写 Text 的网格生成并叠加点击命中检测，是聊天/公告等需要内嵌链接场景的文本控件
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Text;

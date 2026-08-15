@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 继承 BaseAutoDoMovePosState,依赖 AutoDoMovePos 提供路径点与速度,依赖状态机切换到 UpAnim
+ * [OUTPUT]: 对外提供 AutoDoMovePoMoveState 状态(按速度在相邻路径点间线性插值移动箭头)
+ * [POS]: UIGuideArrow 状态机三态中的"移动"态,承接 DownAnim 之后、遍历完路径点后转入 UpAnim
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 

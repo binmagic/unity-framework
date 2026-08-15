@@ -5,7 +5,12 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-
+/**
+ * [INPUT]: 依赖 UnityEngine.Debug 输出,依赖 PlayerPrefs 读取写日志开关,依赖 Conditional 特性做发布裁剪
+ * [OUTPUT]: 对外提供 GameFramework.Log 静态门面,统一 Debug/Info/Warning/Error 调用并按开关分级落盘
+ * [POS]: Common/Log 的对外唯一日志入口,收敛所有打印,桥接 LogFile 落盘,禁止业务直接 UnityEngine.Debug
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Diagnostics;
 using UnityEngine;
 

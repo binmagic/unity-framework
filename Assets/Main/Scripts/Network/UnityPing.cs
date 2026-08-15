@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 MonoBehaviour/Coroutine/Ping，依赖 System.Net.Dns 域名解析
+ * [OUTPUT]: 对外提供 UnityPing 组件，CreatePing 以协程对指定 IP 发起 ICMP 探测并回调耗时（含超时保护）
+ * [POS]: Network 模块的链路测速工具，独立于 BaseMessage 消息体系，服务于选服/网络质量检测；与 FutureManager 的应用层 RTT 统计互补，此处为底层网络延迟
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;

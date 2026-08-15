@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Lua 查询镜像开关,依赖 AutoReverseImageNameList 判定图片是否翻转,依赖 ArabicImageMirror/ForceArabicImage/BidirectionalHorizontalLayoutGroup 施加具体镜像效果
+ * [OUTPUT]: 对外提供 ArabicMirror 组件与 MirrorVersionConfig 全局开关、MirrorPositionData 等镜像数据结构
+ * [POS]: Arabic 模块的镜像中枢,递归遍历整棵 UI 树统一处理位置/对齐/布局/Slider/Image 的 RTL 翻转,是 ArabicHorizonLayout 逐节点适配之外的整树自动化方案
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using GameFramework.Localization;

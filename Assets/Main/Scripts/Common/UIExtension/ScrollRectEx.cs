@@ -6,6 +6,12 @@
  * Edit by darcy 
  ***/
 
+/**
+ * [INPUT]: 依赖 UnityEngine.UI.ScrollRect 基类与 EventSystems 的拖拽处理器接口
+ * [OUTPUT]: 对外提供 ScrollRectEx 组件，替代原生 ScrollRect 支持嵌套滚动
+ * [POS]: UIExtension 的嵌套滚动扩展，按拖拽方向判定是自身响应还是沿父链路由事件给父级 ScrollRect，解决横竖嵌套冲突
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 using System;

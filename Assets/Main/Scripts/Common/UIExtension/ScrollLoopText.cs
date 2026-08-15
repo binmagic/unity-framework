@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI.Text 取文本内容/首选宽度并做锚点位移
+ * [OUTPUT]: 对外提供 ScrollLoopText 组件与 CheckCanRun 接口
+ * [POS]: UIExtension 的跑马灯文本，仅当文本超出容器宽度时用三份副本首尾相接循环横向滚动，否则回落为静态单行显示
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

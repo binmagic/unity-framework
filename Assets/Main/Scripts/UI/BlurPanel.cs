@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 URP 的 UniversalRenderPipelineAsset/ScriptableRendererData 反射开关 BlurURP RenderFeature,依赖场景内 BlurCamera/UIContainer/UICamera 节点
+ * [OUTPUT]: 对外提供 BlurPanel 组件与 BlurMgr 单例(引用计数式管理模糊相机与后处理特性开关)
+ * [POS]: UI 层的背景高斯模糊设施,BlurPanel 挂在需要模糊底衬的界面上,BlurMgr 用计数统筹多面板共享的同一套模糊相机与渲染特性
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

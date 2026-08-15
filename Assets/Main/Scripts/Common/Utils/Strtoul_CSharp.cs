@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System 的 ReadOnlySpan<char> 做零拷贝字符遍历
+ * [OUTPUT]: 对外提供 Strtoul_CSharp,移植自 Apple libc strtoul 的无符号整数解析,含 errno 状态
+ * [POS]: Common/Utils 的高性能数值解析,避开 Convert/Parse 的 GC 与异常开销,与 Strtod_CSharp(浮点)成对
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

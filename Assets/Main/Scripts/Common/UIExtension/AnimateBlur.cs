@@ -4,6 +4,13 @@
 //  * Description: 动态模糊
 //  ***/
 
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 RawImage、UnityEngine 的 Material/Coroutine，依赖 UniversalRenderPipeline 的 ScriptableRendererData 与反射访问 RendererFeature
+ * [OUTPUT]: 对外提供 AnimateBlur 组件，挂载即在启用时播放一次淡入淡出的动态模糊并自动隐藏
+ * [POS]: UIExtension 的模糊特效组件，通过反射切换 URP 的 GrabRenderPassFeature 驱动模糊材质，是全屏模糊效果的一次性播放器
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 #if UNITY_EDITOR
 using Sirenix.OdinInspector;
 #endif

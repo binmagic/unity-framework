@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 BaseMeshEffect/Graphic/Image 顶点管线，依赖 UnityEngine.Sprites.DataUtility 取 Sprite 内边 UV
+ * [OUTPUT]: 对外提供 Mirror 组件（UI/Effects 菜单），支持水平/垂直/四分之一镜像与 SetNativeSize
+ * [POS]: UIExtension 的网格特效节点，挂在 Graphic 上通过重写 ModifyMesh 复制并翻转顶点实现对称贴图，与其他 UI 扩展并列
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

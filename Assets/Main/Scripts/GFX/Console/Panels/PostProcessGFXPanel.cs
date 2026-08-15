@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 继承 BaseGFXPanel,依赖 URP 的 Volume 后处理栈与主摄像机
+ * [OUTPUT]: 对外提供 PostProcessGFXPanel,运行时开关/调节后处理 Volume 各效果
+ * [POS]: GFX/Console/Panels 的后处理调试页,现场对比 Bloom/色调等效果开销与观感
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;

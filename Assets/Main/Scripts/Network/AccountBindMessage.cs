@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 BaseMessage 的请求收发骨架，依赖 GameEntry.Network 的 FutureManager 分配 futureId，依赖 SmartFox2X 的 SFSObject/ExtensionRequest 组包
+ * [OUTPUT]: 对外提供 UserBindGaidMessage 类（消息号 bind.gaid），上报广告标识 gaid 完成账号绑定
+ * [POS]: Network 消息定义层的一员，与其余 *Message 平级，由 MessageFactory 注册并统一分发；标记 [Hotfix] 支持 XLua 热修
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using Sfs2X.Entities.Data;
 using Sfs2X.Requests;
 using UnityEngine;

@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 Vector3 做中心/尺寸运算,依赖 CS.UnityEngine.Bounds 原生类型
+-- [OUTPUT]: 对外提供纯 Lua 版 Bounds 并回填 CS.UnityEngine.Bounds,支持构造与包含/相交判断
+-- [POS]: Common/Tools/UnityEngine 的包围盒结构体封装(源自 tolua),用 Lua 表复刻以减少与 C# 值类型交互开销
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --------------------------------------------------------------------------------
 --      Copyright (c) 2015 - 2016 , 蒙占志(topameng) topameng@gmail.com
 --      All rights reserved.

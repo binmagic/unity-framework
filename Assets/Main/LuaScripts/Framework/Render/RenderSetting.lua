@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 CS.UnityEngine URP(UniversalRenderPipelineAsset/ScriptableRendererData/RendererFeatures)、QualitySettings、OnDemandRendering、Global.SettingManager 读画质档、CS.GameEntry.Resource 加载材质、UpdateManager 注册每帧更新、Logger
+-- [OUTPUT]: 对外提供 RenderSetting 表，暴露 InitRender/InitQulity/SetQualityLevel、各 RenderFeature 开关(平面阴影/模糊/雾/SSAO/描边/毛发等)、渲染缩放/阴影距离与按输入空闲降帧的 Update
+-- [POS]: Render 模块唯一渲染设置中枢，依系统内存与玩家画质档配置 URP 管线特性并按交互空闲动态调节渲染帧间隔；通过反射访问管线私有 m_RendererDataList 逐一开关 RendererFeature(裁剪自 SLG 母工程，含大量注释掉的场景特性)
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
 ---------------------------------------------------------------------
 -- aps_client333 (C) CompanyName, All Rights Reserved
 -- Created by: AuthorName

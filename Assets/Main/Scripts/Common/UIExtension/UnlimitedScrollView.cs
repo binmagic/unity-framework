@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 ScrollRect 与 Horizontal/VerticalLayoutGroup 布局,依赖对象池扩展 Spawn/Recycle 复用 prefab 实例
+ * [OUTPUT]: 对外提供命名空间 GameKit.Base 下的 UnlimitedScrollView 组件及 ItemWrap 数据包装,以进出视口回收机制承载海量条目的无限滚动
+ * [POS]: UIExtension 中独立于 UIScroll 家族的另一套滚动方案,基于 LayoutGroup 自动排布,仅支持纯横或纯纵单向滚动,靠 OnItemMoveIn/Out 回调驱动业务填充
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,7 +11,7 @@ using UnityEngine.UI;
 namespace GameKit.Base
 {
     [System.Serializable]
-    public class ItemWrap 
+    public class ItemWrap
     {
         public GameObject prefab;
         public object userdata;

@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 纯 Lua 实现,依赖 SafePack/SafeUnpack 语义处理变参(基于 select/unpack)
+-- [OUTPUT]: 对外提供 memoize 可调用表,包裹任意函数返回带多级参数缓存的记忆化版本
+-- [POS]: Common/Tools 的函数记忆化工具(kikito/memoize.lua),以参数为多级键缓存计算结果,用于消除纯函数重复计算开销
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local memoize = {
   _VERSION     = 'memoize v2.0',
   _DESCRIPTION = 'Memoized functions in Lua',

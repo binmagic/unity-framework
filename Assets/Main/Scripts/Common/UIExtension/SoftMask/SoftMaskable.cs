@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖父级 SoftMask 提供的遮罩纹理与视投影矩阵，依赖 GraphicConnector 扩展做材质脏标记、MaterialCache 复用效果材质，依赖 Rendering/Profiling
+ * [OUTPUT]: 对外提供 SoftMaskable 组件，实现 IMaterialModifier/ICanvasRaycastFilter，暴露 inverse/raycastFilter 等开关
+ * [POS]: SoftMask 的从属渲染修饰器，挂在受遮罩的 Graphic 上向其材质注入软遮罩采样与模板比较，是被遮罩元素一侧，与作为遮罩源的 SoftMask 配对
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using GameFramework;

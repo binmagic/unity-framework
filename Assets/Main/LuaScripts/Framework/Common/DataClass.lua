@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖全局 DeepCopy 深拷贝、Config.Debug 调试开关、table.dump 输出
+-- [OUTPUT]: 对外提供全局 DataClass(classname, data_tb, super) 工厂，产出带字段访问约束的数据结构类
+-- [POS]: Common OOP 系统的数据结构范式，与 BaseClass(行为对象)、ConstClass(只读常量)三足鼎立；强制字段预声明、禁止读写未定义域，调试期用元表拦截、发布期直接返回裸表以省开销
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-01
 -- 数据结构类：不可写、读不存在的域：避免访问错误，访问控制仅在调试模式下生效
 -- 注意：

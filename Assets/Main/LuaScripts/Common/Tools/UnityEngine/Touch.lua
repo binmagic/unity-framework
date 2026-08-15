@@ -6,6 +6,12 @@
 -- added by wsh @ 2017-12-28
 -- 注意：
 -- 1、已经被修改，别从tolua轻易替换来做升级
+--[[
+-- [INPUT]: 依赖 Vector2 承接触点坐标/位移;由 C# 侧填充触摸原始数据
+-- [OUTPUT]: 对外提供纯 Lua 版 Touch(position/deltaPosition/phase/fingerId 等触摸字段)
+-- [POS]: Common/Tools/UnityEngine 的触摸结构体封装(源自 tolua),把移动端多点触控数据以 Lua 表暴露给输入处理逻辑
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 local zero = Vector2.zero
 local rawget = rawget

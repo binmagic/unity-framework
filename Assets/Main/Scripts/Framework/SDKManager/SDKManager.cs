@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 IPlatformNative 各平台实现(Editor/Android/iOS/WebGL/Standalone)、AnalyticsEvent/HelpManager，依赖 GameEntry 的 Event/Data/GlobalData/Setting 做回调分发
+ * [OUTPUT]: 对外提供 SDKManager，统一登录/支付/打点/推送/剪贴板/设备信息等原生能力入口与原生回调事件的分发处理(HandleEvent)
+ * [POS]: Framework SDK 子系统的门面(实现 IGameController)，按编译宏择一注入平台实现——屏蔽平台差异对上提供统一 SDK 接口，由 GameEntry.Sdk 持有
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;

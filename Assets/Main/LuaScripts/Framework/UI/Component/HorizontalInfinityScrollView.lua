@@ -3,6 +3,12 @@
 --- Created by zzl.
 --- DateTime:
 ---
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.HorizontalInfinityScrollView 原生横向无限滚动组件
+-- [OUTPUT]: 对外提供 HorizontalInfinityScrollView 组件类，含 Init 绑定 cell 回调、SetItemCount 设置总数、ForceUpdate 强刷、MoveItemByIndex 定位
+-- [POS]: Component 层的横向无限循环列表封装，与 GridInfinityScrollView 同族，专用于横向大数据滚动
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local HorizontalInfinityScrollView = BaseClass("HorizontalInfinityScrollView", UIBaseComponent)
 local base = UIBaseComponent
 local UnityScrollView = typeof(CS.HorizontalInfinityScrollView)

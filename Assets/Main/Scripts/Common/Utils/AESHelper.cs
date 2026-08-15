@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Security.Cryptography 的 AES/MD5 原语,依赖内部 AesEncryptor 实现加解密
+ * [OUTPUT]: 对外提供 AESHelper 静态类,封装字符串 AES 加解密与 MD5 摘要
+ * [POS]: Common/Utils 的加密门面,为存档/签名/网络数据提供对称加密能力,与 GSLSignatureHelper(密钥还原)配套
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 using System.Security.Cryptography;

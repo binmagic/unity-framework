@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 MaskableGraphic 及 ILayoutElement/ICanvasRaycastFilter 接口，依赖 SetPropertyUtilityExt 做属性脏标记
+ * [OUTPUT]: 对外提供抽象基类 BaseImage，暴露 sprite/overrideSprite 属性、mainTexture 与布局尺寸计算，供子类重写 OnPopulateMesh 自定义形状
+ * [POS]: CircleImage 模块的绘制基类，抽掉 Unity Image 的贴图与布局逻辑，是 CircleImage 等自定义形状图元的公共父类
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using UnityEngine;
 using System.Collections;

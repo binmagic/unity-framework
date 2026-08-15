@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Resource 异步加载 ArabicMirrorAutoReverseImageListData 配置资源
+ * [OUTPUT]: 对外提供 AutoReverseImageNameList 静态查询表(IsAutoReverseImage/IsDontAutoReverseRawImage)
+ * [POS]: Arabic 模块的镜像白/黑名单数据源,为 ArabicMirror 判定某张图片是否应自动翻转提供依据
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 

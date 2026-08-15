@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 继承 InfinityScrollViewBase 复用滚动/回收框架，依赖 UnityEngine 的 RectOffset/RectTransform/协程做网格布局与定位
+ * [OUTPUT]: 对外提供 GridInfinityScrollView 组件，按可视宽度在 min/max 之间自适应列数，实现多列网格的竖向循环滚动与逐项后移动画(LaterItemByIndex)
+ * [POS]: 无限滚动的网格布局实现，与 HorizontalInfinityScrollView 并列为 InfinityScrollViewBase 的两种具体方向，专用于多列竖向列表
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;

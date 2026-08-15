@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.UnityEngine.UI.Empty4Raycast 原生组件
+-- [OUTPUT]: 对外提供 UIEmpty4Raycast 组件类，含 SetColor/SetAlpha 颜色透明度、SetMaterial 材质、SetRaycastTarget/SetEnable 射线拦截开关
+-- [POS]: ComponentExt 扩展组件，封装无绘制开销的射线遮挡图形；用作全屏点击拦截或引导遮罩，避免真实 Image 的顶点渲染成本
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 --- Created by shimin.
 --- DateTime: 2022/7/13 16:58
 --- Empty4Raycast

@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.CanvasGroup 原生组件
+-- [OUTPUT]: 对外提供 UICanvasGroup 组件类，含 SetAlpha 整体透明度、SetInteractable 可交互、SetBlocksRaycasts 射线拦截
+-- [POS]: Component 层对 CanvasGroup 的 Lua 封装，用于整组 UI 的淡入淡出与交互开关
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UICanvasGroup : UIBaseContainer
 local UICanvasGroup = BaseClass("UICanvasGroup", UIBaseContainer)
 local base = UIBaseContainer

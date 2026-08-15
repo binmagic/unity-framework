@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 DynamicResourceManager 的 URL 纹理加载与缓存、CircleImage/SpriteRenderer 的 LoadSprite、AESHelper 的 MD5、GameEntry.GlobalData 的地区判断
+ * [OUTPUT]: 对外提供 UIPlayerHead 组件及静态 GenCustomPicUrl,承担玩家头像的系统头像/自定义头像加载、CDN 下载与本地缓存切换
+ * [POS]: UIExtension 的玩家头像装载器,统一 CircleImage(UI) 与 SpriteRenderer(3D) 两种载体,处理大小图渐进加载与 Sprite 生命周期释放
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.IO;
 using GameFramework;

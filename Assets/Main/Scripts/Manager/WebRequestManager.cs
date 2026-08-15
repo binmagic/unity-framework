@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.Networking.UnityWebRequest 发起 HTTP 请求,依赖 SingletonBehaviour 提供单例与逐帧 OnUpdate 驱动
+ * [OUTPUT]: 对外提供 WebRequestManager 单例,封装 Get/Post/Put/Head/Delete、纹理加载与断点下载,并做并发限流与请求排队
+ * [POS]: Manager 层的通用 HTTP 传输底座,被 DatabaseManager/DynamicResourceManager/UploadImageManager 等复用,统一收口 UnityWebRequest 的调度与生命周期
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

@@ -4,6 +4,12 @@
 --- 等同于UITextMeshProUGUIEx，以后不要使用UITextMeshProUGUIEx
 ---
 
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.NewTMPText 项目自定义 TMP 文本组件、CS.GameEntry.Resource 加载字体材质；SetLocalText 依赖 Localization
+-- [OUTPUT]: 对外提供 NewTMPText 组件类，含 GetText/SetText/SetLocalText、SetColor/GetColor、SetPreferSize/GetWidth/GetHeight、打字机效果 SetCodeEffectText/SetCodeSpeed/SetMaxVisibleCharacters、超链接 GetLinkInfo/OnPointerClick、SetMaterialPreset/SetFontMaterialByType 字体材质
+-- [POS]: Component 层推荐的 TMP 文本封装（替代已弃用的 UITextMeshProUGUIEx）；富文本、打字机、超链接的首选文本组件
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local NewTMPText = BaseClass("NewTMPText", UIBaseComponent)
 local base = UIBaseComponent
 local CS_NewTMPText = typeof(CS.NewTMPText)

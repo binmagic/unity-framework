@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 Button 基类,依赖 DOTween 做缩放缓动,依赖 UIButtonCurve 资产与 GameEntry.Resource 加载默认曲线
+ * [OUTPUT]: 对外提供 NewButton 组件(灰度禁用材质 + 曲线驱动的按压/回弹动画)与 DefaultNewButtonCurve 全局默认曲线
+ * [POS]: UI 层的定制按钮,替代原生 Button 统一全项目点击手感,与 UIButtonCommonAnim(非按钮节点复用同套曲线)共享 DefaultNewButtonCurve
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

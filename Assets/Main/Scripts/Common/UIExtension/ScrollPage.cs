@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 GridLayoutGroup/Button 布局，依赖 UnityGameFramework.Runtime.UIEventListener 挂拖拽事件
+ * [OUTPUT]: 对外提供 ScrollPage 组件、Initialize/ChangePage/RemovePageByIdx 接口与 OnCreate/OnChange/OnScrollEnd 回调
+ * [POS]: UIExtension 的广告轮播/分页基类，管理页项与指示点的生成删除，靠 GridLayout 锚点插值做整页翻页，支持循环与自动滚动，供业务子类继承
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

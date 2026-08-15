@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 ResourceManager 异步加载 prefab 资源(VEngine.Asset)、InstanceRequest 的实例记录，依赖 Unity GameObject
+ * [OUTPUT]: 对外提供 ObjectPoolMgr(池管理器)与 ObjectPool(单 prefab 池)，实现 Spawn/DeSpawn/闲置清理
+ * [POS]: Framework 资源子系统的 GameObject 复用层，被 ResourceManager 持有并驱动——承接实例化请求的对象复用与生命周期回收，降低实例化开销
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using System.Text;
 using GameFramework;

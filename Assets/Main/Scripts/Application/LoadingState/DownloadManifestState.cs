@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 HttpRequest 下载,依赖 VEngine 的 Manifest/ManifestVersionFile,依赖 System.IO.Compression 解压
+ * [OUTPUT]: 对外提供 DownloadManifest 状态机,拉取并校验资源清单版本、下载差异清单
+ * [POS]: Application/LoadingState 的热更第一步,先于资源下载确定版本基线,启动流程由 ApplicationLaunch 驱动进入
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.IO;
 using System.IO.Compression;

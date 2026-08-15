@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 继承 InfinityScrollViewBase 复用滚动/回收框架，依赖 UnityEngine 的 RectTransform/协程做平滑移动
+ * [OUTPUT]: 对外提供 HorizontalInfinityScrollView 组件，把抽象的坐标/列数/可视数量计算落到单行水平排布，并支持按索引定位滚动
+ * [POS]: 无限滚动的横向布局实现，与 GridInfinityScrollView 并列为 InfinityScrollViewBase 的两种具体方向，专用于横向单行列表
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;

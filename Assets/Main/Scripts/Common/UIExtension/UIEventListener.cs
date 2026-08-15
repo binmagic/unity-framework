@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.EventSystems 的 EventTrigger 与 PointerEventData 事件回调
+ * [OUTPUT]: 对外提供 UIEventListener 组件及静态 Get 挂载入口,以 Action 委托暴露点击/按下/拖拽/选中等交互事件
+ * [POS]: UIExtension 的通用事件转接层,把 UGUI 事件系统的接口回调转为可动态绑定的委托,供业务代码免继承接入
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;

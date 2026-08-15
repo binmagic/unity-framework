@@ -6,6 +6,12 @@
 --]]
 
 ---@class UIInput : UIBaseComponent
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.UnityEngine.UI.InputField 原生输入框；SetLocalText 依赖 Localization
+-- [OUTPUT]: 对外提供 UIInput 组件类，含 GetText/SetText/SetLocalText、SetOnEndEdit/SetOnValueChange 回调、SetInteractable/SetEnable
+-- [POS]: Component 层对 UGUI InputField 的 Lua 封装；与 UITMPInput（TMP 版）对应，用于普通字体文本输入
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIInput = BaseClass("UIInput", UIBaseComponent)
 local base = UIBaseComponent
 local UnityInputField = typeof(CS.UnityEngine.UI.InputField)

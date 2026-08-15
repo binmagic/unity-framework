@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameKit.Base 的 SingletonBehaviour 单例基类,依赖 UnityEngine 的 GameObject 实例化
+ * [OUTPUT]: 对外提供 GameObjectPool 单例,按 prefab 缓存/复用/回收 GameObject 并支持超时清理
+ * [POS]: Common/Other 的对象池核心设施,避免频繁实例化销毁的开销,供 UI/特效等高频生成场景取用
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;

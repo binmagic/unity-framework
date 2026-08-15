@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 MsgDefines 的命令常量作为键，值为 Net.Msgs 下各消息类的 require 路径
+-- [OUTPUT]: 返回 config 表，把协议命令ID映射到消息处理类路径
+-- [POS]: Net 模块的消息路由注册表，唯一消费者是 SFSNetwork，收发时查表懒加载对应 Message 类；连连看当前为空表待接入
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 
 好的，以下是 `MsgMap.lua` 的完整分析：
 

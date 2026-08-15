@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 CS.xLuaOptiUtils 做热点运算优化,依赖 math 与 Vector3,回填 CS.UnityEngine.Quaternion
+-- [OUTPUT]: 对外提供纯 Lua 版 Quaternion(Euler/AngleAxis/Slerp/乘法旋转向量等)
+-- [POS]: Common/Tools/UnityEngine 的四元数结构体封装(源自 tolua),承载旋转组合与插值,是 Transform 朝向计算在 Lua 侧的核心
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --------------------------------------------------------------------------------
 --      Copyright (c) 2015 , 蒙占志(topameng) topameng@gmail.com
 --      All rights reserved.

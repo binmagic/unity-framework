@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Vector3 向量运算
+ * [OUTPUT]: 对外提供 BezierUtils 静态工具,以固定分段数生成二次贝塞尔路径点数组
+ * [POS]: Common/Utils 的曲线采样快捷入口,复用静态缓冲区避免 GC,与 Bezier(可配置三次曲线)分层
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

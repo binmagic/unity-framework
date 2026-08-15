@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 Lua debug.getlocal 推断调用者模块名,依赖 string.split 与 package 表
+-- [OUTPUT]: 对外提供全局函数 import(相对/绝对路径 require)与 reimport(清缓存重新 require)
+-- [POS]: Common/Tools 的模块加载辅助,支持以 "." 前缀相对定位模块并提供热重载入口,是热更调试期替换单文件的基础设施
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 -- 加载模块
 function import(moduleName, currentModuleName)

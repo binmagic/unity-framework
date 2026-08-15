@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 无外部依赖,纯常量定义
+ * [OUTPUT]: 对外提供 LoginErrorCode 错误码常量表(网络/登录/热更各阶段错误字符串)
+ * [POS]: UI 层登录流程的错误码字典,供登录与热更界面把底层错误映射为可读提示,是全流程共享的常量单一来源
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 public class LoginErrorCode
 {
     // 网络出错列表

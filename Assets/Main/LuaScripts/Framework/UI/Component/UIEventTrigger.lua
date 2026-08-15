@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UIEventTrigger 原生事件转发组件
+-- [OUTPUT]: 对外提供 UIEventTrigger 组件类，含 OnPointerDown/Up/Enter/Exit/Click、OnBeginDrag/OnDrag/OnEndDrag/OnDrop、OnLongPress 等事件回调注册与 SetEnable
+-- [POS]: Component 层的指针/拖拽事件转发封装，把 Unity EventSystem 事件桥接到 Lua 回调；供需细粒度触摸交互的界面使用
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UIEventTrigger:UIBaseContainer
 local UIEventTrigger = BaseClass("UIEventTrigger", UIBaseContainer)
 local base = UIBaseContainer

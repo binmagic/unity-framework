@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 Net.Config.MsgMap 路由表、CS.GameEntry.Network、LuaEntry.Network/NetworkCross 发送、UITimeManager/Logger
+-- [OUTPUT]: 对外提供 SFSNetwork 表，暴露 SendMessage/SendCrossMessage 发送与 HandleMessage 收包分发
+-- [POS]: Net 模块的消息收发入口，按 cmd 经 MsgMap 懒加载消息类完成序列化/反序列化；收包在 xpcall 内隔离单条崩溃，是业务与 C# 网络层之间的门面
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 local MsgMap = require "Net.Config.MsgMap"
 local Network = CS.GameEntry.Network

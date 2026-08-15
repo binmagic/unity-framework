@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 ScrollRect 承载滚动，回调 IEnhancedScrollerDelegate 获取数据，复用 EnhancedScrollerCellView 单元格，用 SmallList 存活动与回收集合
+ * [OUTPUT]: 对外提供 EnhancedScroller 组件及一整套滚动/吸附/复用委托，实现用少量视图渲染上千行的循环回收滚动列表
+ * [POS]: EnhancedScroller 模块的核心引擎，统筹数据源、单元格视图、内存容器三者，是本目录其余文件围绕的滚动主控
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
@@ -7,8 +14,8 @@ using System.Diagnostics;
 
 namespace EnhancedUI.EnhancedScroller
 {
-    
-    
+
+
     /// <summary>
     /// This delegate handles the visibility changes of cell views
     /// </summary>

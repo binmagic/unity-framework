@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 Mathf 做分量裁剪,依赖 CS.UnityEngine.Color32 原生类型
+-- [OUTPUT]: 对外提供纯 Lua 版 Color32(0-255 整型 rgba 构造与访问)
+-- [POS]: Common/Tools/UnityEngine 的字节色彩结构体封装(源自 tolua),与 Color 浮点版并列,用于占内存更小的整型颜色场景
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local rawget = rawget
 local setmetatable = setmetatable
 local type = type

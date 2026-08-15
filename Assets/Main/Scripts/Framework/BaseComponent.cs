@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 依赖 GameFrameworkComponent 基类与 Unity Application/Time/Screen，依赖 LayoutHelper 做画布适配
+ * [OUTPUT]: 对外提供 BaseComponent，暴露帧率/游戏速度/后台运行/禁休眠等全局运行参数及暂停/恢复接口
+ * [POS]: Framework 层唯一挂到场景上的 MonoBehaviour 基础组件，Awake 时经 GameEntry.RegisterComponent 注册为 GameEntry.GameBase，是引擎运行环境的总开关
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using GameFramework;
 using UnityEngine;

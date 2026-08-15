@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 BaseMessage 收发骨架，依赖 GameEntry.Network 的 FutureManager 分配 futureId，依赖 SmartFox2X 组包
+ * [OUTPUT]: 对外提供 FcmTokenMessage 类（消息号 change.user.parseid），上报 Firebase 推送 token 与 appId 用于消息推送寻址
+ * [POS]: Network 消息定义层的一员，与其余 *Message 平级，由 MessageFactory 注册分发；对接推送体系，与 PushRecordMessage 同属推送相关消息
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using Sfs2X.Entities.Data;
 using Sfs2X.Requests;
 using UnityEngine;

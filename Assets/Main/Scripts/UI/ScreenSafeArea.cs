@@ -1,10 +1,16 @@
-using System.Collections;  
-using System.Collections.Generic;  
-using UnityEngine;  
-using UnityEngine.UI;  
-using GameFramework;  
-  
-public class ScreenSafeArea:MonoBehaviour  
+/**
+ * [INPUT]: 依赖 Screen.safeArea,依赖 GameEntry.Sdk.AndroidScreenNotch 取安卓刘海参数,依赖 LayoutHelper 判定横竖屏
+ * [OUTPUT]: 对外提供 ScreenSafeArea 组件与静态 GetSafeArea(按平台计算安全区)
+ * [POS]: UI 层的刘海/安全区适配器,把面板锚点收进安全区并随分辨率变化刷新,统一处理 iOS/Android 异形屏
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using GameFramework;
+
+public class ScreenSafeArea:MonoBehaviour
 {  
     
     public Rect phoneDelta = new Rect(50f, 0f, -100f, 0);//ios 官方给定的偏移量  

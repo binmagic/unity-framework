@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Lua 读取 PBController.ProtoConfig 文件清单并回灌到 Lua 运行时,依赖 GameEntry.Resource(VEngine) 异步加载 proto 二进制 TextAsset
+ * [OUTPUT]: 对外提供 PBController,批量预加载 protobuf 描述文件并暴露初始化完成/成功状态
+ * [POS]: Manager 层的 Protobuf 预处理器,由 GameEntry.pb 持有,在开局前把协议描述加载进 Lua 侧解析器,是网络消息序列化的前置依赖
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using GameFramework;
 using UnityEngine;

@@ -1,7 +1,13 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 MaskableGraphic/VertexHelper 网格接口与 RectTransform 尺寸
+ * [OUTPUT]: 对外提供 UILineRenderer 组件,按 Points 点序列生成带线宽、端帽 UV 与旋转对齐的折线网格
+ * [POS]: UIExtension 的 UI 折线绘制器,与 TriangleImage 并列于顶点级自定义 Graphic,用于在 UGUI 内绘制连线路径
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
- 
+
 public class UILineRenderer : MaskableGraphic
 {
     [SerializeField] Texture m_Texture;

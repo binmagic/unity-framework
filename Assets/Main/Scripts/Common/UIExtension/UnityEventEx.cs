@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Reflection 反射访问 UnityEventBase 的私有调用列表(m_Calls/m_ExecutingCalls)
+ * [OUTPUT]: 对外提供扩展方法 UnityEventBase.Clear(),彻底清空事件的持久与运行时监听器
+ * [POS]: UIExtension 的事件工具扩展,弥补 UnityEvent 无法一次性清除所有(含代码添加)监听的缺口,常用于回收 UI 时防止回调泄漏
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;

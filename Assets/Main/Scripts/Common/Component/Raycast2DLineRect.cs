@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Vector2/Rect 基础几何类型
+ * [OUTPUT]: 对外提供静态工具 Raycast2DLineRect.RaycastLineRect 及 LineRectResult/Sector 结果类型
+ * [POS]: Common/Component 的纯数学几何工具（无 MonoBehaviour），用九宫格分区查表求线段与轴对齐矩形交点，为拖拽/命中判定提供最小化射线计算
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 
 /// <summary>

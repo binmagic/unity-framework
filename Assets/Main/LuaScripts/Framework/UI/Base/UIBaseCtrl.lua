@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 BaseClass 的 OOP 机制；子类按需依赖 Net 层发请求、DataCenter 改数据、对应 Model 写界面数据
+-- [OUTPUT]: 对外提供 UIBaseCtrl 空基类，供各窗口 Ctrl 派生
+-- [POS]: UI 框架 MVC 的控制层，衔接 Model 与 View、承载网络请求与游戏逻辑控制；本身无状态（不存变量），与兄弟 UIBaseView/UIBaseModel 构成三层
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-11-30
 -- UI控制层基类：发送网络请求（网络数据）、操作游戏逻辑、修改模型数据（本地数据）
 -- 注意：

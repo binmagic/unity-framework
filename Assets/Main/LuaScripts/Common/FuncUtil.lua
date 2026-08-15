@@ -1,4 +1,10 @@
 --[[
+-- [INPUT]: 依赖 CS.UnityEngine.Networking.UnityWebRequest 做 URL 转义;其余为纯 Lua 类型转换与泛型判断
+-- [OUTPUT]: 对外提供一批全局函数(checknumber/checkstring/BoolToInt/IntToBool/BuildQueryString 等语言级短小工具)
+-- [POS]: Common 的全局函数杂项集,补齐 Lua 缺失的类型安全转换,与 LuaUtil 同为语言级扩展但聚焦无状态短函数
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+--[[
 	这个文件里就是一些常用的短小函数
 	基本上都是全局函数
 ]]

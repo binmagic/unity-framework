@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 无外部依赖(仅 Unity 基础类型)
+ * [OUTPUT]: 对外提供 IPlatformNative 平台抽象接口及 GamePlatform/LoginPlatform/PaymentChannel 枚举与 PlatformResult
+ * [POS]: Framework SDK 子系统的平台抽象契约，各 Platform* 实现类据此适配具体平台，SDKManager 面向此接口编程——是屏蔽平台差异的统一边界
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

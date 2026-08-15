@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 CS.UnityEngine.LayerMask 原生类型;基于位运算维护层名到位掩码映射
+-- [OUTPUT]: 对外提供纯 Lua 版 LayerMask(层名<->掩码互转、GetMask 等)
+-- [POS]: Common/Tools/UnityEngine 的层遮罩封装(源自 tolua),把物理/渲染层的位掩码运算下沉到 Lua,供射线检测与可见性筛选使用
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --------------------------------------------------------------------------------
 --      Copyright (c) 2015 - 2016 , 蒙占志(topameng) topameng@gmail.com
 --      All rights reserved.

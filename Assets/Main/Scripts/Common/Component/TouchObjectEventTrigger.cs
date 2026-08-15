@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Action 作各类指针回调，依赖 UnityEngine.Events.UnityEvent 暴露可序列化点击事件
+ * [OUTPUT]: 对外提供 TouchObjectEventTrigger 组件，聚合点击/双击/拖拽/长按/进出/按下抬起的委托与 On* 触发方法及 priority/distance 排序字段
+ * [POS]: Common/Component 的场景对象触摸事件枢纽，由外部触摸系统按 priority+distance 命中排序后回调，是非 UGUI 世界对象接入统一交互分发的事件承载体
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using UnityEngine.Events;

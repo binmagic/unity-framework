@@ -3,6 +3,12 @@
 --- Created by Imaginaerum.
 --- DateTime: 2022/10/13 19:33
 ---
+--[[
+-- [INPUT]: 依赖 Common.Tools.cjson.util 取持久化目录,依赖 Lua io 文件库
+-- [OUTPUT]: 以 ConstClass 导出只读 WriteLogUtil(OpenFile/WriteToFile/CloseFile)
+-- [POS]: Util 的本地文件日志器,把调试信息写入持久化目录 Debug.txt,区别于 Framework/Logger 的运行时日志,用于落盘排查
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local util = require "Common.Tools.cjson.util"
 local WriteLogUtil = {}
 local namePath = util.GetPersistentDataPath().."/".."Debug.txt"

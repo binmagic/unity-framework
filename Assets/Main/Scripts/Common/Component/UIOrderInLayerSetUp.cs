@@ -4,6 +4,12 @@
 //  * Description:
 //  ***/
 
+/**
+ * [INPUT]: 依赖 GameKit.Base 的 GetOrAddComponent/GetComponentInParentExt 扩展，依赖 UnityEngine.UI 的 Canvas/GraphicRaycaster，编辑器下依赖 Sirenix.OdinInspector 绘制面板
+ * [OUTPUT]: 对外提供 UIOrderInLayerSetUp 组件与 Refresh，按 Canvas 或 Renderer 两种模式把节点排序锚定到父 Canvas
+ * [POS]: Common/Component 的 UI 层级排序配置器，继承 UIParticleSetUpBase，Local 模式在父 Canvas 排序上追加偏移，与 SpriteMaskSetUp/UISurvivalParticleSetUp 同族统一解决特效嵌套排序
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using GameKit.Base;
 #if UNITY_EDITOR
 using Sirenix.OdinInspector;

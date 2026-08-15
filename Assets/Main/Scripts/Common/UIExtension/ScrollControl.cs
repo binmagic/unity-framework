@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI.ScrollRect 提供横向滑动，依赖 InputControl 的鼠标按下/拖拽/抬起事件回调
+ * [OUTPUT]: 对外提供 ScrollControl 组件、Refresh 接口与 AllNum/CurPage 只读属性
+ * [POS]: UIExtension 的横向分页滚动控制器，先判定拖拽主方向再按每页临界值插值吸附，与 InputControl 事件源解耦协作
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;

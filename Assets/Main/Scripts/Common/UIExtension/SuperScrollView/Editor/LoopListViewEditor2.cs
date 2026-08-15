@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEditor 的 Editor/SerializedProperty/EditorGUILayout，序列化读写 LoopListView2 字段
+ * [OUTPUT]: 对外提供 LoopListViewEditor2 自定义 Inspector（[CustomEditor(typeof(LoopListView2))]）
+ * [POS]: SuperScrollView 的编辑器扩展，为 LoopListView2 绘制 item prefab 列表、吸附与排列方式等配置面板，仅编辑期生效，不参与运行时逻辑
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

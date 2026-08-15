@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 Common/BaseClass 的 BaseClass、Logger 的错误日志；状态对象须实现 FSMStateBase 约定的 OnEnter/OnExit/OnUpdate 等接口
+-- [OUTPUT]: 对外提供 FSM 有限状态机类，暴露 AddState/RemoveState/ReplaceState/ChangeState/GetCurState/OnUpdate/HandleInput
+-- [POS]: Common 层通用有限状态机，按 stateIndex 管理一组状态并驱动进入/退出/更新/输入；与 FSMStateBase(状态基类)配对使用，供上层业务(如战斗/流程)组织状态逻辑
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
 ---@class Framework.Common.FSM
 local FSM = BaseClass("FSM")
 

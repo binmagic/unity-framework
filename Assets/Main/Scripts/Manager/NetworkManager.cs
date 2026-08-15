@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 INetProxy 作为当前连接主体,依赖 MessageFactory/FutureManager 做消息编号与分发,依赖 GameEntry.Lua 将网络事件回调转发到 LuaEntry.Network
+ * [OUTPUT]: 对外提供 NetworkManager(实现 IGameController 与 INetManager),统管当前 proxy、上行发送(含 Lua 栈直发)与连接/登录事件的 Lua 回调
+ * [POS]: Manager 网络族的中枢与门面,由 GameEntry.Network 持有,向下驱动 NetProxy/WebSocketNetProxy、向上桥接 Lua 网络逻辑,通过 #if 兼容原生与 WebGL 两套通道
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Buffers;
 using System.Collections.Generic;

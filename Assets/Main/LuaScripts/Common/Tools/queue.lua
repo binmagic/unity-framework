@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 纯 Lua 实现,无外部模块依赖
+-- [OUTPUT]: 对外提供 { new } 构造双端队列(push_right/push_left/pop_right/pop_left/peek/is_empty 等)
+-- [POS]: Common/Tools 的双端队列(deque)容器,以头尾游标实现两端高效进出,供需要 FIFO/LIFO 或双端操作的业务复用
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --- Deque implementation by Pierre 'catwell' Chapuis
 --- MIT licensed (see LICENSE.txt)
 

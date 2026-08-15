@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Network 的发送通道与 FutureManager，依赖 SmartFox2X 的 SFSObject/ExtensionRequest，依赖 UIUtils 展示错误、GameEntry.Event 派发 ServerError
+ * [OUTPUT]: 对外提供抽象基类 BaseMessage，定义 Send/Handle 收发模板与 CSSetData/CSHandleResponse 扩展点及统一错误码处理
+ * [POS]: Network 消息定义层的根基，所有具体 *Message 均继承它以复用组包与错误处理，是本模块的抽象契约
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using Sfs2X.Entities.Data;
 using Sfs2X.Requests;
 using GameFramework;

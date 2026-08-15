@@ -6,6 +6,12 @@
 -- 2. SetFreeze：设置Spine动画的冻结状态
 -- 注意!!!:Spine有个问题,过早设置Freeze会导致数组越界错误,所以写了监听事件,再设置Freeze,很绕但是有必要.
 --]]
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.Spine.Unity.SkeletonGraphic 骨骼动画组件、CS.GameEntry.Resource 加载置灰材质
+-- [OUTPUT]: 对外提供 UISpine 组件类，含 SetAnimation/AddAnimation/ClearTracks 动画轨道控制、SetGray/SetFreeze/SetColor 状态、IsGray/IsFreeze/IsInitialized 查询、OnPrepared/ApplyPendingStates 异步初始化处理
+-- [POS]: Component 层对 Spine SkeletonGraphic 的 Lua 封装，用于 UI 内 2D 骨骼动画；因 Spine 过早设 Freeze 会越界，故监听准备完成事件后再应用挂起的灰/冻结状态
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UISpine
 local UISpine = BaseClass("UISpine", UIBaseComponent)
 local base = UIBaseComponent

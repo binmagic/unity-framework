@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 Common/BaseClass 的 BaseClass 工厂与 _class_type 机制
+-- [OUTPUT]: 对外提供 Singleton 基类，暴露 GetInstance/Startup/Delete 及 __init/__delete 生命周期
+-- [POS]: Common OOP 系统在 BaseClass 之上的单例范式扩展，全局唯一实例挂在类表的 Instance 字段上；各 Manager(TimerManager/UpdateManager/TimeUpManager 等)继承它获得单例语义
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-05
 -- 单例类
 --]]

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 XLua 的 LuaTable 做初始化导入,依赖 IL2CPP/Preserve 特性防裁剪
+ * [OUTPUT]: 对外提供 LuaStringLookupTable,用整数 id 换取字符串,减少 Lua-C# 间字符串传递的 GC
+ * [POS]: Common/Opti 的字符串驻留表,以 id 代理字符串跨语言传参,是 xLua 优化组的数据支撑设施
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 using XLua;

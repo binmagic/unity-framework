@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.SystemInfo/Application 采集硬件与网络信息,依赖 GameEntry.Sdk 获取原生层设备标识,依赖 GameEntry.Setting 缓存 deviceId
+ * [OUTPUT]: 对外提供 DeviceManager,汇总设备型号/网络类型/图形能力/时区及稳定的 deviceUid 生成与缓存
+ * [POS]: Manager 层的设备信息门面,由 GameEntry.Device 持有,为上报、登录与画质决策提供统一的设备画像
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 using UnityEngine;

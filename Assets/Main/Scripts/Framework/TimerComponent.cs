@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 Unity Time、GameEntry.Localization 做时间文案本地化，实现 IGameController
+ * [OUTPUT]: 对外提供 ITimer 与 TimerComponent，含定时器注册/取消及服务器时间校准、时间戳格式化等时间工具
+ * [POS]: Framework 层的时间与定时中枢，由 GameEntry.Timer 持有并在主循环 OnUpdate 中轮询——统一管理客户端/服务器时差与各类计时需求
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Camera/RenderTexture 离屏渲染与 RectTransform 尺寸,依赖兄弟文件 UIObject3DRawImage 承载贴图
+ * [OUTPUT]: 对外提供 UIObject3D 组件,把 3D 目标对象经专用相机渲染到 RenderTexture 并投射进 UI 平面,暴露 Target/HardUpdateDisplay/UpdateDisplay
+ * [POS]: UIObject3D 模块核心,管理目标层级(UIObject3D layer)、相机位姿(FOV/距离)与纹理生命周期,让 3D 模型可在 UGUI 中展示
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using Object = UnityEngine.Object;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI.ScrollRect 与 EventSystems 拖拽，依赖 ItemPool 池化 LoopListViewItem2、ItemPosMgr 计算定位，标注 XLua 供 Lua 提供 item 数据回调
+ * [OUTPUT]: 对外提供 LoopListView2 主组件、ItemPool 池、ItemPrefabConfData 配置及 ListItemArrangeType/ItemCornerEnum 枚举
+ * [POS]: SuperScrollView 的对外核心控件，四方向排列的对象池化无限列表，靠 ItemPool 复用单元格、ItemPosMgr 定位、按需回调拉取数据，是 Lua UI 列表的主要驱动器
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;

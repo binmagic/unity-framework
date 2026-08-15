@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: require Common 下全部语言级扩展(import/LuaUtil/TableUtil/StringUtil/FuncUtil/LuaProfiler)与 Tools/UnityEngine 全部结构体封装及 list/queue/event
+-- [OUTPUT]: 装配全局符号(Mathf/Vector2/Vector3/Quaternion/Color 等结构体、list/queue、Update 心跳),并挂接 GetCfgForEditor 等
+-- [POS]: Common 的引导入口,在游戏逻辑跑之前完成 Lua 语言级支持的统一加载,是本目录所有扩展的总装配点(雷同 Unity Plugin)
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 -- added by wsh @ 2017-12-27
 -- 1、Unity侧部分功能的Lua代码实现用来降低与cs代码的交互来提供性能---移植自tolua
 -- 2、这里的模块在游戏逻辑跑之前开始启动，雷同Unity中的Plugin下脚本

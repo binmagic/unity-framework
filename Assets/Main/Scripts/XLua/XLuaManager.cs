@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 XLua 的 LuaEnv/LuaAPI 底层,依赖资源系统加载 Lua 文本,依赖 GameFramework
+ * [OUTPUT]: 对外提供 XLuaManager(partial),管理 Lua 虚拟机的启停/脚本加载路径/自定义 loader 与热重载
+ * [POS]: XLua 的虚拟机中枢,横竖屏切换脚本根路径,是 ApplicationLaunch 拉起 Lua 层的执行引擎与 GameEntry.Lua 实体
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.IO;

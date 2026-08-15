@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 DatabaseManager 单例执行底层 SQL,依赖 XLua/GameEntry.Lua 在 C# 与 Lua 栈之间转换数据
+ * [OUTPUT]: 对外提供 LuaDatabaseManager 静态类,把数据库初始化与 SQL 执行(单条/多条/带参 STMT)以 LuaTable 结果的形式暴露给 Lua
+ * [POS]: Manager 层数据库对 Lua 的桥接层,包裹 DatabaseManager 并负责结果集与绑定参数的 Lua<->C# 编解码,是 Lua 侧访问本地库的唯一入口
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

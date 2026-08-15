@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 WebRequestManager 从 URL 下载纹理,依赖 UnityEngine 本地文件系统做磁盘缓存
+ * [OUTPUT]: 对外提供 DynamicResourceManager 单例及 DynamicAsset,按 URL 异步加载运行时纹理并做内存+本地双层缓存
+ * [POS]: Manager 层的动态远程资源加载器(MonoBehaviour 单例),区别于打包资源管线,专供玩家头像等运行时下载图片,通过回调合流去重同一 URL 的并发请求
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;

@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 SkinnedMeshRenderer/Material/Shader，在子物体中定位 "Effect_C/Liuguang" 材质
+ * [OUTPUT]: 对外提供 LightSweepEffect 组件，逐帧驱动材质 _UV.z 偏移在 range 区间循环，speed 控制流光速度
+ * [POS]: Common/Component 的角色流光扫光特效，与 LightSweepEffect 不同于 GhostEffect 之处在于直接改材质 UV 而非绘制残影
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using UnityEngine;
 

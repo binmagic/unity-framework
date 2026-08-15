@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Sdk.LogEvent 上报打点、GameEntry.Data.Player / GameEntry.Setting 取上报维度，依赖 SFSObject
+ * [OUTPUT]: 对外提供 AnalyticsEvent，集中定义各打点事件名常量并封装登录/充值/升级/礼包等业务打点触发方法
+ * [POS]: Framework SDK 子系统的数据打点语义层，架在 SDKManager 之上——把散落业务事件收敛为统一事件名与上报入口(Firebase/AppsFlyer/FB)
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

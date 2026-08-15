@@ -1,4 +1,10 @@
 
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.Animator 原生动画状态机
+-- [OUTPUT]: 对外提供 UIAnimator 组件类，含 Play 播放、SetBool/SetTrigger/ResetTrigger 参数控制、SetSpeed/GetSpeed 速度、GetFloat、PlayAnimationReturnTime/GetAnimationReturnTime 取时长、GetCurrentAnimatorClipInfo
+-- [POS]: Component 层对 Unity Animator 的 Lua 封装，供界面播放状态机动画；与 UISimpleAnimation 分别对应 Animator 与 Animation 两套动画系统
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UIAnimator : UIBaseContainer
 local UIAnimator = BaseClass("UIAnimator", UIBaseContainer)
 local base = UIBaseContainer

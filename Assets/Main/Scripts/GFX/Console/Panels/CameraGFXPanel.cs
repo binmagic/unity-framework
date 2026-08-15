@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 继承 BaseGFXPanel,依赖 UnityEngine.Camera 与 BitBenderGames 的触控摄像机缩放参数
+ * [OUTPUT]: 对外提供 CameraGFXPanel,展示并调节摄像机各场景下的 zoom/旋转等运镜参数
+ * [POS]: GFX/Console/Panels 的摄像机调试页,现场核对 MobileTouchCamera 缩放边界,便于表现调优
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using BitBenderGames;
 using UnityEngine;

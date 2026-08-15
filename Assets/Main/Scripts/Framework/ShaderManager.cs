@@ -4,6 +4,12 @@ using System.IO;
 using System.Linq;
 using GameFramework;
 using UnityEngine;
+/**
+ * [INPUT]: 依赖 GameEntry.Resource 加载 shader bundle、VEngine 的 AllBundledAsset/Bundle，依赖 ApplicationLaunch 存放全局 shader 映射
+ * [OUTPUT]: 对外提供 ShaderManager，按名查 Shader、预热 ShaderVariantCollection、管理 shader bundle 生命周期
+ * [POS]: Framework 层的 Shader 资源管理器，将散落 shader 归拢入独立 bundle 并预热变体——运行期为业务提供按名取 shader，由 GameEntry.Shader 持有(编辑器下直连 Shader.Find)
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using VEngine;
 
 /// <summary>

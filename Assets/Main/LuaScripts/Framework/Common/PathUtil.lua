@@ -5,6 +5,13 @@
 ---
 
 
+--[[
+-- [INPUT]: 依赖全局 ConstClass 包装为只读表，依赖 string 的 findlast 扩展
+-- [OUTPUT]: 对外提供只读 PathUtil，暴露 GetFileNameWithoutExtension
+-- [POS]: Common 层轻量路径工具，当前仅剥离目录与扩展名取纯文件名；以 ConstClass 包装保证只读
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
 local PathUtil = {}
 
 

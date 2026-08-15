@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 TMPro 的 TextMeshProUGUI 基类,依赖 GameEntry.Localization 判定阿语,依赖 RTLTMPro.RTLSupport 做 RTL 整形,依赖 TMPTeletypeComponent 实现打字机
+ * [OUTPUT]: 对外提供 NewTMPText 组件(阿语检测/整形/自动右对齐/字号补偿 + 点击回调 + 打字机效果)
+ * [POS]: UI 层的定制 TMP 文本,项目内 TMP 富文本主力控件,与 NewTMP3DText(世界空间 3D 版)几乎同构、与 NewText(legacy 版)平行
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 using GameFramework.Localization;

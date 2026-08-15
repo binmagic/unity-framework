@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.GameKit.Base.UnlimitedScrollView 第三方无限滚动组件
+-- [OUTPUT]: 对外提供 UnlimitedScrollView 组件类，含 AddItemWrap/InsertItemWrap/RemoveItemWrap/ClearItemWraps 按包装项管理、SetOnItemMoveIn/SetOnItemMoveOut 进出回调
+-- [POS]: Component 层基于 GameKit UnlimitedScrollView 的循环列表封装，按 itemWrap 组织；与 UIScrollView/UILoopListView2 同为滚动列表家族的另一实现
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIUnlimitedScrollView = BaseClass("UnlimitedScrollView", UIBaseContainer)
 local base = UIBaseContainer
 local UnityUnlimitedScrollView = typeof(CS.GameKit.Base.UnlimitedScrollView)

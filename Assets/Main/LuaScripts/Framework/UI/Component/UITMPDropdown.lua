@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.TMPro.TMP_Dropdown 原生 TMP 下拉框
+-- [OUTPUT]: 对外提供 UITMPDropdown 组件类，含 AddWithText/AddWithLocalText 追加选项、Clear、SetText/GetText、SetValue/GetValue/SetValueWithoutNotify、SetOnValueChanged 回调
+-- [POS]: Component 层对 TMP_Dropdown 的 Lua 封装；与 UIDropdown（UGUI 版）对应，用于 TMP 字体下拉选择
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UITMPDropdown = BaseClass("UITMPDropdown", UIBaseContainer)
 local base = UIBaseContainer
 --local UnityDropdown = typeof(CS.UnityEngine.UI.Dropdown)

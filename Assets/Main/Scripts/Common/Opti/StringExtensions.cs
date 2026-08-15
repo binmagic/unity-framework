@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Memory 的 Span(经 NuGet 引入)与正则/反射,依赖 GameFramework 基础
+ * [OUTPUT]: 对外提供字符串扩展方法,以 Span 实现 0-GC 的分割/解析/比较等文本处理
+ * [POS]: Common/Opti 的字符串 GC 优化组,针对 Unity 老 GC 算法降低临时字符串开销,是文本处理性能基座
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.IO;

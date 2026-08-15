@@ -5,6 +5,12 @@
 ---
 
 ---@class UITextMeshProUGUI : UIBaseComponent
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.TMPro.TextMeshProUGUI 原生 TMP 组件；SetLocalText 依赖 Localization
+-- [OUTPUT]: 对外提供 UITextMeshProUGUI 组件类，含 GetText/SetText/SetLocalText/SetTextCacheID、SetColor/GetColor、GetWidth/GetHeight、GetLinkInfo 超链接
+-- [POS]: Component 层对原生 TMP TextMeshProUGUI 的 Lua 封装；与项目自定义 NewTMPText 相对，后者为推荐的增强版
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UITextMeshProUGUI = BaseClass("UITextMeshProUGUI", UIBaseComponent)
 local base = UIBaseComponent
 local UnityTextMeshPro = typeof(CS.TMPro.TextMeshProUGUI)

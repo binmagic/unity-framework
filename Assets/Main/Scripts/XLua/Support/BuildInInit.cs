@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Runtime.InteropServices 的 DllImport,以 partial 扩展 XLua.LuaDLL.Lua
+ * [OUTPUT]: 对外提供 rapidjson/lpeg 等内建 C 库的 luaopen 注册入口,供 Lua 虚拟机加载
+ * [POS]: XLua/Support 的内建 C 扩展注册点,由 XLuaManager 启动时挂接,补齐 Lua 侧 JSON/模式匹配等原生能力
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 
 namespace XLua.LuaDLL

@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 继承 UnityEngine.UI.Image，依赖 StencilMaterial/MaskUtilities 与 UnityEngine.Rendering 的模板比较枚举
+ * [OUTPUT]: 对外提供 HoleImage 组件，重写 GetModifiedMaterial 用 NotEqual 模板测试实现"只在遮罩区域外绘制"的反向裁剪
+ * [POS]: HoleMask 模块的图像渲染件，配合 HoleMask 把模板比较从常规 Equal 改成 NotEqual，构成镂空遮罩效果的绘制侧
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;

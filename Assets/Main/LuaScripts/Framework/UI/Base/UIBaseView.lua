@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 UIBaseContainer 的容器调度能力、UIManager 的相机与窗口销毁、UIConfig 的窗口配置、UIUtil 的 RectTransform 铺满，以及 CS 侧 Canvas/GraphicRaycaster/UIParticleSetUpBase 特效排序脚本
+-- [OUTPUT]: 对外提供 UIBaseView 类，含 ResortOrder 层级重排、SetBlurObj/HideBlur 模糊背景、TryHideMainCamera/TryRecoverMainCamera 相机切换、CloseSelf 关闭自身
+-- [POS]: UI 框架 MVC 的视图层顶层容器，每个窗口的最外层节点；只读 Model、被动响应消息刷新，写操作与网络交由 Ctrl；是 UIBaseContainer 的直接特化，与兄弟 UIBaseModel/UIBaseCtrl 构成三层
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-11-30
 -- UI视图层基类：该界面所有UI刷新操作，只和展示相关的数据放在这，只有操作相关数据放Model去
 -- 注意：

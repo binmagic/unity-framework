@@ -5,6 +5,12 @@ author:     lixianmin
 Copyright (C) - All Rights Reserved
 *********************************************************************/
 
+/**
+ * [INPUT]: 依赖 UnityEngine.Profiling 的 Profiler,依赖 id 到采样名的映射表
+ * [OUTPUT]: 对外提供 LuaClientProfiler,用整数 id 驱动 Profiler.BeginSample/EndSample 以剖析 Lua 侧耗时
+ * [POS]: Common/Other 的 Lua 性能剖析桥,把 Lua 调用打点接入 Unity Profiler,服务运行时性能定位
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine.Profiling;
 

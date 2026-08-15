@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 UIBaseModel 的模型基础能力、UIManager 的 OpenWindow/SetKeepModel、UILayer 的层级名判定
+-- [OUTPUT]: 对外提供 UIBaseRecordModel 类，含子窗口栈记录（OnWindowOpen/OnWindowClose 入出栈）、GetWindowStack/ClearWindowStack，重新打开时自动恢复上次未关闭的 Normal 层子窗口
+-- [POS]: UI 框架模型层的记忆型特化，由 UIBaseModel 派生；供有多级子窗口需保持现场的界面使用
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-15
 -- UI带有子窗口记忆功能的模型层基类：窗口被重新打开时会自动打开之前没有关闭的子级窗口
 --]]

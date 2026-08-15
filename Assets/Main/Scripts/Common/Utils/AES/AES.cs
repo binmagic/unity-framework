@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System 基础类型;不依赖 Unity 或项目内其他模块,纯算法实现
+ * [OUTPUT]: 对外提供 AES 类,含 KeyExpansion 密钥扩展、Cipher/InvCipher 分组加解密(ECB 逐 16 字节)
+ * [POS]: Common/Utils/AES 的底层算法核,自研 AES-128 实现;被兄弟文件 AesEncryptor 包装为字符串加解密门面
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 using System.Linq;

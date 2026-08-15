@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Sdk 向原生下发 AIHelp 指令、LitJson 组装数据(当前实现体多被注释停用)
+ * [OUTPUT]: 对外提供单例 HelpManager，封装客服/FAQ/社区/翻译等 AIHelp 相关展示入口
+ * [POS]: Framework SDK 子系统的客服帮助模块(单例)，由 SDKManager 在 onSDKInit 时初始化——承接游戏内客服系统调用(本工程裁剪后逻辑基本停用)
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

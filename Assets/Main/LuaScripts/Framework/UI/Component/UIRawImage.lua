@@ -5,6 +5,12 @@
 ---
 
 ---@class UIRawImage:UIBaseComponent
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.UnityEngine.UI.RawImage 原生组件、ResourceManager 加载 Texture
+-- [OUTPUT]: 对外提供 UIRawImage 组件类，含 LoadSprite/SetTexture 加载纹理、SetColor/SetColorRGBA/GetColor、SetNativeSize、SetEnable
+-- [POS]: Component 层对 RawImage 的 Lua 封装，用于展示无需九宫格的原始 Texture（如大图、渲染贴图）；与 UIImage 相对
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIRawImage = BaseClass("UIRawImage", UIBaseComponent)
 local base = UIBaseComponent
 local UnityRawImage = typeof(CS.UnityEngine.UI.RawImage)

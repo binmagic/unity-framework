@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 无外部依赖,纯枚举
+ * [OUTPUT]: 对外提供 EventId 枚举,集中定义全局事件 id(App 生命周期/屏幕触摸/UI/业务刷新等)
+ * [POS]: Defines 的事件 id 中心表,是 GameEntry.Event 广播订阅的唯一 key 来源,C#-Lua 事件通信的契约
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 public enum EventId
 {
 	APP_APPLICATION_PAUSE = -1000,

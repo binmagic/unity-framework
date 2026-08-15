@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Attribute 基类
+ * [OUTPUT]: 对外提供 Unity.IL2CPP.CompilerServices 的 Option 枚举与 Il2CppSetOptionAttribute 特性
+ * [POS]: Common/Other 的 IL2CPP 代码生成开关,用于关闭空检查/数组越界检查换取热点性能,与急切构造特性配套被大量标注
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 
 namespace Unity.IL2CPP.CompilerServices

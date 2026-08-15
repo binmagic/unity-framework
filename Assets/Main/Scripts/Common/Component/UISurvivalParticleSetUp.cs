@@ -4,6 +4,12 @@
 //  * Description:
 //  ***/
 
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Renderer/Canvas，依赖 GetComponentInParentExt 扩展取父 Canvas，编辑器下依赖 Sirenix.OdinInspector 绘制面板
+ * [OUTPUT]: 对外提供 UISurvivalParticleSetUp 组件、Refresh 与 SetLocalOrder，批量校准子 Renderer 的 sortingOrder 并支持特殊节点单独设序
+ * [POS]: Common/Component 的粒子/渲染体层级配置器，继承 UIParticleSetUpBase，把整棵子树 Renderer 排序锚定父 Canvas 并允许 specialNodeList 例外，与 UIOrderInLayerSetUp/SpriteMaskSetUp 同族
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Linq;
 #if UNITY_EDITOR

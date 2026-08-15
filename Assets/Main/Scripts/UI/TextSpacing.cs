@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 BaseMeshEffect/VertexHelper 与同节点 Text 组件的文本与对齐信息
+ * [OUTPUT]: 对外提供 TextSpacing 组件(按对齐方式逐行、逐字调整字间距)
+ * [POS]: UI 层的文本网格特效之一,与 CircleText 并列,在网格生成阶段按字符位移顶点实现自定义字距
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

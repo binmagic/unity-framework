@@ -6,6 +6,13 @@
 --- 先临时糊一版跨服管理器 由于NetProxy的OnExtensionResponse直接回调的CS的NetworkManager且没有区分是否跨服，因此不修改cs的情况下 
 --- 只能在lua中直接调用SmartFox了，再找机会复用NetProxy吧
 
+--[[
+-- [INPUT]: 依赖 CS.Sfs2X 的 SmartFox/SFSObject/各类 Request、CS.MessageFactory 透传、CrossServerUtil、LuaEntry.Player/Network、UpdateManager/EventManager/UITimeManager/PostEventLog
+-- [OUTPUT]: 对外提供 CrossNetworkManager 类，暴露 ObserveNewSever/StopObserver/IsConnected 等跨服订阅接口
+-- [POS]: Net 模块的跨服连接管理器（SmartFox2X），因 C# NetProxy 未区分跨服回调而在 Lua 侧独立直连一套 SmartFox；跨服推送透传回原消息工厂，与主服 NetworkManager 并列
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 local SmartFox = CS.Sfs2X.SmartFox
 local SFSEvent = CS.Sfs2X.Core.SFSEvent
 local SFSObject = CS.Sfs2X.Entities.Data.SFSObject

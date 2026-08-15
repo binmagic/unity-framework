@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Event 事件系统与 EventId 枚举,面向 XLua 导出
+ * [OUTPUT]: 对外提供 EventNotify 静态类,把 C# 事件 Fire 能力暴露给 Lua 触发
+ * [POS]: XLua/Support 的事件桥,让 Lua 用 EventId 广播 C# 事件,是跨语言事件通信的 Lua→C# 出口
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using Sfs2X.Entities.Data;
 using Sfs2X.Util;
 using UnityGameFramework.Runtime;

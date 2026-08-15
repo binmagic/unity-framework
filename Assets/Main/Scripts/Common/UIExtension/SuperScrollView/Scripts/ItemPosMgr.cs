@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 基础类型，按分组常量 mItemMaxCountPerGroup 组织数组
+ * [OUTPUT]: 对外提供 ItemPosMgr 位置管理器与 ItemSizeGroup 分组，供查询任意 item 的起始位置/尺寸并做脏区重算
+ * [POS]: SuperScrollView 的定位计算核心，把海量 item 的尺寸与累积偏移分组缓存并惰性刷新脏段，为 LoopListView2 的滚动定位与吸附提供 O(1) 级坐标查询
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;

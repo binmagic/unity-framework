@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 SkinnedMeshRenderer/MeshFilter 烘焙网格、Graphics.DrawMesh 与 MaterialPropertyBlock；经 GameEntry.Shader.Find 取残影 Shader
+ * [OUTPUT]: 对外提供 GhostEffect 组件的 CreateGhostEffectObject/Ghost 接口，生成随时间淡出的角色残影序列
+ * [POS]: Common/Component 的角色残影特效，自管理残影对象列表与网格生命周期，是依赖框架 Shader 管理器的重量级视觉组件
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

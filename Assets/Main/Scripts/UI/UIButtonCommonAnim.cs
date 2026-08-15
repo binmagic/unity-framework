@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 DOTween 做缩放缓动,依赖 DefaultNewButtonCurve 提供全局按压/回弹曲线
+ * [OUTPUT]: 对外提供 UIButtonCommonAnim 组件(供外部事件手动触发按压/回弹动画)
+ * [POS]: UI 层的按钮动画复用件,与 NewButton 共享 DefaultNewButtonCurve,用于非 NewButton 节点(如自定义可点区域)手动播放同款点击手感
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using DG.Tweening;
 using UnityEngine;
 

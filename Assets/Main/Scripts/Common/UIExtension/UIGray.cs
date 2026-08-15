@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Shader 查找置灰 Shader(Custom/ImageGray、UI/GrayETC1、Custom/Luminance),依赖 UnityEngine.UI 的 Image/Graphic/Button/Toggle
+ * [OUTPUT]: 对外提供静态工具类 UIGray,以 SetGray 系列方法对 UI 树递归/单体置灰并联动禁用交互
+ * [POS]: UIExtension 的全局置灰服务,按纹理是否为 ETC1 压缩格式分派不同灰度材质,兼顾 SpriteRenderer 与动态换图后的材质校正
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 

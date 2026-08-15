@@ -7,6 +7,12 @@
 --]]
 
 ---@class UIText : UIBaseComponent
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.UnityEngine.UI.Text 原生组件（经 GetComponent_Text/Native_SetText 底层扩展）；SetLocalText 依赖 Localization
+-- [OUTPUT]: 对外提供 UIText 组件类，含 GetText/SetText/SetLocalText/SetText_Cache、SetColor/SetAlpha/GetColor、SetFontSize/SetAlignment、GetWidth/GetHeight/SetPreferSize
+-- [POS]: Component 层最基础的 UGUI Text 文本封装；与 UINewText/UITextMeshProUGUI 等构成文本组件家族，本类为普通位图字体
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIText = BaseClass("UIText", UIBaseComponent)
 local base = UIBaseComponent
 -- local UnityText = typeof(CS.UnityEngine.UI.Text)

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 ParticleSystem 模拟数据与 UnityEngine.UI 的 MaskableGraphic/VertexHelper 网格接口
+ * [OUTPUT]: 对外提供 UIParticleSystem 组件,把粒子系统的每帧粒子转为 UI 顶点四边形,使粒子受 Canvas 裁剪与层级约束
+ * [POS]: UIExtension 的 UI 内粒子渲染桥,禁用原生粒子渲染器改由 Graphic 重绘,支持贴图序列帧动画与非缩放时间模拟
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;

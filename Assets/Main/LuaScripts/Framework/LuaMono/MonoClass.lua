@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 Framework/LuaMono/LuaMonoBase 作为父类、Common/BaseClass 的 BaseClass、xlua.util 的 move_end
+-- [OUTPUT]: 对外提供全局 MonoClass(classname) 工厂(直接返回实例)及全局 yield_return/yield_return_null/yield_break 协程辅助函数
+-- [POS]: LuaMono 模块工厂入口，一步派生 LuaMonoBase 并 New 出与 C# MonoBehaviour 绑定的 Lua Mono 实例；Awake/OnDestroy 生命周期由 C# 侧回调驱动
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- 用来定义Unity的LUA侧的Mono
 --]]
 

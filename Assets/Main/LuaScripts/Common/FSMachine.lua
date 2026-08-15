@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 纯 Lua metatable 实现,无外部模块依赖;状态对象由使用方按约定接口(OnEnter/OnUpdate/OnExit/Dispose)提供
+-- [OUTPUT]: 对外提供 FSMachine 表(Create/Init/AddState/ChangeState/Update/Reset/Dispose 等)
+-- [POS]: Common 的通用有限状态机基座,以 owner 为宿主管理状态注册与切换,被加载流程/业务模块复用以组织状态驱动逻辑
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local FSMachine = {}
 FSMachine.__index = FSMachine
 

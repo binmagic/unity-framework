@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 Sfs2X.Entities.Data 的 ISFSObject/SFSDataType,依赖 IL2CPP 特性做静态构造与空检查优化
+ * [OUTPUT]: 对外提供 MessageExtension 扩展方法,为 ISFSObject 提供容错的 TryGetInt/Float/Long 等取值
+ * [POS]: Common/Utils 的 SmartFox 消息解析辅助,收敛类型不匹配与缺键的容错逻辑,供网络层安全读取服务端字段
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using Sfs2X.Entities.Data;
 
 [Extension.IL2CPP.CompilerServices.Il2CppEagerStaticClassConstructionAttribute]

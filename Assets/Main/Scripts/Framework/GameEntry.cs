@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 依赖各子系统管理器(EventComponent/ResourceManager/LocalizationManager/SoundComponent/SDKManager/XLuaManager/TimerComponent 等)以及 GameFramework 运行时
+ * [OUTPUT]: 对外提供全局静态入口 GameEntry，含 Init/Update/Shutdown 生命周期与各管理器的静态访问器
+ * [POS]: Framework 层的总装配点与全局服务定位器，是唯一的静态入口——所有子系统组件都以静态属性挂载于此，业务(C#/Lua)统一经 GameEntry.Xxx 访问
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using BitBenderGames;
 using GameFramework;

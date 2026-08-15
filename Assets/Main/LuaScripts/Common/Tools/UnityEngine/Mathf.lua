@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 基于 Lua 原生 math 库(floor/abs/sqrt 等),依赖 CS.UnityEngine.Mathf 原生类型
+-- [OUTPUT]: 对外提供纯 Lua 版 Mathf 并回填 CS.UnityEngine.Mathf(Clamp/Lerp/Repeat/PingPong/角度插值等)
+-- [POS]: Common/Tools/UnityEngine 的数学工具封装(源自 tolua),把高频标量运算留在 Lua 侧,是 Vector/Quaternion 等结构体的数值基础
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --------------------------------------------------------------------------------
 --      Copyright (c) 2015 - 2016 , 蒙占志(topameng) topameng@gmail.com
 --      All rights reserved.

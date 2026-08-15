@@ -6,6 +6,12 @@
 //  ***/
 
 
+/**
+ * [INPUT]: 依赖 UnityEngine 的 SpriteMask/Canvas/SortingLayer，依赖 GetComponentInParentExt 扩展取父级 Canvas，编辑器下依赖 Sirenix.OdinInspector 绘制面板
+ * [OUTPUT]: 对外提供 SpriteMaskSetUp 组件，Refresh 校准 SpriteMask 的自定义排序区间，AutoMatchByTarget 按目标 RectTransform 缩放遮罩
+ * [POS]: Common/Component 的 UI 特效遮罩配置器，继承 UIParticleSetUpBase，把 SpriteMask 的 order 区间锚定到父 Canvas 排序，与 UIOrderInLayerSetUp/UISurvivalParticleSetUp 同族解决特效层级
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 #if UNITY_EDITOR

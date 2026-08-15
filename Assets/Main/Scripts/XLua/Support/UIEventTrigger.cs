@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.EventSystems 的 EventTrigger 与指针事件
+ * [OUTPUT]: 对外提供 UIEventTrigger,在标准点击/拖拽之外补充长按判定并以委托暴露给 Lua 订阅
+ * [POS]: XLua/Support 的 UI 输入扩展,把 uGUI 交互事件统一转成可供 Lua 绑定的回调,服务 UI 层交互
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine.EventSystems;
 using UnityEngine;

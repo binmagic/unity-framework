@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 Image 组件,以 Sprite 列表逐帧切换
+ * [OUTPUT]: 对外提供 UISpriteAnimation 组件,按 FPS 播放序列帧,支持正/反向、循环、暂停/恢复/停止/重播
+ * [POS]: UIExtension 的 UI 帧动画播放器,面向以离散 Sprite 序列表现的简单动效,区别于粒子/骨骼动画方案
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;

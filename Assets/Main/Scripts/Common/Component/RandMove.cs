@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Transform/AnimationCurve/Time，依赖 System.Action 作飞行完成回调
+ * [OUTPUT]: 对外提供 RandMove 组件与 StartFly，以及静态贝塞尔曲线工具 Bezier2/Bezier3
+ * [POS]: Common/Component 的自主飞行体，先按曲线上升再贝塞尔追踪目标，与 UIGoodsFly/UIJumpFly 同属贝塞尔飞行家族但走世界空间自更新
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using System;
 

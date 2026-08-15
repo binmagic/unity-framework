@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 继承 BaseGFXPanel,依赖 UnityEngine.Rendering.Universal 的 URP 资产与 Camera/分辨率
+ * [OUTPUT]: 对外提供 QualitySettingGFXPanel,运行时调节画质档位与渲染分辨率上限
+ * [POS]: GFX/Console/Panels 的画质调试页,与 SceneQualitySetting(运行时策略)呼应,供现场对比不同档位表现
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;

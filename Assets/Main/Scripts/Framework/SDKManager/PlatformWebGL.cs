@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 IPlatformNative 契约与 __Internal JsLib 外部函数(wx_* 微信 API)，回调经 GameEntry.Sdk.SendDataToGame 回传
+ * [OUTPUT]: 对外提供 PlatformWebGL，经 JsBridge 封装微信小游戏登录/支付/系统信息/原生数据收发
+ * [POS]: Framework SDK 子系统在 UNITY_WEBGL(微信小游戏)下的平台实现，供 SDKManager 注入——是 C# 与微信小游戏 JS 运行时的桥
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 #if UNITY_WEBGL
 using System;
 using System.Collections.Generic;

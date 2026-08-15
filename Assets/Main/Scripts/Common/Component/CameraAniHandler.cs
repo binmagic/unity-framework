@@ -4,6 +4,13 @@
 //  * Description: 相机动画控制脚本 一份clip可以复用在多个位置
 //  ***/
 
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Camera/AnimationClip/Coroutine 逐帧采样，依赖 Matrix4x4 做相机位姿变换；编辑器下依赖 UnityEditor 暂停调试
+ * [OUTPUT]: 对外提供 CameraAniHandler 组件的 Enter/Exit 接口，以参照 Transform 为基准播放/回退相机动画并回调结果
+ * [POS]: Common/Component 的相机动画控制器，用状态机(Idle/Apply/Recover)保证动画不可打断，一份 clip 可复用于多个位置
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using System.Collections;
 #if UNITY_EDITOR

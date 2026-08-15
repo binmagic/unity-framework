@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 Common/Messenger 承载监听、Common/BaseClass 的 BaseClass 与 Singleton、全局 UpdateBeat 帧驱动
+-- [OUTPUT]: 对外提供 UpdateManager 单例，暴露 AddUpdate/RemoveUpdate 及 Startup/Dispose/Cleanup
+-- [POS]: Updater 模块的每帧更新入口，用 Messenger 弱引用广播替代直连 UpdateBeat，避免脚本被强引用而无法释放；需每帧 Update 的逻辑(如 RenderSetting)从此注册，是 TimerManager 之外的逐帧更新通道
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-18
 -- 更新管理，负责Unity侧Update对Lua脚本的调用
 -- 注意：

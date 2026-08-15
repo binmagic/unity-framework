@@ -5,6 +5,12 @@
 ---
 
 ---@class CircleImage : UIBaseComponent
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.CircleImage 原生圆形图片组件
+-- [OUTPUT]: 对外提供 CircleImage 组件类，含 LoadSprite 按路径加载贴图（带路径去重）、SetIsCircle 圆形开关
+-- [POS]: Component 层对 CS 圆形裁剪 Image 的 Lua 封装，用于头像等需圆形显示的图片
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local CircleImage = BaseClass("CircleImage", UIBaseComponent)
 local base = UIBaseComponent
 local UnityImage = typeof(CS.CircleImage)

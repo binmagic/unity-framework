@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine UI/Transform、DOTween 与 GameKit.Base,供 XLua 调用
+ * [OUTPUT]: 对外提供 CSUtils,把 Lua 高频调用的固定行为(如点击特效定位)下沉 C# 实现
+ * [POS]: XLua 的交互加速工具,收敛 Lua-C# 频繁往返的逻辑以减 GC,与 Opti 组同旨但落在 XLua 桥接目录
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;

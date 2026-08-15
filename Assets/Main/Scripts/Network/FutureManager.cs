@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Threading 的 Interlocked 原子自增，依赖 GameFramework.Log 输出超时日志
+ * [OUTPUT]: 对外提供 FutureManager，为每条请求分配自增 futureId、登记发送时刻并在响应回来时结算 RTT，暴露 getPing 等统计
+ * [POS]: Network 模块的请求追踪中枢，被 BaseMessage 各子类在组包时调用（getFutureId/onSendRequest）、被 MessageFactory 在分发时回调（onServerMsgCome），是延迟统计与超时监测的唯一来源
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Threading;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameFramework.Localization.Language 枚举、GameEntry.Resource 加载字典 txt、GameEntry.Setting 持久化用户语言、Unity Application.systemLanguage
+ * [OUTPUT]: 对外提供 LocalizationManager，含字典加载解析与按 string/int 主键取本地化文案(支持格式化参数)、语言切换与系统语言映射
+ * [POS]: Framework 本地化子系统的核心，由 GameEntry.Localization 持有——将词条字典载入内存(string/int 双索引)供全端取文案，兄弟文件 Language.cs 提供语言枚举
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.IO;

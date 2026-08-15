@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Timer 获取服务器时间作为建造计时基准
+ * [OUTPUT]: 对外提供 BuildAnimatorManager,维护建筑升级/建造的进度时间数据
+ * [POS]: Manager 层的建筑动画状态管理器,由 GameEntry.BuildAnimatorManager 持有,为城建表现层提供正在建造建筑的起止时间查询
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

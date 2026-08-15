@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 MonoBehaviour 物理回调(OnCollision/OnTrigger Enter/Exit)与 System.Action 委托
+ * [OUTPUT]: 对外提供 ColliderEventHandler 组件，将物理碰撞/触发事件转发给对象级回调，缺省时回落到静态全局回调(按 action/param 分发)
+ * [POS]: Common/Component 的物理事件桥接器，把 Unity 原生碰撞回调解耦为可注入的委托，供上层逻辑(含 Lua)统一接收
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using UnityEngine;
 

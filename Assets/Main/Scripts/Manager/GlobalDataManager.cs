@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Sdk 获取发行渠道,依赖 Sfs2X ISFSObject 接收服务端初始化字段,依赖 UserBindGaidMessage 回传广告标识
+ * [OUTPUT]: 对外提供 GlobalDataManager,集中托管跨会话的全局运行时状态(渠道/版本/gaid/后台标识/踢下线标识等)与渠道判定
+ * [POS]: Manager 层的全局易变状态容器,由 GameEntry.GlobalData 持有,是 C# 各模块共享全局标识的单一数据源,区别于玩家业务数据的 CustomDataManager
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using System.Linq;
 using Sfs2X.Entities.Data;

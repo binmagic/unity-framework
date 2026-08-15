@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 Common/BaseClass 的 BaseClass、全局 Time(frameCount/deltaTime)、Logger、xpcall 保护回调
+-- [OUTPUT]: 对外提供 Timer 类，暴露 Init/Update/Start/Pause/Resume/Stop/Reset/IsOver
+-- [POS]: Updater 模块的定时器实体，支持秒/帧计时、一次性/循环、scaled/unscaled 时间；由 TimerManager 统一创建、调度 Update 并在 IsOver 后回收，自身不主动挂更新
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-18
 -- 定时器
 -- 注意：

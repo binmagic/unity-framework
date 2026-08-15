@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 Framework.Common.Messenger 的观察者派发、CS.EventNotify 的跨语言事件触发（FireLong/FireBool/FireString/FireLuaTable）、EventId 的事件枚举、Singleton 基类
+-- [OUTPUT]: 对外提供 EventManager 单例，含 AddListener/RemoveListener 订阅、Broadcast 广播（按 CS 引用计数决定是否绕经 CS）、IncreaseCSRef/DecreaseCSRef 维护 CS 侧监听计数
+-- [POS]: UI 与全局的事件中枢，Lua 与 CS 双向事件桥；被 UIBaseModel/UIBaseContainer 等各层用于消息驱动刷新，是 Message 模块的核心
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 local Messenger = require "Framework.Common.Messenger"
 local EventNotify = CS.EventNotify

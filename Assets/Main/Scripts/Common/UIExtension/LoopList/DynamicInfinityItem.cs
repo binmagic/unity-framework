@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 继承 UnityEngine 的 MonoBehaviour，依赖 Rect 做相交判断
+ * [OUTPUT]: 对外提供 DynamicRect(带索引的格子矩形) 与 DynamicInfinityItem(单元格视图基类)，后者暴露 SetData/GetData 与 OnSelect/OnUpdateData 委托，子类重写 OnRenderer 填充显示
+ * [POS]: LoopList 模块的单元格与格子模型，由 DynamicInfinityListRenderer 统一实例化和回收，是数据与视图绑定的最小单元
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;

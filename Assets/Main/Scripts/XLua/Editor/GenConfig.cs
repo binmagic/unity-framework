@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 XLua 的 [CSharpCallLua]/[GenPath] 特性与 CSObjectWrapEditor 生成器(编辑器期)
+ * [OUTPUT]: 对外提供 GenConfig,声明需生成 wrap 代码的类型白名单与生成输出路径(XLuaGen)
+ * [POS]: XLua/Editor 的代码生成配置源,决定 Lua 可调用哪些 C# 类型,是 xLua 静态导出的清单
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using System;
 using XLua;

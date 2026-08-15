@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.UI.HorizontalOrVerticalLayoutGroup 原生布局组
+-- [OUTPUT]: 对外提供 UIHorizontalOrVerticalLayoutGroup 组件类，含 GetSpacing/SetSpacing 间距、SetPaddingLeft/Right/Top/Bottom 与 GetPadding 内边距控制
+-- [POS]: Component 层对水平/垂直自动布局组的 Lua 封装，用于运行时调整子元素排布间距与边距
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIHorizontalOrVerticalLayoutGroup = BaseClass("UIHorizontalOrVerticalLayoutGroup", UIBaseContainer)
 local base = UIBaseContainer
 local UnityHorizontalOrVerticalLayoutGroup = typeof(CS.UnityEngine.UI.HorizontalOrVerticalLayoutGroup)

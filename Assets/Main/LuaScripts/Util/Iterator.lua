@@ -3,6 +3,12 @@
 --- Created by 1022.
 --- DateTime: 2023/4/11 14:24
 ---迭代器，目前只支持数组，可以顺序读取和随机读取数据
+--[[
+-- [INPUT]: 依赖 Framework 的 BaseClass,依赖 table.values/IsNullOrEmpty/IsNotEmpty 扩展
+-- [OUTPUT]: 对外提供 Iterator 类(Push 扩容、GetRandom 随机取、顺序读取、可用性判定)
+-- [POS]: Util 的数组迭代器,构造时复制值快照保证数据安全,支持顺序与随机两种消费方式,用于轮播/抽取类业务
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local Iterator = BaseClass("Iterator")
 
 function Iterator:__init(array)

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 IMGUI(OnGUI/Rect),依赖 BaseGFXPanel 面板抽象,依赖 GameFramework
+ * [OUTPUT]: 对外提供 BaseGFXConsole MonoBehaviour 基类,管理面板列表/分页切换/IMGUI 窗口绘制
+ * [POS]: GFX/Console/Base 的控制台骨架,由 GFXConsole 继承并 AddPanel 填充,统一调试台的容器与交互框架
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using GameFramework;
 using UnityEngine;

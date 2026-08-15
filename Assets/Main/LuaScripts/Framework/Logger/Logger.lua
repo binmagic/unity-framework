@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 CS.GameFramework.Log 的 Info/Error/SetWriteLogLevel、CS.CommonUtils.IsDebug、全局 App 的 IsDebug/IsEditor、table.dump
+-- [OUTPUT]: 对外提供 Logger 表，暴露 Debug/DebugFormat/Log/LogFormat/LogError/LogErrorFormat/LogTable 及日志级别读写
+-- [POS]: Logger 模块核心，Lua 层唯一日志出口(禁止裸 print)，按 writeLogLevel(0关/1全/2仅错)分级并桥接到 C# 日志系统；错误日志附 traceback 以便崩溃排查，是 FireBaseLog/PostEventLog 之外的本地日志通道
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-11-30
 -- Logger系统：Lua中所有错误日志输出均使用本脚本接口，以便上报服务器
 --]]

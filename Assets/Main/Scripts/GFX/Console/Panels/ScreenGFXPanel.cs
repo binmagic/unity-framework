@@ -1,10 +1,16 @@
+/**
+ * [INPUT]: 继承 BaseGFXPanel,依赖 URP 的渲染缩放(renderScale)与屏幕分辨率
+ * [OUTPUT]: 对外提供 ScreenGFXPanel,运行时调节 URP 主相机分辨率缩放以权衡清晰度与性能
+ * [POS]: GFX/Console/Panels 的屏幕分辨率调试页,与 QualitySettingGFXPanel 分工聚焦渲染分辨率维度
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
-/// 
+///
 /// </summary>
 public class ScreenGFXPanel :BaseGFXPanel
 {

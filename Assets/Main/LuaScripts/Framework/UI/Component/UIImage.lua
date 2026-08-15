@@ -4,6 +4,12 @@
 --]]
 
 ---@class UIImage : UIBaseComponent
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.UnityEngine.UI.Image 原生组件（经 GetComponent_Image/LoadSprite/LoadHeadEx 底层扩展）
+-- [OUTPUT]: 对外提供 UIImage 组件类，含 LoadSprite 加载贴图、LoadHeadEx 加载头像、SetFillAmount/GetFillAmount 填充、SetColor/SetAlpha 颜色、SetMaterial、SetNativeSize/SetSizeByWidth/SetSizeByHeight 尺寸、SetRaycastTarget/SetEnable
+-- [POS]: Component 层最基础的图片组件，界面绝大多数静态图使用；与 CircleImage/UIRawImage 分别对应圆形与纹理场景
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIImage = BaseClass("UIImage", UIBaseComponent)
 local base = UIBaseComponent
 local UnityImage = typeof(CS.UnityEngine.UI.Image)

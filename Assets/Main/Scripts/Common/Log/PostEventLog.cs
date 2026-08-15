@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityWebRequest 上报,依赖 GameFramework/GameKit 基础设施,依赖预定义事件名常量
+ * [OUTPUT]: 对外提供 PostEventLog 静态类,以固定事件名(启动/退出/资源就绪等)向远端埋点服务上报关键节点
+ * [POS]: Common/Log 的运营埋点上报通道,区别于本地落盘的 Log,专供 App 生命周期打点的数据回传
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Buffers;
 using System.Collections.Generic;

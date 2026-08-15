@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 ContentSizeFitter 基类与 LayoutUtility 尺寸计算
+ * [OUTPUT]: 对外提供 ClampedContentSizeFitter 组件(在自适应尺寸基础上追加最大宽/高上限)
+ * [POS]: UI 层的布局适配增强件,扩展原生 ContentSizeFitter,解决自适应文本/容器无限撑大的问题
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 

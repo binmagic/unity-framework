@@ -5,6 +5,12 @@
 -- 由于原本的UIToggleButton是基于UIButton的自定义控件，不是UnityGUI的Toggle，这里扩展一个Unity的Toggle
 --]]
 
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.UI.Toggle 原生开关组件
+-- [OUTPUT]: 对外提供 UIToggle 组件类，含 SetIsOn/GetIsOn/SetIsOnWithoutNotify 状态、SetOnValueChanged 回调、SetGroup 归入 ToggleGroup、SetInteractable
+-- [POS]: Component 层对 UGUI Toggle 的 Lua 封装，用于复选/单选（配合 Group）与页签切换
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UIToggle
 local UIToggle = BaseClass("UIToggle", UIBaseContainer)
 local base = UIBaseContainer

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry 的 Sdk/Resource 等管理器,依赖 XLua 的 [Hotfix] 热更能力,依赖 UnityEngine 渲染与 UI 类型
+ * [OUTPUT]: 对外提供 CommonUtils 静态工具类,聚合运行环境判断/URL 打开/类型检测等游戏通用杂项方法
+ * [POS]: Common/Utils 的通用杂项工具,C# 与 Lua 共享调用的第一落点,与 GameUtility(平台路径)分工不同职责
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using GameFramework;
 using UnityEngine;

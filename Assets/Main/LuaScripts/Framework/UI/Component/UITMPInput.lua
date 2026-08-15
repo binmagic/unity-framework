@@ -4,6 +4,12 @@
 --- DateTime: 2023/11/10 16:36
 ---
 
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.TMPro.TMP_InputField 原生 TMP 输入框；SetLocalText 依赖 Localization
+-- [OUTPUT]: 对外提供 UITMPInput 组件类，含 GetText/SetText/SetLocalText、SetOnEndEdit/SetOnSelect/SetOnValueChange 回调、SetInteractable/SetEnable、SetCharacterLimit 字数限制
+-- [POS]: Component 层对 TMP_InputField 的 Lua 封装；与 UIInput（UGUI 版）对应，用于 TMP 字体文本输入
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UITMPInput : UIBaseComponent
 local UITMPInput = BaseClass("UITMPInput", UIBaseComponent)
 local base = UIBaseComponent

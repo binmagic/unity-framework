@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 RectTransform 锚点位移与协程更新，标注 XLua.Hotfix 以支持 Lua 热更注入
+ * [OUTPUT]: 对外提供 ScrollTxtNode 组件与 Move 接口
+ * [POS]: UIExtension 的单行滚动字幕节点，按 scrollInterval 定时把文本横向滚出后归位，供 Lua 通过 Hotfix 驱动
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 

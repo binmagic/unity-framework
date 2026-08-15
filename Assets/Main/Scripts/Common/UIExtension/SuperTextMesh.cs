@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 MeshFilter/MeshRenderer 直接构建网格，依赖 STMCharInfo 存字符几何，依赖 ArabicSupport.ArabicFixer 做 RTL 阿拉伯语整形
+ * [OUTPUT]: 对外提供 SuperTextMesh 组件（Mesh/Super Text Mesh 菜单），暴露 text/color32/alpha 等富文本属性
+ * [POS]: UIExtension 的自绘文本网格控件，绕开 UGUI 直接生成顶点/UV/三角形以支持逐字符效果，写入 text 时按需 RTL 修正并 Rebuild 网格，是文本渲染类扩展中的独立自实现件
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using System.Collections.Generic;

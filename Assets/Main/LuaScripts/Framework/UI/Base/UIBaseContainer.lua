@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 UIBaseComponent 的组件能力、EventManager 的消息注册、UpdateManager 的每帧驱动、TimerManager 的延迟/下一帧调用
+-- [OUTPUT]: 对外提供 UIBaseContainer 类，含 AddComponent/GetComponent/RemoveComponent 子组件管理、AddUIListener/RemoveAllUIListeners 消息订阅、SetActive 递归激活、DelayInvoke/DoNextFrame 延迟执行、ResortUIEffect 特效重排
+-- [POS]: UI 框架的容器基类，负责调度其持有的子组件生命周期；以子节点 InstanceID 为键管理组件表，是 UIBaseComponent 与 UIBaseView 之间的中间层
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-08
 -- UI容器基类：当一个UI组件持有其它UI组件时，它就是一个容器类，它要负责调度其它UI组件的相关函数
 -- 注意：

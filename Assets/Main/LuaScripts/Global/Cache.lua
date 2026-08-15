@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 CS.UnityEngine.Animator 做字符串哈希
+-- [OUTPUT]: 对外提供 GlobalCache 表，暴露 Animator 哈希缓存与 state0x/statex 字符串复用接口
+-- [POS]: Global 模块的运行期缓存汇集点，统一收口可随重启清理的缓存，降低 Lua↔C# 字符串交互开销
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 -- 这里主要保存一些游戏中运行的全局cache信息
 -- 放到这里的主要原因是，方便游戏重启的时候删除
 -- 不要在代码中自行去设置cache，统一在这里添加，否则到时候不要统一管理了！

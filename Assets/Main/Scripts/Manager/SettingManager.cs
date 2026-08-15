@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.PlayerPrefs 做本地键值持久化,依赖 LuaStringLookupTable 以 keyId 换取字符串键降低 Lua 交互 GC
+ * [OUTPUT]: 对外提供 SettingManager,统一的客户端设置读写门面(public 全局键 / private 按 uid 隔离键 / byId 免拼接三套接口)
+ * [POS]: Manager 层的本地设置存储门面,由 GameEntry.Setting 持有,是全工程 PlayerPrefs 访问的唯一收口,承载语言、deviceId、推送等零散配置
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using GameFramework.Localization;
 using UnityEngine;
 

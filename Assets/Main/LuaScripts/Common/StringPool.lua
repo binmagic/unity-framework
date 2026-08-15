@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 Framework 的 BaseClass,依赖 string.split/string.IsNullOrEmpty 扩展与 Mathf.Repeat
+-- [OUTPUT]: 对外提供 StringPool 类(GetRandom 随机取/Sequence 轮播取/First)
+-- [POS]: Common 的字符串池,把分隔符串拆成数组后提供随机与顺序轮播两种取用策略,常用于台词/提示文案的多样化展示
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---
 --- 随机池 + 轮播池
 ---

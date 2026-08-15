@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI.ScrollRect 提供滑动容器，依赖 EventSystems 的拖拽接口与 Unity.Mathematics 的边界裁剪
+ * [OUTPUT]: 对外提供 PageViewComponent 组件、Refresh/RefreshByCell/pageTo 接口与 onPageChanged 回调
+ * [POS]: UIExtension 的分页滑动控制器，在 ScrollRect 之上计算每页临界位置并做插值吸附，支持逐格滑动与两端空位补齐
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;

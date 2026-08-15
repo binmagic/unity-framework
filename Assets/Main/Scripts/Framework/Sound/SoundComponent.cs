@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 依赖 GameEntry.Resource 异步加载音频资源(VEngine.Asset)、GameEntry.Localization 取配音语言，依赖 Unity AudioListener/AudioSource
+ * [OUTPUT]: 对外提供 SoundComponent(partial 主体)，含音乐/音效/配音/3D 音效播放、按组停止/暂停/静音/调音量与序列号管理
+ * [POS]: Framework 声音子系统的门面(partial，另含 SoundGroup 与 PlaySoundInfo 分部)，由 GameEntry.Sound 持有并在主循环 OnUpdate 中轮询——统管音频加载调度与分组播放
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using GameFramework;

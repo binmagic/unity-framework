@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System 基础
+ * [OUTPUT]: 对外提供 BuildingState/ResourceType 等游戏枚举,统一建筑状态与资源类型的取值词汇
+ * [POS]: Defines 的枚举定义集,C# 与 Lua 共享的类型常量源,与 GameDefines(数值常量)分工承载"分类型"定义
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 
 public enum BuildingState

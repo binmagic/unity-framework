@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 纯 Lua metatable 实现,无外部模块依赖
+-- [OUTPUT]: 对外提供 Stack 类(new/push/pop/peek/is_empty/clear/print_stack)
+-- [POS]: Common/Tools 的后进先出栈容器,基于 table 数组实现,供需要 LIFO 语义的算法(如调用栈追踪)复用
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 --在 Lua 中实现一个简单的栈（Stack）类，可以利用表（table）来实现。
 -- 栈是一种数据结构，遵循后进先出（LIFO，Last In, First Out）的原则，即最新压入栈的元素最先弹出。

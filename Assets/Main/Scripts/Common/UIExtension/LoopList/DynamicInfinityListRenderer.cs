@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 ScrollRect 承载滚动，实例化 RenderGO 预制体并要求其挂 DynamicInfinityItem，以 IList 作为数据源
+ * [OUTPUT]: 对外提供 DynamicInfinityListRenderer 组件，支持横/竖多列布局、数据驱动的 SetDataProvider/RefreshDataProvider 与定位到指定数据的补间滚动
+ * [POS]: LoopList 模块的滚动主控，以矩形相交检测回收 DynamicInfinityItem，是相对 InfinityScrollViewBase 更偏数据源(IList)驱动的一套无限列表实现
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;

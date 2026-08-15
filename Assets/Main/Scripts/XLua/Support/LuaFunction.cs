@@ -8,6 +8,12 @@ using RealStatePtr = System.IntPtr;
 using LuaCSFunction = XLua.LuaDLL.lua_CSFunction;
 #endif
 
+/**
+ * [INPUT]: 依赖 XLua 的 LuaAPI/RealStatePtr 底层栈操作,依赖 GameFramework
+ * [OUTPUT]: 对外提供 LuaFunction 封装,以栈操作方式调用 Lua 函数并压入参数,减少中间层开销
+ * [POS]: XLua/Support 的低层函数调用原语,被 DCBuilding 等取 Lua 数据的 C# 类复用,是跨语言调用的性能底座
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using GameFramework;

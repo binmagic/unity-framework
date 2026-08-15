@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 RawImage 与 ILayoutElement 布局接口
+ * [OUTPUT]: 对外提供 UIObject3DRawImage 组件,一个屏蔽默认布局尺寸推断的 RawImage 子类
+ * [POS]: UIObject3D 模块的贴图载体,被 UIObject3D 挂载以显示 3D 渲染纹理,以最低布局优先级避免 LayoutGroup 干扰其尺寸
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 

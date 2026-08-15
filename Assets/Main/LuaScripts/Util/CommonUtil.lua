@@ -4,6 +4,12 @@
 --- DateTime: 2021/6/29 15:34
 ---
 
+--[[
+-- [INPUT]: 依赖 CS.Vibrator/CS.GameEntry.Resource,依赖 LuaEntry.Player 与 DataCenter 各 Manager、ServerType 等业务全局
+-- [OUTPUT]: 以 ConstClass 导出只读 CommonUtil(震动、跨服/龙战判定、世界坐标、引导相关等业务通用方法)
+-- [POS]: Util 的业务通用工具集,聚合与玩家/服务器状态强相关的跨模块杂项判断,依赖游戏数据层,区别于 Common 的语言级无状态扩展
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class CommonUtil
 local CommonUtil = {}
 local Vibrator = CS.Vibrator

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 WebRequestManager 做 multipart 上传与文件下载,依赖 GameEntry.Sdk 唤起原生选图,依赖 AESHelper 生成鉴权 md5,依赖 GameEntry.Lua 回传上传状态
+ * [OUTPUT]: 对外提供 UploadImageManager 单例,承担玩家头像的选择、鉴权上传与按 uid/picVer 规则下载
+ * [POS]: Manager 层的头像图片上传下载流程编排器,串联 Lua 发起、原生选图与 HTTP 传输,是玩家头像业务的专用端到端通道
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.IO;
 using UnityEngine;

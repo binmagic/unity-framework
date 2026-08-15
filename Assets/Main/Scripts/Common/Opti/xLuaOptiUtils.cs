@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine UI/TMP 与 Cinemachine 等类型,面向 XLua 的 userdata/struct 打包机制
+ * [OUTPUT]: 对外提供 xLua 交互优化方法,减少 Lua 操作 UI 时 struct/引用类型跨语言传递的开销
+ * [POS]: Common/Opti 的 xLua 交互层优化,直面 ObjectTranslator 装箱成本,与 LuaStringLookupTable(字符串驻留)同属 xLua 优化组
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

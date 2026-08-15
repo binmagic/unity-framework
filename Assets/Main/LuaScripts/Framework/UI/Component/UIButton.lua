@@ -9,6 +9,12 @@
 --]]
 
 ---@class UIButton : UIBaseContainer
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.UI.Button 与 Image 原生组件
+-- [OUTPUT]: 对外提供 UIButton 组件类，含 SetOnClick/Click 点击回调、SetInteractable/SetEnabled 可用态、SetSprite/LoadSprite/SetMaterial/SetNativeSize 按钮图形、SetSafeClickMode 防连点、SetParam/GetParam 携带参数
+-- [POS]: Component 层最常用的按钮容器（含子级 Image/Text），是交互入口；与 ComponentExt/UIButton_LongPress 互补（后者支持长按）
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIButton = BaseClass("UIButton", UIBaseContainer)
 local base = UIBaseContainer
 local UnityButton = typeof(CS.UnityEngine.UI.Button)

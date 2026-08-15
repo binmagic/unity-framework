@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 无外部依赖，纯配置表
+-- [OUTPUT]: 对外提供 UILayer 层级配置表，定义 World/Scene/Background/UIResource/Normal/Info/Dialog/Guide/TopMost/TopCanvas 各层的容器节点名、PlaneDistance 与 OrderInLayer 基准
+-- [POS]: UI 框架的层级顺序标准，UIManager 据此把窗口挂到对应层并计算排序；相邻层 OrderInLayer 差 5000 以隔离特效排序，受 Unity sortingOrder 取值范围约束
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-04
 -- UILayer配置
 --]]

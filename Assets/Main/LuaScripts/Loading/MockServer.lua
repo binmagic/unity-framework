@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 LuaEntry:onMessage 灌入数据、EventManager 广播 PUSH_INIT_OK，依赖 Logger
+-- [OUTPUT]: 对外提供 MockServer 表，暴露 GeneratePushInitData/SimulatePushInit
+-- [POS]: Loading 模块的单机模拟服务器，无服务器环境下伪造 push_init 数据并走通 LuaEntry→广播链路；由 AppStartupLoading 的 PushInitState 在 Debug/无网时 require
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- MockServer - 单机模式下的模拟服务器
 -- 提供 push_init 等服务器消息的模拟数据
 -- 仅用于无服务器的本地开发/测试环境

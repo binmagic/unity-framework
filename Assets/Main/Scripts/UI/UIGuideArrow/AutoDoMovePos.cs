@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 AutoDoMovePosMachine 驱动状态流转,依赖字符串配置解析路径点(pos;type 格式)
+ * [OUTPUT]: 对外提供 AutoDoMovePos 组件(引导手势箭头沿多点路径循环移动的宿主与数据源)
+ * [POS]: UIGuideArrow 模块的门面与数据中心,持有路径点与全局速度/时长常量,把逐帧驱动委托给状态机——是箭头动画对外的唯一挂载入口
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 

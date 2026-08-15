@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 Framework 的 BaseClass、EventManager/TimerManager/UIManager 单例、CS.GameEntry.Data/Resource，以及 DataCenter 下众多业务 Manager 与 Guide 枚举
+-- [OUTPUT]: 对外提供 GuideManager 类，暴露引导状态机的 SetCurGuideId/DoGuide/DoNext/CheckGuideComplete 及各类信号回调
+-- [POS]: DataCenter 模块的新手引导管理器，母工程完整引导状态机；连连看简化流程下 __init 仅保留字段桩、不注册监听不访问已注释枚举，注册于 DataCenter.Managers
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 ---
 --- Created by shimin.
 --- DateTime: 2021/8/18 10:52

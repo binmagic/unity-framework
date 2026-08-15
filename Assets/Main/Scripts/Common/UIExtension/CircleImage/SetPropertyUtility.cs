@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Color 类型
+ * [OUTPUT]: 对外提供 SetPropertyUtilityExt 静态工具，暴露 SetColor/SetStruct/SetClass 三个带脏值判断的属性赋值方法
+ * [POS]: CircleImage 模块的属性赋值助手，供 BaseImage 等在 setter 中判断值是否真正改变，避免无谓的 SetAllDirty 重绘
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 
 internal static class SetPropertyUtilityExt

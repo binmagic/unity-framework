@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: require Global.Global 拉起全局命名空间;依赖 UpdateManager/EventManager/TimerManager/UIManager 等框架单例与 LuaEntry、AppStartupLoading
+-- [OUTPUT]: 对外提供全局 GameMain(Start 主入口,ShowTips/ShowMessage/OnApplicationPause/Focus、DispatchCSEvent 等 C# 回调)
+-- [POS]: LuaScripts 根级 Lua 程序总入口,被 C# 侧 XLuaManager 启动后调用 Start,依次点火各框架管理器并交棒给加载状态机
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 -- 全局模块
 require "Global.Global"

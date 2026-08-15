@@ -6,6 +6,12 @@
 -- added by wsh @ 2017-12-28
 -- 注意：
 -- 1、已经被修改，别从tolua轻易替换来做升级
+--[[
+-- [INPUT]: 依赖 CS.UnityEngine.Time 原生类型;每帧由 event.lua 的 Update 调用 SetDeltaTime/SetFrameCount 刷新
+-- [OUTPUT]: 对外提供纯 Lua 版 Time(deltaTime/unscaledDeltaTime/frameCount 缓存与 setter)
+-- [POS]: Common/Tools/UnityEngine 的时间缓存封装(源自 tolua),把每帧时间快照留在 Lua 侧避免高频跨 C# 取值,是帧循环的时间基准
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 local rawget = rawget
 local unity_time = CS.UnityEngine.Time

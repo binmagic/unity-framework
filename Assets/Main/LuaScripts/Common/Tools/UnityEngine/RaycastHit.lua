@@ -6,6 +6,12 @@
 -- added by wsh @ 2017-12-28
 -- 注意：
 -- 1、已经被修改，别从tolua轻易替换来做升级
+--[[
+-- [INPUT]: 依赖 Vector3 承接命中点/法向,回填 CS.UnityEngine.RaycastHit
+-- [OUTPUT]: 对外提供纯 Lua 版 RaycastHit(point/normal/distance/collider 等命中信息访问)
+-- [POS]: Common/Tools/UnityEngine 的射线命中结果结构体封装(源自 tolua),承接物理射线检测的返回数据供 Lua 侧读取
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 local rawget = rawget
 local setmetatable = setmetatable

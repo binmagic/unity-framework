@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 MaskableGraphic 取 materialForRendering，依赖 Shader.PropertyToID 缓存 APS/V_ui_shader_common 着色器属性
+ * [OUTPUT]: 对外提供 UIShaderCommonHelp 组件，把 Inspector 上的颜色/溶解/噪声/世界坐标等参数逐帧写入材质
+ * [POS]: Common/Component 的 UI 通用着色器参数驱动器，仅接管使用 APS/V_ui_shader_common 的 UI 材质实例，在 Inspector 面板与运行时材质之间做参数同步
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

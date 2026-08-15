@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameFramework.Localization 的 Language 判定阿语环境,依赖 Image/RawImage/Text 组件识别
+ * [OUTPUT]: 对外提供 ForceArabicImage 标记组件(IsReverseImage 意图开关)
+ * [POS]: Arabic 模块的图片翻转覆盖标记,ArabicMirror 结合 AutoReverseImageNameList 名单时读取它,以强制指定单张图片在 RTL 下是否镜像
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using GameFramework.Localization;
 using TMPro;
 using UnityEngine;

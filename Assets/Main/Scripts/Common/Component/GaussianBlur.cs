@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 RenderTexture/Graphics.Blit 与外部注入的模糊 Material，依赖 UnityEngine.UI 的 RawImage 取源纹理并回写
+ * [OUTPUT]: 对外提供 GaussianBlur 组件的 Blur 方法，对 RawImage 纹理做降采样多次横竖两趟高斯模糊
+ * [POS]: Common/Component 的 UI 背景虚化工具，禁用时释放中间 RenderTexture 防泄漏，服务于弹窗背景毛玻璃效果
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

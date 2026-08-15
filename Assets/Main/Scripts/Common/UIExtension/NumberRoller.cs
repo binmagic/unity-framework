@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 TMPro 的 TextMeshProUGUI 文本渲染，依赖 GameEntry.Localization 取提示词，依赖 Unity 协程与 Mathf.Lerp
+ * [OUTPUT]: 对外提供 NumberRoller 组件及 StartRoll 接口，驱动数字从 0 滚动到目标值
+ * [POS]: UIExtension 的数值动画节点，用协程做定时插值的一次性数字增长动效，OnDisable 时中止协程防泄漏
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using TMPro;
 using UnityEngine;

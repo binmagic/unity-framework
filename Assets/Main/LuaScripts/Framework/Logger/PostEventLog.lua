@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 CS.PostEventLog.Record 执行实际打点上报(Lua 侧仅做转发与 xpcall 保护)
+-- [OUTPUT]: 对外提供 PostEventLog 表，暴露 Defines 事件常量表与 Record/Track 接口
+-- [POS]: Logger 模块的启动/登录流程打点通道，Defines 枚举覆盖启动→检查版本→下载→连接→登录各阶段埋点；当前实现委托给 C# 版本(Lua 纯 Lua 上报逻辑已注释保留)，与 FireBaseLog(崩溃线索)分工不同
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
 ---
 --- 打点日志
 --- 这个类暂时不要挪到lua，因为C#还会用。暂时先用C#的。

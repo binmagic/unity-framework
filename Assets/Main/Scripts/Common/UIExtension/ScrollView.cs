@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 UIBehaviour/布局与画布重建接口，依赖 EventSystems 拖拽/滚动事件，依赖 GameEntry.Event 订阅 StopSvAutoToCell
+ * [OUTPUT]: 对外提供 ScrollView 组件、RefillCells/RefillCellsFromEnd/RefreshCells/ScrollToCell 等无限列表接口与 onItemMoveIn/onItemMoveOut 回调
+ * [POS]: UIExtension 的核心，基于 LoopScrollRect 思想自研的对象池化无限循环滚动容器，靠 cell 复用只维持视口内实例，是列表类 UI 的运行时底座，区别于仅做嵌套/激活定制的 ScrollRectEx/ScrollRectWithoutEnable
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;

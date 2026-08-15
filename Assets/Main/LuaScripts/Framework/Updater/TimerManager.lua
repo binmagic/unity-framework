@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 Common/BaseClass 的 BaseClass 与 Singleton、Updater/Timer 实体、全局 UpdateBeat 帧驱动、Time、Logger、table.clear
+-- [OUTPUT]: 对外提供 TimerManager 单例，暴露 GetTimer/DelayInvoke/DelayNextFrameAction、Startup/Dispose/Cleanup 及静态 getBetweenDays
+-- [POS]: Updater 模块调度中枢，挂到 UpdateBeat 上限频(约每秒15次)统一驱动所有 Timer，管理待加/待删列表与下一帧动作队列避免遍历与重入问题；是上层倒计时/延时逻辑的统一入口，TimeUpManager 亦借它获取秒级 Timer
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-18
 -- 定时器管理：负责定时器获取、回收、缓存、调度等管理
 -- 注意：

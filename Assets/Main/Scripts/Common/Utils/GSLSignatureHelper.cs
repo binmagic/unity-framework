@@ -4,7 +4,12 @@
 //  * Description: get server list sig相关支持 key以非明文的方式存储，动态随机选择一种算法还原
 //  ***/
 
-
+/**
+ * [INPUT]: 依赖 System.Text 编码,依赖内部多套 KeyGenerator 以异或字节还原密钥
+ * [OUTPUT]: 对外提供 GSLSignatureHelper 静态类,动态随机选算法还原签名密钥并生成获取服务器列表的签名
+ * [POS]: Common/Utils 的密钥防护工具,密钥非明文分散存储,与 AESHelper(通用加解密)分工,专服务于服务器列表签名
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Text;
 using UnityEngine;
 

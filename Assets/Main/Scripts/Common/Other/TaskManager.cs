@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 协程与 UnityGameFramework.Runtime 基础
+ * [OUTPUT]: 对外提供 Task 封装与 TaskManager,以可暂停/可停止的句柄式接口驱动协程
+ * [POS]: Common/Other 的协程任务管理器,把裸协程包装成可控生命周期的 Task,供需要中途暂停/取消的异步流程使用
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using System.Collections;
 using UnityGameFramework.Runtime;

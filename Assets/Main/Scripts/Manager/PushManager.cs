@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 FcmTokenMessage/PushRecordMessage 上报推送 token 与点击记录,依赖 GameEntry.Setting 读写推送缓存数据
+ * [OUTPUT]: 对外提供 PushManager 单例,管理推送账号注册、token 同步与推送点击数据的记录/清理
+ * [POS]: Manager 层的消息推送协调器,汇集平台(fcm/apns 等)token 并在登录完成后择机上报,是客户端与推送后台的对接点
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using GameFramework;
 using System;
 

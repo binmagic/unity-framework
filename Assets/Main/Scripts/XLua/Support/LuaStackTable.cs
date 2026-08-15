@@ -8,7 +8,12 @@ using RealStatePtr = System.IntPtr;
 using LuaCSFunction = XLua.LuaDLL.lua_CSFunction;
 #endif
 
-
+/**
+ * [INPUT]: 依赖 XLua 的 LuaAPI/RealStatePtr 直接操作 Lua 栈
+ * [OUTPUT]: 对外提供基于 Lua 栈的轻量 table 封装,实现 0-GC 的跨语言表数据传输
+ * [POS]: XLua/Support 的高性能表通道,相对注册表 LuaTable 更轻但仅存活于栈(不可缓存),供高频数据往返使用
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 //
 // LuaTable是创建在注册表里面的一个table
 // 当我们频繁在c#和lua之间传输数据的时候，使用LuaTable会略耗。

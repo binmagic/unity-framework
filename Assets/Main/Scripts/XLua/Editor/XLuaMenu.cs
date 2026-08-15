@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEditor 菜单与 System.IO,读写 LuaScripts/LuaTxt 及横竖屏路径常量
+ * [OUTPUT]: 对外提供 XLuaMenu 编辑器菜单,把 Lua 源码导出/拷贝为运行时可加载的 LuaTxt(含横竖屏两套路径)
+ * [POS]: XLua/Editor 的构建工具,是 Lua 脚本进包的打包入口,与 XLuaManager 运行时加载的路径约定一一对应
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖兄弟文件 UIScrollController(行池化引擎)与 UIScrollItem(行容器),依赖 UnityEngine.UI 的 ScrollRect
+ * [OUTPUT]: 对外提供泛型基类 UIScrollBase<T>,在单列行滚动之上封装多列(numPerLine)网格、数据列表绑定与刷新/插入/删除/定位 API,以 freshEvent/addListenerEvent 回调下沉业务
+ * [POS]: UIScroll 家族的业务层门面,把 UIScrollController 的行复用映射到 T 数据列表与每行多个 cell,供各业务列表继承使用
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using System.Collections.Generic;

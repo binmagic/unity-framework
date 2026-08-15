@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 直接依赖 XLua 底层 LuaAPI(LuaDLL) 与 GameEntry.Lua.Env 的 lua_State/translator，依赖 Unity MonoBehaviour
+ * [OUTPUT]: 对外提供 LuaMonoBase，将挂载 GameObject 绑定到指定 Lua table 并提供无 GC 的 Lua 函数调用/取值/引用管理原语
+ * [POS]: Framework LuaMono 子系统的基类，是 C# MonoBehaviour 与 Lua 逻辑对象的绑定底座——子类 LuaMonoConfig/LuaMonoUpdate 在其上扩展生命周期回调转发
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 using GameFramework;

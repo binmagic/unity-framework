@@ -1,2 +1,6 @@
-
-
+--[[
+-- [INPUT]: 预期依赖 Common/BaseClass 的 BaseClass 派生；被 FSM 按 stateIndex 持有与驱动
+-- [OUTPUT]: 预期对外提供 FSMStateBase 状态基类，约定 OnEnter/OnExit/OnUpdate/HandleInput/OnTransToSelf 生命周期接口
+-- [POS]: Common 层 FSM 状态机的状态契约基类，与 FSM(状态容器)配对——上层各具体状态由它派生以获得统一进入/退出/更新/输入回调。当前为空文件(接口约定占位)，实现时须补齐
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]

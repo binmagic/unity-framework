@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 HorizontalOrVerticalLayoutGroup 布局基类与 LayoutUtility 尺寸计算
+ * [OUTPUT]: 对外提供 BidirectionalHorizontalLayoutGroup 组件与 IsReverse 开关(可从左起或从右起排布子元素)
+ * [POS]: Arabic 模块的双向水平布局基础设施,替代 Unity 原生 HorizontalLayoutGroup,由 ArabicMirror/ForceArabicBiHorizontalLayout 翻转其排布方向以实现 RTL
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Runtime.InteropServices 的 P/Invoke 与 AOT.MonoPInvokeCallback,依赖 Profiler
+ * [OUTPUT]: 对外提供 CFuncUtils,以 DllImport 访问从 C 导出的底层接口(含 Profiler 采样标注)
+ * [POS]: XLua/Support 的原生互操作层,打通 C# 与 native/lua dll 的直调,服务性能剖析与底层能力扩展
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;

@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 CS.GameEntry.Localization 取字符串、string.format_params 做参数替换，依赖 App/Logger
+-- [OUTPUT]: 对外提供 Localization 表，暴露 GetString/Reset/GetLanguage/GetRealId 等多语言取值接口
+-- [POS]: Global 模块的本地化门面，在 Lua 侧缓存 id→字符串以省去反复的 Lua↔C# 往返；字符串总表仍存于 C#，本层只管缓存与格式化
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 -- LUA版本的Localization
 -- 其实就是对C#的字符串做了一些缓存
 -- 否则有时候获取一个字符串要先从C#获取，然后再传回C#，有点浪费效率

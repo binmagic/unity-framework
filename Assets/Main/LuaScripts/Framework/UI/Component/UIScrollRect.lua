@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.UI.ScrollRect 原生滚动矩形
+-- [OUTPUT]: 对外提供 UIScrollRect 组件类，含 ScrollToPosition/Set(Get)HorizontalNormalizedPosition/Set(Get)VerticalNormalizedPosition 定位、IsScrolling、拖拽回调 OnBeginDrag/OnDrag/OnEndDrag、AddValueChangeListener/RemoveAllListeners、StopMovement、GetScrollRect
+-- [POS]: Component 层对原生 ScrollRect 的 Lua 封装，提供底层滚动容器能力；上层 UIScrollView 系列在其之上做 cell 复用
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIScrollRect = BaseClass("UIScrollRect", UIBaseContainer)
 local base = UIBaseContainer
 local UnityScrollRect = typeof(CS.UnityEngine.UI.ScrollRect)

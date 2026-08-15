@@ -1,4 +1,10 @@
 --[[
+-- [INPUT]: 依赖 CS.CommonUtils.IsEditor 判环境,依赖 Logger;基于 Lua table.pack/unpack 与 debug 库
+-- [OUTPUT]: 对外提供一批全局函数(SafePack/SafeUnpack/ConcatSafePack、IsNull、SetPointerClick、模块卸载等)
+-- [POS]: Common 的 Lua 全局工具核心,重点解决原生 pack/unpack 的 nil 截断与变参安全传递,被框架各处高频调用
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+--[[
 -- added by wsh @ 2017-12-01
 -- Lua全局工具类，全部定义为全局函数、变量
 -- TODO:

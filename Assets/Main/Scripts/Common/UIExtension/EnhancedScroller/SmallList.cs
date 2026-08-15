@@ -1,10 +1,17 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Mathf 做容量倍增计算
+ * [OUTPUT]: 对外提供泛型容器 SmallList<T>，Clear 时只重置计数不释放底层数组以复用内存
+ * [POS]: EnhancedScroller 模块的低 GC 列表实现，为滚动器高频增删的活动/回收单元格集合提供免垃圾回收的存储
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 using System.Collections.Generic;
 
 namespace EnhancedUI
 {
     /// <summary>
-    /// This is a super light implementation of an array that 
+    /// This is a super light implementation of an array that
     /// behaves like a list, automatically allocating new memory
     /// when needed, but not releasing it to garbage collection.
     /// </summary>

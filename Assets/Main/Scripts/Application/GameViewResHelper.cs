@@ -5,6 +5,12 @@
 //  * 横竖屏切换时自动设置GameViewResolution
 //  ***/
 
+/**
+ * [INPUT]: 依赖 UnityEditor 反射内部 GameView 类型与快捷键系统(仅 UNITY_EDITOR)
+ * [OUTPUT]: 对外提供 GameViewResHelper 编辑器工具,横竖屏切换时反射设置 GameView 分辨率
+ * [POS]: Application 的编辑器辅助,配合 LayoutHelper 的横竖屏逻辑给开发期预览便利,不进运行时包体
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 #if UNITY_EDITOR
 
 using System;

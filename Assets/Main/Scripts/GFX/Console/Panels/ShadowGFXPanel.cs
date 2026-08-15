@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Light/主光(实现整体注释停用中)
+ * [OUTPUT]: 曾对外提供 ShadowGFXPanel,用于运行时调节主光与阴影参数;当前整体注释未启用
+ * [POS]: GFX/Console/Panels 的阴影调试页,已在 GFXConsole 装配中禁用,保留为后续恢复的占位
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 // using UnityEngine;
 //
 // public class ShadowGFXPanel:BaseGFXPanel

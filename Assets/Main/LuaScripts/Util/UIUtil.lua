@@ -1,5 +1,11 @@
 
 --[[
+-- [INPUT]: 依赖 CS.GameEntry.Data/Resource,依赖行军类型等业务枚举与数值配置
+-- [OUTPUT]: 以 ConstClass 导出只读 UIUtil(特效数值计算、里程指针、来源服限制校验、确认弹窗等 UI 相关业务方法)
+-- [POS]: Util 的 UI 业务工具集,承接与界面展示强相关的数值换算与通用弹窗逻辑,依赖资源/数据层,是 UI 层的业务辅助
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+--[[
 -- added by wsh @ 2017-12-03
 -- UI工具类
 --]]

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 TMPro 的 TextMeshPro(世界空间)基类,依赖 GameEntry.Localization 判定阿语,依赖 RTLTMPro.RTLSupport 整形,依赖 TMPTeletypeComponent 实现打字机
+ * [OUTPUT]: 对外提供 NewTMP3DText 组件(世界空间 3D 文本的阿语整形/自动右对齐/字号补偿 + 打字机效果)
+ * [POS]: UI 层定制文本的世界空间变体,与 NewTMPText(UGUI 版)逻辑一致但继承 TextMeshPro,用于挂在场景 3D 物体上的文字
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 using GameFramework.Localization;

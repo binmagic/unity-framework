@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 EventManager 的监听注册与广播、BaseClass 的 OOP 机制；子类通常从 DataCenter 取业务数据做中转
+-- [OUTPUT]: 对外提供 UIBaseModel 类，含 Activate/Deactivate 生命周期钩子、AddUIListener/AddDataListener 消息订阅（自动解绑）、UIBroadcast 数据变动广播
+-- [POS]: UI 框架 MVC 的数据模型层，界面数据源与消息定制中枢；对 View 只读不写、不依赖 Ctrl 与 View，拿掉两层仍能独立运行；与兄弟 UIBaseView/UIBaseCtrl 构成三层，UIBaseRecordModel 由此派生
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-11-30
 -- UI模型层基类：该界面相关数据，同时负责消息定制
 -- 注意：

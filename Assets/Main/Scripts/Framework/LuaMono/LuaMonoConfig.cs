@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖基类 LuaMonoBase 的 Lua 绑定与调用原语，依赖 GameEntry.Lua 判活，依赖 Unity MonoBehaviour 生命周期与物理/碰撞回调
+ * [OUTPUT]: 对外提供 LuaMonoConfig，将 Awake/OnEnable/OnDestroy/碰撞/触发/焦点等 Unity 消息转发到绑定的 Lua table 对应函数
+ * [POS]: Framework LuaMono 子系统的通用配置组件(不含 Update)，继承 LuaMonoBase、被 LuaMonoUpdate 继承——多数逻辑在 Lua 侧，此 Mono 仅作消息中转与函数引用缓存
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using GameFramework;
 using UnityEngine;
 

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityGameFramework.Runtime 与内置 CDN 域名常量
+ * [OUTPUT]: 对外提供 UrlUtils 静态类,判断自定义头像并拼装头像的 CDN 访问 URL 与解密 key
+ * [POS]: Common/Utils 的头像 URL 拼装工具,收敛头像版本号到远端地址的映射规则,供玩家/社交模块取图
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;

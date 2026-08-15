@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 Sfs2X.SmartFox 客户端建立 TCP 连接与收发,依赖 INetManager(NetworkManager)回调连接/登录事件,依赖 MessageFactory 分发扩展响应
+ * [OUTPUT]: 对外提供 ProxyStatus 及 NetProxy(INetProxy 的原生实现),封装 SmartFox 连接生命周期、心跳与事件转发
+ * [POS]: Manager 网络族在原生平台(iOS/Android/PC)的传输实现,与 WebGL 的 WebSocketNetProxy 互斥编译,由 NetworkManager 作为当前 proxy 驱动
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using GameFramework;
 using UnityEngine;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 IPlatformNative 契约与 Unity AndroidJavaProxy/AndroidJavaObject 调用原生 Activity，回调经 GameEntry.Sdk.SendDataToGame 回传
+ * [OUTPUT]: 对外提供 PlatformAndroid，封装 Android 原生方法/字段调用与登录/支付/权限接口，并作为 Java 侧回调监听代理
+ * [POS]: Framework SDK 子系统在 UNITY_ANDROID 下的平台实现，供 SDKManager 注入——是 C# 与 Android 原生层的双向桥(下发调用、上报回调)
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 #if UNITY_ANDROID
 using System;
 using System.Collections;

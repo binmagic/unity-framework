@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖自研 ScrollView 组件的 content/LayoutType 与位置
+ * [OUTPUT]: 对外提供 UIScrollViewArrow 组件(根据滚动位置显隐可滚动方向的提示箭头)
+ * [POS]: UI 层的滚动提示件,面向项目自研 ScrollView;与 UIScrollArrow(面向原生 ScrollRect)逻辑同构、宿主不同
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

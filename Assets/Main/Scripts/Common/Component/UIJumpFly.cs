@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 DG.Tweening 做贝塞尔路径动画，依赖 UnityEngine 的 Animator 播放起跳触发帧，依赖 System.Action 作完成回调
+ * [OUTPUT]: 对外提供 UIJumpFly 组件，DoFly/DoFlyNew 触发动画后由 DoJump 关闭 Animator 转贝塞尔路径飞向目标，支持左右方向与延迟
+ * [POS]: Common/Component 的跳跃飞行特效，先播 Animator 起跳再交接给贝塞尔曲线抵达目标点，与 UIGoodsFly/RandMove 同属贝塞尔飞行家族但以动画触发起跳
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;

@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 CS 侧 LocalController(读表接口 GetTableLength/getStrValue),依赖业务全局(世界点/寻路/主界面状态)
+-- [OUTPUT]: 以 ConstClass 导出只读 CSharpCallLuaInterface(供 C# 回调 Lua 的读表、世界点、行走判定等接口)
+-- [POS]: Util 的 C#→Lua 单向调用汇聚点,统一收口 C# 主动调用 Lua 的入口,避免散落绑定,与 CSharpCallLuaInterface.cs 侧约定成对
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---统一使用 CSharpCallLuaInterface 实现c# call lua 功能
 ---@class CSharpCallLuaInterface
 local CSharpCallLuaInterface = {}

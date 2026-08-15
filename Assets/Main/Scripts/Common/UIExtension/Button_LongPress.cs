@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.EventSystems 的指针事件接口，依赖 GameEntry.Event 派发 EventId.Btn_LongPress，操作子物体的 Image 做按压变灰
+ * [OUTPUT]: 对外提供 Button_LongPress 组件及 SetLongPressAction/SetClickAction/SetTouchBgGray 注入回调的接口
+ * [POS]: UIExtension 的按钮交互扩展，在原生点击之上叠加长按识别，区分短按点击与长按触发两种回调
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using UnityEngine.EventSystems;
 

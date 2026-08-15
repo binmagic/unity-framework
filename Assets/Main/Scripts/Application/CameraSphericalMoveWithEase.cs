@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Transform,依赖 DOTween 做缓动
+ * [OUTPUT]: 对外提供 CameraSphericalMoveWithEase MonoBehaviour,让摄像机绕中心点在预设方位间做带缓动的球面移动
+ * [POS]: Application 的摄像机运镜组件,挂场景摄像机上服务展示/切镜,是启动层里独立于加载流程的表现类
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;

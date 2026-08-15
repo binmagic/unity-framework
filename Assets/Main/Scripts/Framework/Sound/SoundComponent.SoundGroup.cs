@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 依赖 Unity AudioSource、VEngine.Asset 音频资源与其引用释放，依赖 GameKit.Base 扩展
+ * [OUTPUT]: 对外提供 SoundComponent 分部中的 ISoundGroup 契约、SoundGroup(单源 2D 组)与 Sound3DGroup(按 GameObject 挂载的 3D 组)
+ * [POS]: Framework 声音子系统的声音组实现(SoundComponent partial 分部)，是 SoundComponent 门面之下的实际播放执行单元——负责单组的播放/打断/OneShot/淡入淡出与音源生命周期
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using GameFramework;

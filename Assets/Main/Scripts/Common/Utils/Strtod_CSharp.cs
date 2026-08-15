@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System 基础数值类型,内置 10 的幂查表加速指数换算
+ * [OUTPUT]: 对外提供 Strtod_CSharp,移植自 TCL strtod 的字符串转 double 实现
+ * [POS]: Common/Utils 的高性能浮点解析,规避标准库 GC/异常,与 Strtoul_CSharp(无符号整数)成对使用
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

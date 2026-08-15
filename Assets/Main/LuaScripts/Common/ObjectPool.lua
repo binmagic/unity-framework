@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 Framework 的 BaseClass/Singleton;缓存对象须实现 _class_type 标识与 Delete 方法
+-- [OUTPUT]: 对外提供 ObjectPool 单例(Load 取出/Save 存入/Clear/ClearAll)
+-- [POS]: Common 的按类分桶对象池,以类为键复用实例降低 GC,进池前由调用方负责清数据,是频繁创建销毁对象的性能兜底
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---
 --- 对象池，对象进池之前要清数据
 ---

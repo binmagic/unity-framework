@@ -6,6 +6,12 @@
 -- added by wsh @ 2017-12-28
 -- 注意：
 -- 1、已经被修改，别从tolua轻易替换来做升级
+--[[
+-- [INPUT]: 依赖 math.sqrt 做模长运算,依赖 table.set_const 冻结常量;回填 CS.UnityEngine.Vector2
+-- [OUTPUT]: 对外提供纯 Lua 版 Vector2(加减点乘、Normalize/Distance/Lerp、运算符重载与 zero 常量)
+-- [POS]: Common/Tools/UnityEngine 的二维向量结构体封装(源自 tolua),服务于 UI/屏幕坐标与触摸位移,被 Touch 等依赖
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 local sqrt = math.sqrt
 local setmetatable = setmetatable

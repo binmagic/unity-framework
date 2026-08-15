@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 XLua 的 LuaDLL.Lua 从 Lua 堆栈取可变参,依赖 System.Text 拼装
+ * [OUTPUT]: 对外提供 StringFormat,在 C# 侧实现类 C 的 printf 格式化(%s/%d/%f/%@/%#)
+ * [POS]: Common/Other 的 Lua 格式化下沉,专为 Lua 高频格式化场景减 GC,与 Opti 组的字符串优化同宗但直取 Lua 栈
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 using LuaAPI = XLua.LuaDLL.Lua;

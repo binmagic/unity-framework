@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 IPlatformNative 契约与 __Internal DllImport 原生函数、iOS 本地通知(Unity.Notifications.iOS)，回调经 GameEntry.Sdk.SendDataToGame 回传
+ * [OUTPUT]: 对外提供 PlatformIOS，封装 iOS 登录/内购(IAP)/本地推送通知/原生数据收发
+ * [POS]: Framework SDK 子系统在 UNITY_IOS 下的平台实现，供 SDKManager 注入——是 C# 与 Objective-C 原生层的桥
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 #if UNITY_IOS
 
 using System;
@@ -11,7 +17,7 @@ using UnityGameFramework.Runtime;
 using Unity.Notifications.iOS;
 using LitJson;
 using AppsFlyerSDK;
- 
+
  public class PlatformIOS : IPlatformNative
 {
     #region IOS Native Call

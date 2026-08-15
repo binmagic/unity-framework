@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI.Graphic 的顶点/材质脏标记接口
+ * [OUTPUT]: 对外提供 GraphicConnector 基类与 GraphicConnectorExtension 扩展方法（SetVerticesDirtyEx/SetMaterialDirtyEx/GetComponentInParentEx）
+ * [POS]: SoftMask 的图形适配层，用可按优先级注册的 Connector 抹平不同 Graphic 派生类型脏标记差异，是 SoftMask/SoftMaskable 与具体 UI 图形之间的解耦垫片
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;

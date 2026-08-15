@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Threading 的 Thread/AutoResetEvent,依赖 GameFramework 基础
+ * [OUTPUT]: 对外提供 IQueuedThreadTask 任务接口与 QueuedThread 后台线程,串行消费任务队列
+ * [POS]: Common/Other 的后台线程设施,把耗时任务移出主线程(如日志落盘/IO),以事件唤醒避免忙等
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Threading;

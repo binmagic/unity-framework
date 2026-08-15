@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIScrollView 父类的循环滚动能力
+-- [OUTPUT]: 对外提供 UIScrollViewEx 组件类，含 SetData/UpdateData 数据驱动刷新、RefreshList/Refresh、GetCellByIndex 取 cell、SetOnItemMoveInCallback/SetOnItemMoveOutCallback、ClearCells
+-- [POS]: Component 层在 UIScrollView 之上的数据驱动增强版，封装 data->cell 的自动绑定刷新流程，简化业务列表接入
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UIScrollViewEx : UIScrollView
 local UIScrollViewEx = BaseClass("UIScrollViewEx", UIScrollView)
 local base = UIScrollView

@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 BaseClass 的 OOP 机制、CS.GameEntry.Resource 与 CommonUtil.LoadResAsync 异步加载、UILayerComponent 判定视图根、CS 侧 RectTransform 及 UIParticleSetUpBase 特效脚本
+-- [OUTPUT]: 对外提供 UIBaseComponent 基类，含 OnCreate/OnEnable/OnDisable/OnDestroy 生命周期、SetActive/GetActiveInHierarchy 激活管理、GameObjectInstantiateAsync 异步实例化、AddUIEffect/RemoveUIEffect 特效挂载、大量 RectTransform 位置/缩放/锚点读写封装
+-- [POS]: UI 框架所有组件的根基类，对应 Unity 原生 Component/Script；缓存 transform/gameObject 并管理 Lua 侧名字与实例 id，向上被 UIBaseContainer 扩展为容器
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-12-08
 -- UI组件基类：所有UI组件从这里继承
 -- 说明：

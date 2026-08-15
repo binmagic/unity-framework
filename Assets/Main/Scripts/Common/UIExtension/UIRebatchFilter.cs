@@ -1,8 +1,14 @@
+/**
+ * [INPUT]: 依赖 System.Reflection 反射读取 CanvasUpdateRegistry 的私有重建队列,依赖 UnityEngine.UI 的 ICanvasElement/Graphic
+ * [OUTPUT]: 对外提供 UIRebatchFilter 组件(仅 UNITY_EDITOR 生效),每帧输出触发 UGUI 网格重建的元素路径与所属 Canvas
+ * [POS]: UIExtension 的编辑期 UI 性能诊断工具,用于定位引发 Canvas rebatch/网格重建的源头,不参与运行时逻辑
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.UI;
- 
+
 public class UIRebatchFilter : MonoBehaviour
 {
 #if UNITY_EDITOR

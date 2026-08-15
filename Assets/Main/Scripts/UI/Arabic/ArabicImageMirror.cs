@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 BaseMeshEffect/VertexHelper/Image 顶点数据,处理 Simple/Sliced/Tiled 三种绘制类型
+ * [OUTPUT]: 对外提供 ArabicImageMirror 组件(在网格生成阶段对图片顶点做水平镜像)
+ * [POS]: Arabic 模块的图片镜像执行末端,由 ArabicMirror 自动挂载,负责在 GPU 顶点层面翻转图形而不改变节点变换
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

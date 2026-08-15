@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 ScriptableObject 与 AnimationCurve 序列化能力
+ * [OUTPUT]: 对外提供 UIButtonCurve 配置资产,承载按钮按下/其他态的缓动曲线、时长与目标缩放
+ * [POS]: UIExtension 的按钮动效数据源,与消费它的按钮交互组件解耦,把动效参数外置为可配置资产
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

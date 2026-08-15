@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 MeshFilter/MeshRenderer/Sprite/Material，将 Sprite 顶点转为 Mesh
+ * [OUTPUT]: 对外提供 SpriteMeshRenderer 组件，暴露 sprite/color/sortingOrder 属性以网格方式渲染精灵
+ * [POS]: Common/Component 的精灵网格渲染器，用静态字典按 Sprite 引用计数共享 Mesh 避免重复构建，替代 SpriteRenderer 让精灵接入 MeshRenderer 的排序与材质体系
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;

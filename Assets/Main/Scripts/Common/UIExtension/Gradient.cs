@@ -1,7 +1,14 @@
-using System.Collections.Generic;  
-  
-  
-public enum GradientType  
+/**
+ * [INPUT]: 继承 UnityEngine.UI.BaseMeshEffect，依赖 UnityEngine.Gradient 颜色曲线与 VertexHelper 顶点流
+ * [OUTPUT]: 对外提供 Gradient 网格特效组件及 GradientType(横/纵)、Blend(覆盖/叠加/相乘) 枚举，按顶点位置采样渐变色并混合
+ * [POS]: UIExtension 的顶点着色特效，挂在 UI 图元上对其网格顶点做水平或垂直方向的颜色渐变，是纯顶点级的美术增强件
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
+using System.Collections.Generic;
+
+
+public enum GradientType
 {  
     Horizontal,  
     Vertical  

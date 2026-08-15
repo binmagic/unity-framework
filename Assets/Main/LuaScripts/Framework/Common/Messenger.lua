@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 Common/BaseClass 的 BaseClass、Logger 的错误日志、全局 SafePack/SafeUnpack/ConcatSafePack 与 table.clear/count
+-- [OUTPUT]: 对外提供 Messenger 类，暴露 AddListener/Broadcast/RemoveListener/RemoveListenerByType/Cleanup/Dump
+-- [POS]: Common 层通用消息中心，采用弱引用表存监听(不阻碍监听者被 GC)、广播时快照防重入、空表池减 GC；是 UpdateManager 帧广播与上层业务事件系统(EventManager)的底层机制
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-11-28
 -- 消息系统
 -- 使用范例：

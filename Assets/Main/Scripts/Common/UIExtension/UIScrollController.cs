@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 ScrollRect 滚动回调、RectTransform 尺寸,消费兄弟文件 UIScrollItem 作为行对象
+ * [OUTPUT]: 对外提供 UIScrollController 组件,以对象池复用实现横/纵向无限滚动列表,暴露 Init/AddItem/DelItem 及增删初始化事件回调
+ * [POS]: UIScroll 家族的底层引擎,只负责按滚动位置回收/复用行 Item 与维护 content 尺寸,不关心行内业务数据,由 UIScrollBase 在其上叠加多列与数据绑定
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using System.Collections.Generic;

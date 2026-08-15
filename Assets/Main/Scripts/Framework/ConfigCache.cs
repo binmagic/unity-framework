@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Lua 的 GetTemplateData 从 Lua 侧读取策划配置
+ * [OUTPUT]: 对外提供 ConfigCache，按 表名/id/列名 三级缓存策划配置查询结果
+ * [POS]: Framework 层的配置读取旁路缓存，架在 C# 与 Lua 配置之间——同帧多次取配置时避免重复跨语言调用，由 GameEntry 持有并在 Shutdown 时 reset
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 
 /**

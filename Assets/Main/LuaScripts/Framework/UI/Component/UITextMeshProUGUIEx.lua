@@ -3,6 +3,12 @@
 --- Created by mac.
 --- DateTime: 9/28/21 12:28 PM
 ---
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.NewTMPText 组件、Resource 加载字体材质；SetLocalText 依赖 Localization
+-- [OUTPUT]: 对外提供 UITextMeshProUGUIEx 组件类，含 GetText/SetText/SetLocalText/SetText_Cache、SetColor/SetAlpha/GetColor、SetAlignment/SetPreferSize、SetRichTextEnable、GetLinkInfo/OnPointerClick 超链接
+-- [POS]: Component 层旧版 TMP 增强封装，已弃用（应改用 UINewTMPText）；仍被 UITweenNumberText 继承作数字滚动文本基类
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UITextMeshProUGUIEx : UIBaseComponent
 local UITextMeshProUGUIEx = BaseClass("UITextMeshProUGUIEx", UIBaseComponent)
 local base = UIBaseComponent

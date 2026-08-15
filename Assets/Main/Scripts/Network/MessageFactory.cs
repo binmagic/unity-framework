@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 BaseMessage 抽象契约反射建实例，依赖 SmartFox2X 的 SFSObject/ByteArray/ExtensionEvent 解包，依赖 GameEntry.Network 结算 future、GameEntry.Lua 分派 C# 未接管的协议
+ * [OUTPUT]: 对外提供单例 MessageFactory，InitMessageHandlers 手工注册消息表，DispatchResponse 按 cmd 统一分发（命中走 C# Handle，未命中转 Lua），区分 SFS 与 WebGL 两条入口
+ * [POS]: Network 消息定义层的调度中枢，是所有 *Message 的注册表与响应路由，桥接底层传输（SmartFox2X socket / WebGL WebSocket）与上层 BaseMessage 及 Lua 网络层
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using GameFramework;

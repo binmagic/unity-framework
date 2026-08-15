@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Screen/UI/EventSystems,依赖 ScreenSafeArea 取安全区
+ * [OUTPUT]: 对外提供 UIUtils 静态类,计算异形屏安全区偏移等 UI 布局相关的通用量
+ * [POS]: Common/Utils 的 UI 适配工具,缓存屏幕尺寸避免重复计算,供 UI 层做刘海屏/安全区适配
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;

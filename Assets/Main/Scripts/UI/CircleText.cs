@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 BaseMeshEffect/VertexHelper 顶点数据
+ * [OUTPUT]: 对外提供 CircleText 组件(将文本每个字符按半径沿弧线重排、旋转)
+ * [POS]: UI 层的文本网格特效之一,与 TextSpacing 并列——都在网格生成阶段改写字符顶点,此件负责弧形/环形排版
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

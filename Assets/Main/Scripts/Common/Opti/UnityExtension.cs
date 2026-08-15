@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 依赖大量 UnityEngine 类型(UI/TMP/Rendering/AI 等)与 XLua LuaAPI,依赖 GameFramework 基础
+ * [OUTPUT]: 对外提供针对 Unity 对象的扩展方法集合,把高频组件操作下沉 C# 减少 Lua 调用开销
+ * [POS]: Common/Opti 的 Unity 对象优化扩展,与 OptiUtils(无归属全局函数)分工,专放挂在具体类上的方法
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;

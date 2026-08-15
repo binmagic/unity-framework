@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.Text/正则/加密原语,依赖 IL2CPP 特性做静态构造与空检查优化
+ * [OUTPUT]: 对外提供 StringUtils 静态类,含数字转字符串缓存/罗马数字/格式化等高频字符串处理
+ * [POS]: Common/Utils 的字符串性能工具,以预缓存数组换取零 GC,供 UI 与逻辑层高频文本转换
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Security.Cryptography;
 using System;
 using System.Collections.Generic;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖兄弟文件 AES 的分组加解密能力;依赖 System.Text 编码
+ * [OUTPUT]: 对外提供 AesEncryptor 类,含 EncryptString(补齐+Base64) / DecryptString(Hex 解码) 及 Hex/Byte 互转辅助
+ * [POS]: Common/Utils/AES 的字符串加解密门面,把裸算法 AES 包装成业务可直接调用的 key→字符串接口
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Text;
 

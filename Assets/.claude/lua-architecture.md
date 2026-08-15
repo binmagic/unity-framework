@@ -1,7 +1,9 @@
 # LuaScripts 整体架构与编写规范
 
-基于 `Assets/Main/LuaScripts/` 全目录分析（10 个顶层目录，约 9200+ 个 lua 文件）总结。
+基于 `Assets/Main/LuaScripts/` 全目录分析（9 个顶层目录，约 169 个 lua 文件）总结。
 这是 Lua 层的**总纲**，各专项规则见文末「配套文档」。
+
+> 本工程为「连连看（LianLian）」项目，从上游 SLG 母工程裁剪而来。母工程的 `Slg/`、`Scene/` 两个顶层目录**在本工程已不存在**，其位置由新业务目录 `Game/` 承接。下表与全文以本工程磁盘现实为准。
 
 ---
 
@@ -10,16 +12,15 @@
 | 目录 | 文件数级 | 职责 | 专项文档 |
 |------|---------|------|----------|
 | `GameMain.lua` | 1 | Lua 总入口（`Start`/`Exit`/`Protocal`） | 本文 |
-| `Global/` | ~16 | 全局模块加载与全局命名空间定义 | 本文 |
-| `Framework/` | ~80 | 框架层：OOP 系统、UI 基类、事件、定时器、日志 | 本文 |
-| `Common/` | ~55 | Lua 语言级扩展、工具、C# 交互封装（与游戏逻辑无关） | 本文 |
-| `Util/` | ~35 | 游戏业务工具类（全局 require） | 本文 |
-| `DataCenter/` | ~1258 | 数据管理中枢 + 各业务 Manager | `datacenter-conventions.md` |
-| `Net/` | ~1485 | 网络协议：消息定义、路由、消息类 | `rules.md`（MsgDefines/MsgMap） |
-| `UI/` | ~3383 | UI 窗口（MVC：View/Controller/Component） | `ui-*.md` |
-| `Slg/` | ~1774 | SLG 业务模块（UI/DataCenter/Chat/Generated 的并行体系） | 见下「Slg 说明」 |
-| `Scene/` | ~716 | 场景内动态对象管理器（血条、气泡、特效、行军等） | 见下「Scene 说明」 |
-| `Loading/` | ~24 | 启动加载流程、热更版本检测 | 本文 |
+| `Global/` | 13 | 全局模块加载与全局命名空间定义 | 本文 |
+| `Framework/` | 80 | 框架层：OOP 系统、UI 基类、事件、定时器、日志 | 本文 |
+| `Common/` | 53 | Lua 语言级扩展、工具、C# 交互封装（与游戏逻辑无关，含第三方库） | 本文 |
+| `Util/` | 8 | 游戏业务工具类（全局 require） | 本文 |
+| `DataCenter/` | 3 | 数据管理中枢 + 各业务 Manager | `datacenter-conventions.md` |
+| `Net/` | 6 | 网络协议：消息定义、路由、消息类 | `rules.md`（MsgDefines/MsgMap） |
+| `UI/` | 2 | UI 窗口（MVC：View/Controller/Component），当前仅 Config 路由 | `ui-*.md` |
+| `Game/` | 0 | 连连看业务模块（`Game/LianLian/`，当前为预留脚手架） | 本文「Game 说明」 |
+| `Loading/` | 3 | 启动加载流程、热更版本检测 | 本文 |
 
 ---
 
@@ -219,32 +220,19 @@ return XxxMessage
 
 ---
 
-## 八、Scene 说明
+## 八、Game 说明
 
-`Scene/` 存放**场景内动态对象的管理器**——血条、气泡、行军图标、地块特效等需要随场景生成/销毁的 UI/对象。
-
-典型结构：
+`Game/` 是本工程（连连看）的业务代码根目录，承接母工程 `Slg/` 的位置。当前为预留脚手架：
 
 ```
-Scene/{模块名}/
-    XxxManager.lua    -- 管理器（多为 Singleton，用 GetInstance）
-    Xxx.lua           -- 单个对象/Tip 类
+Game/
+    LianLian/
+        Manager/    -- 业务管理器待落地（尚无 .lua）
 ```
 
-特点：管理器多走 `XxxManager:GetInstance():Startup()`，在 `LuaEntry:StartGame()` 中统一启动、`EndGame()` 中统一 Delete。
+连连看的 UI 窗口仍走顶层 `UI/`（`UIConfig` 路径前缀 `UI.LianLian.`），数据管理器规划落于 `Game/LianLian/`。业务代码填充时，遵循与顶层 UI/DataCenter 一致的 OOP/生命周期/命名规则。
 
----
-
-## 九、Slg 说明
-
-`Slg/` 是 SLG 战略玩法的业务代码，内部是 `UI/`、`DataCenter/`、`Chat/`、`Generated/` 的**并行体系**（与顶层同名目录规则一致）：
-
-- `Slg/UI/` — SLG 相关 UI 窗口（UIConfig 路径前缀 `Slg.UI.`）
-- `Slg/DataCenter/` — SLG 相关数据管理器（Managers 注册路径前缀 `Slg.DataCenter.`）
-- `Slg/Chat/` — 聊天系统
-- `Slg/Generated/` — **工具自动生成的代码（带 `Gen` 后缀），不要手改**
-
-规则与顶层 UI/DataCenter 完全一致，只是命名空间前缀不同。
+> 母工程曾有 `Scene/`（场景内动态对象管理器：血条、气泡、行军图标）与 `Slg/`（SLG 玩法 UI/DataCenter/Chat/Generated 并行体系）两个顶层目录，本工程已裁剪移除，相关约定不再适用。
 
 ---
 
@@ -286,9 +274,8 @@ Scene/{模块名}/
 4. **禁止漏写文件末尾 `return 类变量`**
 5. **禁止 `__init` 字段在 `__delete` 中漏置 nil**（内存泄漏）
 6. **禁止把业务逻辑模块暴露到全局命名空间**（只有工具/单例/常量才进 Global.lua）
-7. **禁止手改 `Slg/Generated/` 下的 `*Gen.lua`**（工具生成）
-8. **禁止新建顶层目录**（固定 10 个：Common/DataCenter/Framework/Global/Loading/Net/Scene/Slg/UI/Util）
-9. **禁止破坏 Global.lua 的 require 加载顺序**（有依赖关系）
+7. **禁止新建顶层目录**（固定 9 个：Common/DataCenter/Framework/Game/Global/Loading/Net/UI/Util）
+8. **禁止破坏 Global.lua 的 require 加载顺序**（有依赖关系）
 
 ---
 

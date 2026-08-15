@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.Networking 的 UnityWebRequest
+ * [OUTPUT]: 对外提供 Main.Scripts.Application.LoadingState.HttpRequest,封装带超时与重试的 HTTP 请求
+ * [POS]: Application/LoadingState 的网络原语,被 DownloadManifestState 复用于清单/资源下载,是启动期下载的可靠性底座
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using UnityEngine.Networking;

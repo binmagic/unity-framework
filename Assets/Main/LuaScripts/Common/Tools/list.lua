@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 纯 Lua metatable 实现,无外部模块依赖
+-- [OUTPUT]: 对外提供 list 双向链表类(push/pop/remove 等)及全局迭代器 ilist/rilist(正/反向遍历)
+-- [POS]: Common/Tools 的双向循环链表容器(源自 tolua 已本地改造),提供 O(1) 增删,event 系统的监听器表即依赖其 ilist 迭代
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --------------------------------------------------------------------------------
 --      Copyright (c) 2015 - 2016 , 蒙占志(topameng) topameng@gmail.com
 --      All rights reserved.

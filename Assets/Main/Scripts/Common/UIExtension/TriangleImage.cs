@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 VertexHelper 网格构建能力,继承项目内 BaseImage 基类
+ * [OUTPUT]: 对外提供 TriangleImage 组件,以三个顶点绘制可填充的三角形 UI 图元
+ * [POS]: UIExtension 的自定义 Graphic 绘制扩展,与其他 UI*Image 类并列,专注非矩形形状的顶点级渲染
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;

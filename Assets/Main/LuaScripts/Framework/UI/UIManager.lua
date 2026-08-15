@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 Singleton 基类、UILayer 层级配置、UILayerComponent 层节点、UIWindow 窗口数据、UIConfig 窗口路由、EventManager 事件、CS.GameEntry.Resource/Sound 资源与音效、CS 侧 UIRoot/Canvas/相机节点，以及各窗口的 Model/Ctrl/View
+-- [OUTPUT]: 对外提供 UIManager 单例，含 OpenWindow/CloseWindow/DestroyWindow 窗口生命周期、OpenView/CloseView 视图显隐、层级重排与缓存、SetKeepModel 保持后台 Model、GetUICamera/相机与模糊管理、窗口栈维护
+-- [POS]: UI 框架的总控中枢，挂在 UIRoot 上的隐式 UI 组件式单例；统管 Model+Ctrl+View 构成的完整窗口概念，是业务打开界面的唯一入口，串联本目录 Base/Component/Message/UILayer/UIWindow 各部件
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-11-30
 -- UI管理系统：提供UI操作、UI层级、UI消息、UI资源加载、UI调度、UI缓存等管理
 -- 注意：

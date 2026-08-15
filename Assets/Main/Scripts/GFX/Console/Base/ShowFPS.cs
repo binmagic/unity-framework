@@ -1,6 +1,12 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Time 与 IMGUI
+ * [OUTPUT]: 对外提供 ShowFPS MonoBehaviour,按固定间隔统计并以 IMGUI 叠加显示实时帧率
+ * [POS]: GFX/Console/Base 的独立帧率显示组件,可脱离控制台单挂,是最轻量的性能可视化工具
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 
-public class ShowFPS : MonoBehaviour 
+public class ShowFPS : MonoBehaviour
 {
     private float updateInterval = 1F;
     private double lastInterval;

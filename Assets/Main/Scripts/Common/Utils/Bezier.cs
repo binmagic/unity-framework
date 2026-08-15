@@ -1,5 +1,11 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Vector3 向量运算
+ * [OUTPUT]: 对外提供 Bezier 可序列化类,封装四控制点三次贝塞尔曲线的采样求值
+ * [POS]: Common/Utils 的曲线数学基元,与 BezierUtils(二次快速路径)互补,供飞行道具/轨迹动画取点
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
- 
+
 [System.Serializable]
  
 public class Bezier : System.Object

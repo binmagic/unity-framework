@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Material/Hash128 与运行期/编辑期销毁能力
+ * [OUTPUT]: 对外提供 MaterialCache 静态缓存（Register/Unregister）与内部 MaterialEntry 计数条目
+ * [POS]: SoftMask 的材质共享层，按 Hash128 对遮罩材质做引用计数复用与释放，避免重复实例化 Material，被 SoftMaskable 消费
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using System;
 using UnityEngine;

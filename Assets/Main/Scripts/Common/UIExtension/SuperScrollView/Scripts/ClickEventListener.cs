@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.EventSystems 的指针点击/按下/抬起接口
+ * [OUTPUT]: 对外提供 ClickEventListener 组件、静态 Get 挂载入口与单击/双击/按下/抬起事件的委托注册接口
+ * [POS]: SuperScrollView 的通用点击事件适配器，把 UGUI 指针事件转成可动态绑定的委托，供列表 item 按需附加交互回调
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

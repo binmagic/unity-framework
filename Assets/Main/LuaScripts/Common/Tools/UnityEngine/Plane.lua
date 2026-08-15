@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 Vector3 与 Mathf 做法向/距离运算,依赖 CS.UnityEngine.Plane 原生类型
+-- [OUTPUT]: 对外提供纯 Lua 版 Plane 并回填 CS.UnityEngine.Plane(法向+距离构造、射线求交、点侧判定)
+-- [POS]: Common/Tools/UnityEngine 的平面结构体封装(源自 tolua),供射线拾取与空间裁剪在 Lua 侧完成几何计算
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --------------------------------------------------------------------------------
 --      Copyright (c) 2015 - 2016 , 蒙占志(topameng) topameng@gmail.com
 --      All rights reserved.

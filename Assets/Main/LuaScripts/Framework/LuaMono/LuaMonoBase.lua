@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 Common/BaseClass 的 BaseClass、xlua.util 的 cs_generator，self.Mono 为绑定的 C# MonoBehaviour
+-- [OUTPUT]: 对外提供 LuaMonoBase 基类，暴露对象级 StartCoroutine/StopCoroutine
+-- [POS]: LuaMono 模块基类，为 Lua 侧模拟 MonoBehaviour 提供协程能力；由 MonoClass 工厂派生并绑定真实 Mono 对象，与 Common/Coroutine(全局单点协程)相对，此为每对象独立
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
 --
 -- lua 的 MonoBehaviour
 -- 注意事项：

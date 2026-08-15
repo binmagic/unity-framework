@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 基础
+ * [OUTPUT]: 对外提供 LuaBuildData 等 POCO,承载 C# 调用 Lua 时返回的固定结构(如建筑数据)
+ * [POS]: XLua 的跨语言数据载体,给 DCBuilding 等 Data 层做强类型返回,避免 LuaTable 反复解包的开销
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 
 /// <summary>

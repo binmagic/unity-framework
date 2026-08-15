@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 继承 BaseGFXConsole,依赖 BitBenderGames 的 MobileTouchCamera 屏蔽点击,聚合各 GFXPanel
+ * [OUTPUT]: 对外提供 GFXConsole,组装后期/屏幕/Shader/画质/摄像机/场景查看等调试面板为一个控制台
+ * [POS]: GFX/Console 的具体控制台实现与装配点,决定启用哪些 Panel,是调试台的对外入口
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using BitBenderGames;
 using UnityEngine;
 

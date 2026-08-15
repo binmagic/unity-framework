@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 依赖 Unity Vector3 与 SoundComponent 内部的 SoundGroup 类型
+ * [OUTPUT]: 对外提供 SoundComponent 分部中的 Constant(默认参数)、PlaySoundParams(播放参数)与 PlaySoundInfo(播放上下文)
+ * [POS]: Framework 声音子系统的播放参数与上下文载体(SoundComponent partial 分部)，在异步加载音频完成回调间传递序列号/声音组/参数——为 SoundComponent 播放流程提供数据结构
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 
 

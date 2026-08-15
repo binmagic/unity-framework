@@ -79,6 +79,13 @@ MsgDefines.lua          MsgMap.lua              Net/Msgs/XxxMessage.lua
 ]]
 
 
+--[[
+-- [INPUT]: 依赖 Framework 的 ConstClass 做只读包装
+-- [OUTPUT]: 返回只读的 MsgDefines 常量表（同时注入全局），把每条协议映射为可读常量名→SFS2X 命令字符串
+-- [POS]: Net 模块的协议命令常量表（SmartFox2X），全项目发消息/路由/C# 分发的唯一命令字典；由 Global.lua 全局 require，与 MsgMap 的"谁来处理"、Net/Msgs 的"怎么处理"三者互补
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 MsgDefines = {
     PushDesertFightWinLv = "push.desert.fight.win.lv", --玩家最高打过几级地
     PushDragonScoreSync = "push.dragon.score.sync",

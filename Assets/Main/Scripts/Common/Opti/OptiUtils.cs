@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Vector3 等数学类型,依赖 IL2CPP/Preserve 特性防裁剪
+ * [OUTPUT]: 对外提供 OptiUtils 全局静态函数,把 Lua 中开销大的向量运算(角度/移动等)下沉 C#
+ * [POS]: Common/Opti 的无归属优化函数集,与 UnityExtension(挂类上的扩展)互补,收敛计算密集型逻辑
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 

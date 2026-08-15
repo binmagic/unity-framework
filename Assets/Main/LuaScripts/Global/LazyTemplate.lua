@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 Framework 的 BaseClass 构造类，依赖 Logger 记录字段缺失
+-- [OUTPUT]: 对外提供 LazyTemplate 类，暴露 set_meta_value/get_value/getValue 等惰式取值接口
+-- [POS]: Global 模块的表格惰式解析基类，用元表把大配置表的结构化解析延迟到首次访问，以启动效率换取运行期开销，供各 Template 继承
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 ---------------------------------------------------------------------
 -- LazyTemplate 用来缓式解析表格；主要目的是增加启动效率
 -- 因为lua元表的开销，所以惰式解析总体上性能肯定是降低的，但是可以增加启动效率和减少内存

@@ -3,6 +3,12 @@
 -- Lua侧UILayer
 --]]
 
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、UILayer 的层级配置（Name/OrderInLayer）
+-- [OUTPUT]: 对外提供 UILayerComponent 组件类，含 GetConfig 取层配置、GetOrderInLayer 取排序基准、GetActiveInHierarchy
+-- [POS]: Component 层中代表一个 UI 层级节点（World/Normal/Dialog 等）的组件，由 UIManager 为每层创建；是窗口视图 view 归属判定的顶层（UIBaseComponent.OnCreate 据此确定 view）
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UILayerComponent = BaseClass("UILayerComponent", UIBaseComponent)
 local base = UIBaseComponent
 

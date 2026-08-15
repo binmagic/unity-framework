@@ -6,6 +6,12 @@
 --]]
 
 ---@class UISlider : UIBaseComponent
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.UnityEngine.UI.Slider 与 Image 原生组件
+-- [OUTPUT]: 对外提供 UISlider 组件类，含 GetValue/SetValue、SetOnValueChanged 回调、SetFillColor 填充色、SetInteractable、DOValue 缓动到值、IsNil
+-- [POS]: Component 层对 UGUI Slider 的 Lua 封装，用于进度条、血条、可拖动数值等
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UISlider = BaseClass("UISlider", UIBaseComponent)
 local base = UIBaseComponent
 local UnitySlider = typeof(CS.UnityEngine.UI.Slider)

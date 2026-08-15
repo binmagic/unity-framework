@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 原生 ScrollRect 的 content/滚动方向与位置
+ * [OUTPUT]: 对外提供 UIScrollArrow 组件(根据滚动位置显隐上/下(或左/右)可滚动提示箭头)
+ * [POS]: UI 层的滚动提示件,面向原生 ScrollRect;与 UIScrollViewArrow(面向自研 ScrollView)逻辑同构、宿主不同
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

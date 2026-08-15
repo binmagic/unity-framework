@@ -12,6 +12,12 @@ using VEngine;
 using UnityEditor;
 #endif
 
+/**
+ * [INPUT]: 依赖 VEngine(XAssetPro) 的 Asset/Bundle/Versions/Download 底层，依赖 ObjectPoolMgr 做实例复用、GameEntry.Sdk 拼下载地址
+ * [OUTPUT]: 对外提供 ResourceManager(资源加载/卸载/热更下载/实例化)、InstanceRequest(异步实例句柄)、UnityUIExtension(Image 等 LoadSprite 扩展)
+ * [POS]: Framework 层资源子系统的门面，包裹 VEngine 热更资源管线——统管清单更新、AB 下载、按帧限流实例化与 SpriteAtlas 延迟绑定，由 GameEntry.Resource 持有
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 //
 // 资源管理
 //

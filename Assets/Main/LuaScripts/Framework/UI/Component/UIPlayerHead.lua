@@ -4,6 +4,12 @@
 --- DateTime: 8/6/21 6:43 PM
 ---
 
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.UIPlayerHead 原生头像组件
+-- [OUTPUT]: 对外提供 UIPlayerHead 组件类，含 SetData 设置头像数据、LoadSprite 加载、SetCustomLoadCallback 自定义加载回调、SetGray 置灰
+-- [POS]: Component 层的玩家头像基础封装；与 UIPlayerHeadNew/UICommonHead 同族，UICommonHead 在其上叠加头像框与加载动画
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UIPlayerHead
 local UIPlayerHead = BaseClass("UIPlayerHead", UIBaseComponent)
 local base = UIBaseComponent

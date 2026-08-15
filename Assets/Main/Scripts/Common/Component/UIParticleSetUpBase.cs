@@ -7,6 +7,12 @@
 //  ***/
 
 
+/**
+ * [INPUT]: 依赖 UnityEngine 的 MonoBehaviour
+ * [OUTPUT]: 对外提供抽象基类 UIParticleSetUpBase 及统一的 Refresh 契约
+ * [POS]: Common/Component 的 UI 特效排序基类，让 SpriteMaskSetUp/UIOrderInLayerSetUp/UISurvivalParticleSetUp 互相嵌套时能被 Lua ResortOrder 以同一基类批量取用并排序，无需按具体类型区分
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 
 public abstract class UIParticleSetUpBase : MonoBehaviour

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.MonoBehaviour 生命周期与协程能力
+ * [OUTPUT]: 对外提供 GameKit.Base 的 SingletonBehaviour<T> 泛型单例基类与 SingletonParent 挂载父节点
+ * [POS]: Common/Other 的单例基础设施,被 GameObjectPool 等 MonoBehaviour 单例继承,统一实例生命周期与退出释放
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using UnityEngine;

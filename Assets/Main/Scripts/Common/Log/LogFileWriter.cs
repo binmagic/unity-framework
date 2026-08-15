@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.IO 与内部 FileWriter 落盘,依赖 Application.persistentDataPath 定位目录
+ * [OUTPUT]: 对外提供 GameFramework.LogFile,按时间戳建文件、格式化写入日志行并清理历史日志
+ * [POS]: Common/Log 的落盘后端,被 Log 门面驱动,与 LogLevel(分级)/Log(入口)构成完整日志链路
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.IO;
 using UnityEngine;

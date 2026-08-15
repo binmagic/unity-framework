@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 DynamicInfinityListRenderer 的循环列表渲染能力与 DynamicInfinityItem 数据项，依赖 UnityEngine.UI.Button
+ * [OUTPUT]: 对外提供 LoopListExample 示例组件（无业务导出）
+ * [POS]: LoopList 的用法演示脚本，通过按钮驱动 SetData/定位/增删数据以示范动态无限列表 API，仅供参考非运行时业务
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

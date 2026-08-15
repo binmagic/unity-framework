@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Camera 与 Matrix4x4 投影矩阵，读取 Camera.main 判定当前投影模式
+ * [OUTPUT]: 对外提供 ChangeCameraProjection 组件的 ChangeToPers/ChangeToOrth 接口，在透视与正交投影间切换
+ * [POS]: Common/Component 的相机投影切换器，与 CameraAniHandler 同为相机行为组件，本组件专注投影矩阵过渡
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using UnityEngine;
 

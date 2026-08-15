@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 继承 BaseDataContainer,依赖 Sfs2X 的 ISFSObject 与 XLua
+ * [OUTPUT]: 对外提供 DCPlayer,缓存 uid/serverId/crossServerId 等不变的玩家核心标识供 C# 高频读取
+ * [POS]: Data 层的玩家数据容器,只驻留稳定字段其余回 Lua 取,与 DCBuilding 同为 C#-Lua 数据边界
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using Sfs2X.Entities.Data;
 using XLua;

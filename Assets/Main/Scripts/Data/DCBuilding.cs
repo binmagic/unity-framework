@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 继承 BaseDataContainer,依赖 GameEntry.Lua 环境反查 CSharpCallLuaInterface 中的建筑数据函数
+ * [OUTPUT]: 对外提供 DCBuilding,以 uuid/buildId 从 Lua 侧取建筑数据供 C# 高频访问
+ * [POS]: Data 层的建筑数据容器,是 C# 读取 Lua 建筑数据的性能门面,与 DCPlayer(玩家数据)并列
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using GameFramework;
 using UnityEngine;
 using XLua;

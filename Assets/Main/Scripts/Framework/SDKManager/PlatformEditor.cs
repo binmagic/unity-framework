@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 IPlatformNative 契约(仅 Unity 基础类型)
+ * [OUTPUT]: 对外提供 PlatformEditor，编辑器下的空实现平台(登录/支付多为空操作，仅少量取值桩)
+ * [POS]: Framework SDK 子系统在 UNITY_EDITOR 下的平台实现，供 SDKManager 在编辑器运行时注入——让 SDK 流程在无真机环境下可空跑
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 #if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 Odin Inspector 生成编辑器按钮,依赖 GameEntry.Lua 调用 DataCenter.GuideManager/SU_EventSystem 的 Lua 方法
+ * [OUTPUT]: 对外提供 GuideGM 编辑器调试组件(在 Inspector 中一键触发指定引导 ID 与事件 ID)
+ * [POS]: Guide 模块的引导调试入口,是 C# 侧薄壳、真正引导逻辑在 Lua DataCenter.GuideManager,仅供开发期手动驱动引导流程
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 #if UNITY_EDITOR
 using Sirenix.OdinInspector;

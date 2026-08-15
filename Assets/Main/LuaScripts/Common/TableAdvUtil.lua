@@ -1,4 +1,10 @@
 --[[
+-- [INPUT]: 纯 Lua 实现,无外部模块依赖;比较逻辑由调用方传入 fcompval/reversed 定制
+-- [OUTPUT]: 挂载到全局 table 表的高级操作(binsearch 二分查找、bininsert 二分插入、randomKey 等)
+-- [POS]: Common 的 table 高级算法扩展,聚焦有序表的二分查找与插入,与 TableUtil 分工:TableUtil 管通用增删遍历,本文件管性能敏感的有序操作
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+--[[
 	table表的一些高级操作
 	主要是二分查找和二分插入
 ]]

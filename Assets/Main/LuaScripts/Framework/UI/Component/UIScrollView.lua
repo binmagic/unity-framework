@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.ScrollView 项目自定义循环滚动组件
+-- [OUTPUT]: 对外提供 UIScrollView 组件类，含 SetTotalCount 设置总数、RefreshCells/RefillCells 刷新、ScrollToCell 定位、ClearCells、SetOnItemMoveIn/Out cell 进出回调、SetOnValueChanged、GetChildCount、垂直归一化位置读写、SetNestedScrolling 嵌套滚动
+-- [POS]: Component 层基于对象池复用的循环列表核心，界面列表主力；被 UIScrollViewEx 继承扩展，与 UIScrollViewExclusive 处理嵌套独占
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UIScrollView : UIBaseContainer
 local UIScrollView = BaseClass("UIScrollView", UIBaseContainer)
 local base = UIBaseContainer

@@ -1,4 +1,10 @@
 --[[
+-- [INPUT]: 纯 Lua 实现,无外部模块依赖;按哈希表(hashtable)/数组(array)/通用(tb)三种语义区分处理
+-- [OUTPUT]: 挂载到全局 table 表的一批扩展(count/keys/values/clone/merge/unique_insert/const 只读/print_r 等)
+-- [POS]: Common 的 table 语言级扩展主集,补齐 Lua 原生 table 缺失的长度/键值/深浅拷贝/合并/只读封装,被全项目高频依赖
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+--[[
 -- added by wsh @ 2017-12-11
 -- table扩展工具类，对table不支持的功能执行扩展
 -- 注意：

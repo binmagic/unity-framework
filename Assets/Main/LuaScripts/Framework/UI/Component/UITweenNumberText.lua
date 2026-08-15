@@ -4,6 +4,12 @@
 --- DateTime: 2022/1/12 17:16
 ---
 
+--[[
+-- [INPUT]: 依赖 UITextMeshProUGUIEx 父类的文本能力、DOTween 序列做数值缓动
+-- [OUTPUT]: 对外提供 UITweenNumberText 组件类，含 SetNum 直设、TweenToNum/FromNumTweenToNum 滚动到目标值、GetCurNum/GetTargetNum、SetPrefix/SetSuffix/SetAffix 前后缀、SetDecimal/SetSeparator 格式、SetTextFunc 自定义显示、IsPlaying/Stop
+-- [POS]: Component 层的数字滚动文本，继承 TMP 文本；用于金币/经验等数值变化的平滑跳动展示
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UITweenNumberText : UITextMeshProUGUIEx
 local UITweenNumberText = BaseClass("UITweenNumberText", UITextMeshProUGUIEx)
 local base = UITextMeshProUGUIEx

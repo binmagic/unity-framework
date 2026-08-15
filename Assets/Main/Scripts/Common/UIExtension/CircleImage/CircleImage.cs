@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 继承 BaseImage 复用其贴图/布局能力，依赖 UnityEngine.Sprites.DataUtility 取 UV，用 VertexHelper 生成网格
+ * [OUTPUT]: 对外提供 CircleImage 组件，支持圆形/圆环/扇形填充绘制，并用射线交叉法做精确的点击区域命中检测
+ * [POS]: CircleImage 模块的具体实现，是 BaseImage 的圆形图元子类，把顶点生成与不规则形状 Raycast 落到实处
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;

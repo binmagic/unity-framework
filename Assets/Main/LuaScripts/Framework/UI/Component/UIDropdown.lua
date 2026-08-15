@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.UI.Dropdown 原生下拉框
+-- [OUTPUT]: 对外提供 UIDropdown 组件类，含 Add/Clear 选项管理、SetText/GetText、SetValue/GetValue/SetValueWithoutNotify 选中值、SetOnValueChanged 回调
+-- [POS]: Component 层对 UGUI Dropdown 的 Lua 封装；与 UITMPDropdown（TMP 版）功能对应，用于普通字体下拉选择
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIDropdown = BaseClass("UIDropdown", UIBaseContainer)
 local base = UIBaseContainer
 local UnityDropdown = typeof(CS.UnityEngine.UI.Dropdown)

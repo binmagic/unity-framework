@@ -20,6 +20,12 @@
 ---
 ---     HorizontalInfinityScrollView同理
 
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.GridInfinityScrollView 原生网格无限滚动组件
+-- [OUTPUT]: 对外提供 GridInfinityScrollView 组件类，含 Init 绑定 InitCell/UpdateCell/DestroyCell 回调、SetItemCount 设置总数、ForceUpdate 强刷、MoveItemByIndex/LaterItemByIndex 定位、Remark/Dispose
+-- [POS]: Component 层的网格型无限循环列表封装，靠对象池复用 cell 承载大数据网格；与 HorizontalInfinityScrollView 及各 ScrollView 同属滚动列表家族
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class GridInfinityScrollView:UIBaseComponent
 local GridInfinityScrollView = BaseClass("GridInfinityScrollView", UIBaseComponent)
 local base = UIBaseComponent

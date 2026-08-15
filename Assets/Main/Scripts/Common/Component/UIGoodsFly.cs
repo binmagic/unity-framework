@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 DG.Tweening 做贝塞尔路径动画，依赖 GameEntry.UIContainer 定位资源栏目标节点、GameEntry.Event 触发 RewardItemAdd，依赖 RewardType/ResourceType 枚举与 Image.LoadSprite 扩展加载图标
+ * [OUTPUT]: 对外提供 UIGoodsFly 组件，DoAnimForLua/DoAnim 系列按奖励类型把物品图标沿贝塞尔曲线飞向对应资源栏并回调
+ * [POS]: Common/Component 的奖励飞行特效核心，供 Lua 调用驱动领奖动画，用静态缓存复用路径点与 TrailRenderer，与 UIJumpFly/RandMove 同族但专司资源图标归位
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

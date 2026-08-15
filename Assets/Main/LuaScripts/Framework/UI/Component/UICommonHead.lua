@@ -1,6 +1,12 @@
 ---
 --- 通用头像组件（可以显示玩家头像、丧尸头像、城市头像或其他什么玩意）
 ---
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UIPlayerHead 与 CS.CircleImage 原生组件；数据来自玩家信息
+-- [OUTPUT]: 对外提供 UICommonHead 组件类，含 SetHead/SetData/SetHeadAndFrame 设置头像与头像框、SetAsMyself、SetIsCircle 圆形、ShowLoadingAinmation/HideLoadingAinmation 加载态、ComponentDefine/DataDefine 生命周期辅助
+-- [POS]: Component 层的通用头像组件（玩家/丧尸/城市等），整合头像图、头像框与加载动画；与 UIPlayerHead/UIPlayerHeadNew 同为头像展示家族
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UICommonHead : UIBaseContainer
 local UICommonHead = BaseClass("UICommonHead", UIBaseContainer)
 local base = UIBaseContainer

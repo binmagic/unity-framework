@@ -12,42 +12,37 @@
 ## 目录结构
 
 ```
-unity-framework/
-├── Assets/                     # Unity 主资源目录
+unity-lianlian-copy/
+├── Assets/                     # Unity 主资源目录（业务代码全在此，工程根仅 IDE/构建产物）
 │   ├── Main/                   # 游戏核心资源和代码
-│   │   ├── Scripts/            # C# 代码（Git 子模块: barrelscript.git）
-│   │   ├── LuaScripts/         # Lua 热更新脚本
-│   │   ├── DataTable/          # 数据表和本地化（Git 子模块: barreldata.git）
-│   │   ├── Prefabs/            # 预制体（UI、角色、建筑、怪物、特效等）
-│   │   ├── Scenes/             # 场景分区数据
-│   │   ├── Animation/          # 动画资源
-│   │   ├── Atlas/              # 图集
-│   │   ├── Material/           # 材质
-│   │   ├── Sprites/            # 精灵图（~16,639 个）
-│   │   ├── Sound/              # 音效（~2,567 个）
-│   │   ├── Proto/              # Protobuf 协议定义
-│   │   ├── URPSettings/        # URP 渲染管线配置
-│   │   └── ...
+│   │   ├── Scripts/            # C# 代码（主仓库直接追踪，非子模块）
+│   │   ├── LuaScripts/         # Lua 热更新脚本（9 个顶层目录，~169 文件）
+│   │   ├── DataTable/          # 数据表和本地化
+│   │   ├── LuaTxt/             # Lua 文本资源
+│   │   └── Prefabs/            # 预制体（UI/LianLian 等）
 │   ├── Editor/                 # 编辑器扩展和工具
 │   ├── Plugins/                # 第三方插件（DLL、SDK 等）
 │   ├── Resources/              # Unity Resources 目录
-│   └── StreamingAssets/        # 流式加载资源
+│   ├── Scenes/                 # 场景
+│   ├── GUI/                    # GUI 资源
+│   ├── _Art_LianLian/          # 连连看美术资源
+│   ├── AVProVideo/             # 第三方视频播放插件
+│   ├── XLuaExtension/          # XLua 扩展
+│   ├── WebGLTemplates/         # WebGL(微信小游戏) 模板
+│   └── launcher.unity          # 启动场景
 ├── ProjectSettings/            # Unity 项目设置
 ├── Packages/                   # Unity Package Manager 配置
-├── MapEditor/                  # 独立的 Unity 子项目 — 地图编辑器
-├── Tools/                      # 构建/辅助工具（Python27、LuaC、Xlsx2json、gradle、jenkins）
-├── Docs/                       # 项目文档
-├── proj_android/               # Android 导出工程（Gradle 构建）
-├── proj_xcode/                 # iOS Xcode 导出工程
-└── proj_CN/                    # 中国区专用工程配置
+└── AssetBundles/               # 打包产物
 ```
+
+> 本工程从上游 SLG 母工程裁剪而来。母工程曾有 `MapEditor/`、`Tools/`、`Docs/`、`proj_android/`、`proj_xcode/`、`proj_CN/` 等目录，本工程未包含；`Scripts`、`DataTable` 在母工程是 Git 子模块，本工程为主仓库直接追踪。
 
 ---
 
 ## 启动流程
 
 ```
-Launch.unity
+launcher.unity
   → ApplicationLaunch.cs (MonoBehaviour, DontDestroyOnLoad)
     → 检测屏幕方向/布局
     → 下载热更资源（DownloadManifestState）
@@ -89,19 +84,20 @@ GameEntry.BuildAnimatorManager // 建筑动画
 
 **入口文件**: `Assets/Main/LuaScripts/GameMain.lua`
 
-**顶层目录（固定 10 个，不可新建）**:
+**顶层目录（固定 9 个，不可新建）**:
 | 目录 | 职责 |
 |------|------|
 | `Global/` | 全局模块加载与全局命名空间（`Global.lua` 是唯一加载入口，有依赖顺序） |
 | `Framework/` | 框架层：OOP 系统、UI 基类、事件、定时器、日志 |
-| `Common/` | Lua 语言级扩展与 C# 交互封装（与游戏逻辑无关） |
+| `Common/` | Lua 语言级扩展与 C# 交互封装（与游戏逻辑无关，含第三方库） |
 | `Util/` | 游戏业务工具类（全局 require） |
 | `DataCenter/` | 数据管理中枢 + 各业务 Manager |
 | `Net/` | 网络协议：消息定义、路由、消息类 |
-| `UI/` | UI 窗口（MVC） |
-| `Slg/` | SLG 业务（UI/DataCenter/Chat/Generated 并行体系） |
-| `Scene/` | 场景内动态对象管理器（血条、气泡、特效、行军等） |
+| `UI/` | UI 窗口（MVC），当前仅 Config 路由 |
+| `Game/` | 连连看业务模块（`Game/LianLian/`，当前为预留脚手架） |
 | `Loading/` | 启动加载流程、热更版本检测 |
+
+> 本工程为连连看，从上游 SLG 母工程裁剪而来：母工程的 `Slg/`、`Scene/` 顶层目录**已移除**，其位置由 `Game/` 承接。
 
 **OOP 系统**: 所有类用 `BaseClass(name, super)`；类名=文件名=变量名三者一致；生命周期 `__init`（初始化字段）/ `__delete`（字段置 nil，一一对应）；单例继承 `Singleton` 用 `GetInstance()`；只读常量用 `ConstClass` 包装
 
@@ -119,8 +115,8 @@ GameEntry.BuildAnimatorManager // 建筑动画
 **UI 模块注册规则**:
 - `UIWindowNames.lua`: 窗口名常量表，格式 `Name = "Name",`（4空格缩进，key=value同名）
 - `UIConfig.lua`: 窗口路由表，格式 `[UIWindowNames.XXX] = "UI.路径.Config",`（tab缩进）
-- Config 路径前缀只允许 `UI.` 或 `Slg.UI.`，禁止自创命名空间
-- Lua 文件放 `LuaScripts/UI/` 或 `LuaScripts/Slg/UI/` 下，不可新建顶层目录
+- Config 路径前缀只允许 `UI.`（连连看窗口用 `UI.LianLian.`），禁止自创命名空间
+- Lua 文件放 `LuaScripts/UI/` 下，不可新建顶层目录
 - 详细规则见 `Assets/.claude/rules.md`
 - 目录结构规范见 `Assets/.claude/ui-directory-structure.md`
 
@@ -173,14 +169,12 @@ GameEntry.BuildAnimatorManager // 建筑动画
 
 | 文件类型 | 数量 |
 |---|---|
-| C# 文件（Assets 总计） | ~6,750 |
-| C# 文件（排除 3rdParty） | ~4,678 |
-| Lua 脚本 | ~533 |
-| Prefab 预制体 | ~4,049 |
-| Unity 场景 | 17 |
-| Shader / ShaderGraph | ~239 |
-| 音效文件 | ~2,567 |
-| 精灵文件 | ~16,639 |
+| C# 文件（Assets 总计） | ~738 |
+| C# 文件（排除 3rdParty） | ~390 |
+| Lua 脚本 | 169 |
+| Prefab 预制体 | ~406 |
+| Unity 场景 | 21 |
+| Shader / ShaderGraph | ~45 |
 
 ---
 
@@ -194,12 +188,8 @@ GameEntry.BuildAnimatorManager // 建筑动画
 | 框架入口 | `Assets/Main/Scripts/Framework/GameEntry.cs` | 全局静态管理类 |
 | 资源管理 | `Assets/Main/Scripts/Framework/ResourceManager.cs` | 资源加载/卸载 |
 | 网络管理 | `Assets/Main/Scripts/Manager/NetworkManager.cs` | 网络连接管理 |
-| 场景管理 | `Assets/Main/Scripts/Scene/SceneManager.cs` | 场景切换 |
-| 城市场景 | `Assets/Main/Scripts/Scene/City/` | 建筑建造、LOD、渲染优化 |
-| 世界地图 | `Assets/Main/Scripts/Scene/World/` | 区块化管理、行军、战争迷雾 |
-| PVE 战斗 | `Assets/Main/Scripts/Scene/PVE/` | 寻路网格、技能、子弹物理 |
-| RVO 碰撞 | `Assets/Main/Scripts/Scene/RVO/` | Agent、KdTree、Simulator |
-| UI 系统 | `Assets/Main/Scripts/UI/` | UI 管理（~50 个文件） |
+| 场景画质 | `Assets/Main/Scripts/Scene/SceneQualitySetting.cs` | 场景画质设置 |
+| UI 系统 | `Assets/Main/Scripts/UI/` | UI 管理（~35 个文件） |
 | XLua 桥接 | `Assets/Main/Scripts/XLua/` | Lua 热更新桥接 |
 | SDK 管理 | `Assets/Main/Scripts/Framework/SDKManager/` | 平台抽象层 |
 
@@ -282,48 +272,24 @@ ai, androidjni, animation, assetbundle, audio, cloth, director, imageconversion,
 
 ## 国际化
 
-支持 **16 种语言**（`Assets/Main/DataTable/Localization/`）：
-Arabic、ChineseSimplified、ChineseTraditional、English、French、German、Italian、Japanese、Korean、PortuguesePortugal、Russian、Spanish、Thai、Turkish、Vietnamese
-[CLAUDE.md](CLAUDE.md)
-**注意**: 阿拉伯语需要 RTL 布局适配（`Assets/Main/Scripts/UI/Arabic/`）
+本地化资源位于 `Assets/Main/DataTable/Localization/`，当前工程仅内置 `English`。
+
+> 母工程支持 16 种语言（含阿拉伯语 RTL），本连连看工程已裁剪至 English。C# 侧的 RTL 适配代码 `Assets/Main/Scripts/UI/Arabic/` 仍保留，接入多语言时可复用。
 
 ---
 
 ## 构建与部署
 
-- **Android**: Gradle 构建（`proj_android/`），支持多 Gradle 版本（5.6.4/6.5/6.8）
-- **iOS**: Xcode 工程（`proj_xcode/`）
-- **CI/CD**: Jenkins
-- **中国区**: 专用工程配置（`proj_CN/`）
-- **启动场景**: `Assets/Launch.unity`（EditorBuildSettings 中唯一配置的场景）
+- **目标平台**: Android / iOS / WebGL（微信小游戏，见 `Assets/WebGLTemplates/`）
+- **启动场景**: `Assets/launcher.unity`
 
 ---
 
-## Git 子模块
+## 版本控制
 
-```gitmodules
-[submodule "Assets/Main/Scripts"]
-    path = Assets/Main/Scripts
-    url = http://10.7.88.20/cc/barrelscript.git
-[submodule "Assets/Main/DataTable"]
-    path = Assets/Main/DataTable
-    url = http://10.7.88.20/cc/barreldata.git
-```
+Scripts、DataTable 均由**本仓库直接追踪**（工程根 `.gitmodules` 不存在，无 Git 子模块）。
 
-**注意**: Scripts 和 DataTable 是独立的 Git 子模块，修改时需要注意提交到对应的子模块仓库。
-
----
-
-## 项目文档
-
-详细文档位于 `Docs/` 目录：
-- `客户端启动流程/` — 启动流程说明
-- `数据库/` — 客户端数据库接口文档
-- `XLua文档/` — XLua 使用文档
-- `功能文档/` — 各功能模块文档（世界、行军、英雄、编队等）
-- `动更发布流程/` — 热更新发布流程
-- `美术规范文档/` — 美术资源规范
-- `Shader使用说明/` — Shader 使用说明
+> 母工程曾将 `Assets/Main/Scripts`（barrelscript.git）与 `Assets/Main/DataTable`（barreldata.git）作为独立 Git 子模块。本连连看工程已并入主仓库统一追踪——修改 C# 或数据表直接提交到本仓库即可。
 
 ---
 

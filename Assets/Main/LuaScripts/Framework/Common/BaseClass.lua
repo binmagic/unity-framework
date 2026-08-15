@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 仅依赖 Lua 原生 setmetatable/元表机制，无外部模块依赖
+-- [OUTPUT]: 对外提供全局 BaseClass(classname, super) 工厂与 ClassType 枚举
+-- [POS]: Common 模块乃至整个 Lua 层 OOP 系统的基石——所有业务类/Manager/UI 均由它派生，确立"类共享虚表 + 构造链 create/析构链 delete + New 实例化"的对象范式，Singleton/DataClass/ConstClass 皆在其之上或与其并列扩展
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-11-30
 -- Lua面向对象设计
 -----------------------------------

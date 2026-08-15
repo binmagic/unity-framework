@@ -6,6 +6,12 @@
 -- added by wsh @ 2017-12-28
 -- 注意：
 -- 1、已经被修改，别从tolua轻易替换来做升级
+--[[
+-- [INPUT]: 依赖 Vector3 表示原点与方向,回填 CS.UnityEngine.Ray
+-- [OUTPUT]: 对外提供纯 Lua 版 Ray(origin+direction 构造、GetPoint 沿线取点)
+-- [POS]: Common/Tools/UnityEngine 的射线结构体封装(源自 tolua),与 Plane/RaycastHit 配合完成 Lua 侧拾取与碰撞查询
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 local rawget = rawget
 local setmetatable = setmetatable

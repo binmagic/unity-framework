@@ -4,6 +4,12 @@
 --- DateTime: 6/8/21 2:18 PM
 ---
 
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.SuperScrollView.LoopListView2 第三方无限滚动插件
+-- [OUTPUT]: 对外提供 UILoopListView2 组件类，含 InitListView/InitWithParam 初始化、SetListItemCount 设置总数、RefreshAllShownItem 刷新、MovePanelToItemIndex 定位、GetShownItemByItemIndex 取可见 cell、拖拽/点击回调、SetMoveType/StopMovement/ClearAllItems
+-- [POS]: Component 层基于 SuperScrollView 的高性能循环列表封装，承载大数据量列表；与 UIScrollView 系列同为滚动容器，能力更强
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UILoopListView2 : UIBaseContainer
 local UILoopListView2 = BaseClass("UILoopListView2", UIBaseContainer)
 local base = UIBaseContainer

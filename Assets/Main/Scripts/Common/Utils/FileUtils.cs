@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 System.IO 的 File/Directory,依赖 XLua 供 Lua 侧调用文件操作
+ * [OUTPUT]: 对外提供 FileUtils 静态类,封装存在性判断/拷贝/读写等带异常吞吐的文件操作
+ * [POS]: Common/Utils 的文件系统门面,与 GameUtility(路径解析)配合完成落盘,供热更与存档读写文件
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

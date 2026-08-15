@@ -3,6 +3,12 @@
 --- Created by zhangxiaowu.
 --- DateTime: 2024/11/6 下午12:01
 ---
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.UI.ScrollRect 与 CS.ScrollView（向上查找父级滚动组件）
+-- [OUTPUT]: 对外提供 UIScrollViewExclusive 组件类，含 ReInit/ReInitScrollRect 重新绑定、拖拽事件 OnBeginDrag/OnDrag/OnEndDrag 独占转发
+-- [POS]: Component 层处理嵌套滚动冲突的组件，拖拽时协调自身与父级 ScrollRect/ScrollView 的滚动独占权
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIScrollViewExclusive = BaseClass("UIScrollViewExclusive", UIBaseContainer)
 local base = UIBaseContainer
 local function OnCreate(self)

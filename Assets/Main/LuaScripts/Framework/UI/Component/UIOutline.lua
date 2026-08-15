@@ -3,6 +3,12 @@
 --- Created by mac.
 --- DateTime: 1/19/22 4:40 PM
 ---
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.UnityEngine.UI.Outline 原生描边组件
+-- [OUTPUT]: 对外提供 UIOutline 组件类，含 SetColor 描边颜色、SetEnable 开关
+-- [POS]: Component 层对 UGUI Outline 的 Lua 封装，用于文本/图片描边效果控制
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIOutline = BaseClass("UIOutline", UIBaseComponent)
 local base = UIBaseComponent
 local UnityOutline = typeof(CS.UnityEngine.UI.Outline)

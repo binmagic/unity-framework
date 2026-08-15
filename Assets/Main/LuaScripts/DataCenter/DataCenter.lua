@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖各业务 Manager 的 require 路径（登记于 Managers 表），依赖 Framework 的类系统
+-- [OUTPUT]: 对外提供 DataCenter 表，暴露 IsValid/DeleteAll，并经元表按需懒加载返回各 XxxManager 实例
+-- [POS]: DataCenter 模块的数据管理中枢，用 __index 元表把 DataCenter.XxxManager 首访转为 require+New+缓存；全项目业务数据的统一入口，与 LuaEntry 并列
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 
 local Managers =

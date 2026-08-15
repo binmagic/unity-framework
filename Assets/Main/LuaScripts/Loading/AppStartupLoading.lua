@@ -1,3 +1,10 @@
+--[[
+-- [INPUT]: 依赖 Framework 的 BaseClass/Singleton、EventManager/UIManager/UpdateManager 单例，依赖 App/Logger、Loading.MockServer、Game.LianLian.Manager.LianLianManager
+-- [OUTPUT]: 对外提供 AppStartupLoading 单例，暴露 Startup/TransitionState/OnLogin/OnPushInitOk/Shutdown 等流程控制接口
+-- [POS]: Loading 模块的启动加载状态机，串起权限→资源版本→下载→数据表→连服→登录→PushInit→场景→进游的十个状态；连连看简化版多数状态直连下一步，末态拉起 LianLianManager 并打开主界面
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 ---
 --- AppStartupLoading - 游戏启动加载状态机
 --- 管理从启动到进入游戏的完整加载流程

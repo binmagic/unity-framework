@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖兄弟文件 UIScrollController 提供的 GetPosition 计算行坐标,依赖 UnityEngine.UI 的 Text
+ * [OUTPUT]: 对外提供 UIScrollItem 组件,代表滚动列表中的一"行",通过 Index 赋值时自动定位并重命名 GameObject
+ * [POS]: UIScroll 家族的行单元,被 UIScrollController 池化管理,是 UIScrollBase 组织多列 cell 的行容器
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 using UnityEngine.UI;
 

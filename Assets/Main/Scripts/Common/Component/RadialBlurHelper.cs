@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.Rendering.Universal 的 URP 管线资产，通过反射读取 m_RendererDataList 定位命名 RendererFeature，并反射调用其 UpdateParam 逐帧下发参数
+ * [OUTPUT]: 对外提供 RadialBlurHelper 组件，暴露径向模糊的中心/循环/模糊度/降采样/强度可调参数
+ * [POS]: Common/Component 的后处理特效控制器，随组件启停开关屏幕径向模糊 Feature，是 URP RenderFeature 与 Inspector 参数之间的运行时桥
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 HttpRequest 下载压缩包,依赖 System.IO.Compression 解压,依赖 VEngine.Logger
+ * [OUTPUT]: 对外提供 ConfigStatus 状态枚举与 ZipDataTable,处理内网配置压缩包的下载/解压/落地
+ * [POS]: Application 的内网配置热更处理,服务开发/测试期用打包配置覆盖本地表,与 LoadingState 的正式热更并行
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

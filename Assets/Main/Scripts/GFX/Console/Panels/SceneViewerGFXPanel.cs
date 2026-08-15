@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 继承 BaseGFXPanel,依赖 UnityEngine 的 Transform 层级遍历
+ * [OUTPUT]: 对外提供 SceneViewerGFXPanel,运行时浏览当前场景的对象层级并定位节点
+ * [POS]: GFX/Console/Panels 的场景查看页,真机上补足无 Hierarchy 面板的排查能力
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

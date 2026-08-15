@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UI.Config.UIWindowNames 的窗口名常量
+-- [OUTPUT]: 不返回值；向全局命名空间注入 UIConfig/UIAssets/VFXAssets/SoundAssets 等资源表与 ProxyList/LoginErrorMessage 等枚举
+-- [POS]: Global 模块的全局资源与枚举总表，是全项目 prefab/特效/音效/错误码的唯一登记处；由 Global.lua 在依赖链末段 require
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 --[[
 -- 枚举类

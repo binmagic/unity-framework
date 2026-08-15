@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 TMPro 的 TMP_Text 基类(同时兼容 TextMeshProUGUI 与 TextMeshPro),依赖 maxVisibleCharacters 逐帧推进
+ * [OUTPUT]: 对外提供 TMPTeletypeComponent 组件(打字机逐字显示、变速、瞬显跳过)
+ * [POS]: UI 层打字机效果的共享执行体,由 NewTMPText/NewTMP3DText 按需 GetOrAdd 挂载并委托,把两套 TMP 控件的打字逻辑收敛于一处
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

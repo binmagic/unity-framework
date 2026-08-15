@@ -4,6 +4,12 @@
 --- DateTime:
 
 ---@class UIScrollPage:UIBaseComponent
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.PageViewComponent 原生分页视图组件
+-- [OUTPUT]: 对外提供 UIScrollPage 组件类，含 Refresh/RefreshByCell 刷新页、PageTo 翻到指定页
+-- [POS]: Component 层的分页滚动封装，用于整页翻动的横幅/引导页等；区别于连续滚动的 ScrollView 家族
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIScrollPage = BaseClass("UIScrollPage", UIBaseComponent)
 local base = UIBaseComponent
 local UnityScrollView = typeof(CS.PageViewComponent)

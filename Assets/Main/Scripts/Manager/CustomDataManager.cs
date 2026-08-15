@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 BaseDataContainer 及其子类(DCPlayer/DCBuilding)的数据容器能力
+ * [OUTPUT]: 对外提供 CustomDataManager,聚合并统一管理玩家自身各类业务数据容器
+ * [POS]: Manager 层的玩家数据聚合入口,按类型注册并托管各 DataContainer 的生命周期,是 C# 侧玩家数据的门面
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 

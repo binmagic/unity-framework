@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 依赖 Unity MonoBehaviour 与 GameEntry.RegisterComponent
+ * [OUTPUT]: 对外提供 GameFrameworkComponent 抽象基类，在 Awake 时向 GameEntry 自注册
+ * [POS]: Framework 层所有场景挂载型框架组件的抽象基类，兄弟类 BaseComponent 继承之，打通 MonoBehaviour 与全局静态入口 GameEntry 的注册桥
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using UnityEngine;
 
 namespace UnityGameFramework.Runtime

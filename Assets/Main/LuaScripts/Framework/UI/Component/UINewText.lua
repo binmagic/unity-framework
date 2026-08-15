@@ -3,6 +3,12 @@
 --- Created by Imaginaerum.
 --- DateTime: 2021/8/30 15:14
 ---
+--[[
+-- [INPUT]: 依赖 UIBaseComponent 基类、CS.NewText 项目自定义文本组件；SetLocalText 依赖 Localization
+-- [OUTPUT]: 对外提供 UINewText 组件类，含 GetText/SetText/SetLocalText/SetText_Cache、SetColor/GetColor/SetColorRGBA、GetWidth/GetHeight/SetPreferSize、SetAlignment
+-- [POS]: Component 层对项目自定义 NewText（非 TMP）的 Lua 封装；与 UIText 同为普通位图字体文本，NewText 为其增强版
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UINewText = BaseClass("UINewText", UIBaseComponent)
 local base = UIBaseComponent
 local UnityText = typeof(CS.NewText)

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 Text 基类,依赖 GameEntry.Localization 按语言换字体,依赖 ArabicSupport.ArabicFixer 做 RTL 整形
+ * [OUTPUT]: 对外提供 NewText 组件(自动省略号截断、BestFit 缩放、去换行空格、阿语整形与自动换字体)
+ * [POS]: UI 层的定制原生文本,替代 UGUI Text 承接所有 legacy Text 需求,与 NewTMPText(TMP 体系)分工;AutoChangeFont 是其换字体能力的独立轻量版
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.Text;

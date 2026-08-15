@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Camera.main 与 projectionMatrix，依赖 System.Action 作切换完成回调
+ * [OUTPUT]: 对外提供 ViewChange 组件与 ChangeToPers/ChangeToOrth，在正交与透视投影间平滑过渡
+ * [POS]: Common/Component 的主相机投影切换器，在 LateUpdate 中按时间对投影矩阵做插值实现正交/透视渐变，单独占用主相机投影不与其他相机逻辑耦合
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

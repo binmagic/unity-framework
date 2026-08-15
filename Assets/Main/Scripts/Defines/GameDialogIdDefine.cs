@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 无外部依赖,常量集合
+ * [OUTPUT]: 对外提供 GameDialogDefine,把代码里写死的多语言文本 id 收敛成带注释的具名常量
+ * [POS]: Defines 的多语言 id 常量表,消除 C# 里散落的魔法字符串,配合本地化字典取词
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 
 /*

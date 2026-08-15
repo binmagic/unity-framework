@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.Timeline/Playables 的信号通知机制,依赖 GameEntry.Event 广播 EventId.GuideTimelineMarker
+ * [OUTPUT]: 对外提供 GuideTimelineMarker 组件(接收 Timeline 信号并转成引导事件、支持标记回退)与 IsContinue 拦截回调
+ * [POS]: Guide 模块中 Timeline 与引导逻辑的桥接件,把演出时间轴上的信号点转换为业务可订阅的引导事件,控制引导过场的暂停/回放
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using GameFramework;
 using UnityEngine;

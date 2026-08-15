@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 ConstClass 将表包装为只读常量
+-- [OUTPUT]: 对外提供 EventId 只读常量表，为全局所有业务事件分配唯一整型 id（按功能分号段，如火车 4000+、生存 5000+、引导 90000+）
+-- [POS]: Message 模块的事件字典，EventManager 广播/订阅的键来源；与 EventManager 配对，业务层与引导层共用此号段以保证跨模块一致
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 
 ---@class EventId
 local EventId = {

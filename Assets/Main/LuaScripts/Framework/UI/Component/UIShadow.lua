@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、CS.UnityEngine.UI.Shadow 原生阴影组件
+-- [OUTPUT]: 对外提供 UIShadow 组件类，含 Enable/AllEnable 开关、SetAllColor 阴影颜色
+-- [POS]: Component 层对 UGUI Shadow 的 Lua 封装，用于文本/图片投影效果控制
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 local UIShadow = BaseClass("UIShadow", UIBaseContainer)
 local base = UIBaseContainer
 local UnityShadow = typeof(CS.UnityEngine.UI.Shadow)

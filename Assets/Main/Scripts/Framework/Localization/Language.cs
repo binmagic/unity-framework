@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 无外部依赖
+ * [OUTPUT]: 对外提供 GameFramework.Localization.Language 语言枚举(含 Unspecified 及各语种)
+ * [POS]: Framework 本地化子系统的语言标识定义，被兄弟文件 LocalizationManager 作为语言维度的基准类型消费
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 namespace GameFramework.Localization
 {
     /// <summary>

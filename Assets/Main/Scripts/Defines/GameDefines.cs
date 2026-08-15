@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 基础类型
+ * [OUTPUT]: 对外提供 GameDefines 静态常量集,含画质档位/默认字典路径/材质名/聚焦时长等全局数值常量
+ * [POS]: Defines 的数值常量中心,消除全局魔法数字,与 GameEnum(分类枚举)/EventId(事件)构成 Defines 三支
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 

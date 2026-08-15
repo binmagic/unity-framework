@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI.Mask 基类与 IMeshModifier，依赖 Rendering.CommandBuffer/RenderTexture 离屏渲染遮罩缓冲，依赖软遮罩 Shader 与视投影矩阵缓存
+ * [OUTPUT]: 对外提供 SoftMask 组件（替代原生 Mask）、DownSamplingRate 与 softness/alpha 等平滑遮罩参数
+ * [POS]: SoftMask 的遮罩源核心，把遮罩图形渲染进可降采样的 RenderTexture 供子级 SoftMaskable 采样，支持父子遮罩嵌套，是软遮罩体系的渲染发起端
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;

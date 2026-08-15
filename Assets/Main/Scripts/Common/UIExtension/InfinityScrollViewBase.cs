@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 依赖 UnityEngine.UI 的 ScrollRect 监听滑动，实例化 itemTemplate 预制体，通过 GameEntry.Event 派发刷新完成事件，回调外部注入的 onInit/onUpdate/onDestroy
+ * [OUTPUT]: 对外提供抽象基类 InfinityScrollViewBase 及配套的 InfinityRect(矩形+索引) 与 InfinityItem(挂载组件) 类，实现可视区矩形相交检测驱动的循环复用滚动
+ * [POS]: UIExtension 无限滚动的算法核心与父类，把布局细节(单元格坐标/列数/尺寸)留给横向与网格子类实现，是自研版滚动列表区别于 EnhancedScroller 的一套
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;

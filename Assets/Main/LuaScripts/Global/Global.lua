@@ -1,4 +1,11 @@
 --[[
+-- [INPUT]: 依赖 Framework 的 BaseClass/Singleton/Logger/UI 全家桶、Common 的 SFS/工具库、Util 业务工具，以及本模块内 App/Config/EnumType 等
+-- [OUTPUT]: 不返回值；副作用是把 App/Setting/Config/DataCenter/LuaEntry/UIManager/MsgDefines 等数十个模块注入全局命名空间
+-- [POS]: Global 模块的唯一加载入口，严格按依赖顺序 require；GameMain 启动时最先执行，决定"哪些模块是全局的"
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
+--[[
 -- added by wsh @ 2017-11-30
 -- 1、加载全局模块，所有全局性的东西都在这里加载，好集中管理
 -- 2、模块定义时一律用local再return，模块是否是全局模块由本脚本决定，在本脚本加载的一律为全局模块

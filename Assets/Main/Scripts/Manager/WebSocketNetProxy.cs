@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 __Internal JsBridge(ws_connect/ws_send/ws_close) 走浏览器 WebSocket,依赖 INetManager(NetworkManager) 回调连接事件,依赖 MessageFactory 分发消息,协议体仍为 SFSObject 二进制
+ * [OUTPUT]: 对外提供 WebSocketNetProxy(INetProxy 的 WebGL 实现)及 JS 回调入口(OnWsOpen/OnWsMessage/OnWsClose/OnWsError),用线程安全队列把 JS 线程回调搬到主线程
+ * [POS]: Manager 网络族在微信小游戏(WebGL)平台的传输实现,与原生的 NetProxy 互斥编译,让 NetworkManager 在无 SmartFox 客户端时仍以统一接口收发
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 #if UNITY_WEBGL
 using System;
 using System.Collections.Generic;

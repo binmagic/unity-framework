@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameFramework/GameKit.Base 基础设施,依赖 VEngine 的 InstanceRequest,依赖热更下载与 XLua 启动链路
+ * [OUTPUT]: 对外提供 ApplicationLaunch MonoBehaviour 单例,承接 launcher 场景启动、屏幕方向检测、热更加载与热重载
+ * [POS]: Application 的游戏总入口,DontDestroyOnLoad 常驻,串起 LoadingState 下载流程 → GameEntry.Init → 拉起 Lua 虚拟机
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 DG.Tweening 做缩放缓动，依赖 DefaultNewButtonCurve 提供全局按压曲线（缩放/时长/缓动函数）
+ * [OUTPUT]: 对外提供 TouchObjectAnim 组件与 ShowClickPressAnim/HideClickPressAnim 两个按压反馈接口
+ * [POS]: GEgineRunTime 命名空间下 Common/Component 的点击按压动画器，把全局按钮曲线配置应用到任意可点击对象，通常由 TouchObjectEventTrigger 的点击事件驱动
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using DG.Tweening;
 using UnityEngine;
 

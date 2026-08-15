@@ -1,3 +1,10 @@
+/**
+ * [INPUT]: 引用同命名空间的 EnhancedScroller 与 EnhancedScrollerCellView 类型作为回调参数
+ * [OUTPUT]: 对外提供 IEnhancedScrollerDelegate 接口，约定数据源三要素：单元格总数、单元格尺寸、按索引取回收后的单元格视图
+ * [POS]: EnhancedScroller 模块的数据源契约，业务侧实现此接口把列表数据喂给滚动器，是滚动器与业务解耦的边界
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
+
 using UnityEngine;
 using System.Collections;
 

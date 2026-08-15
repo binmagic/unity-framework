@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Screen/UI,依赖本地缓存(PlayerPrefs)读取历史布局
+ * [OUTPUT]: 对外提供 LayoutHelper 静态类与 Layout 枚举,判定并缓存横屏/竖屏布局
+ * [POS]: Application 的横竖屏决策中枢,启动时被 ApplicationLaunch 查询以确定初始朝向,编辑期由 GameViewResHelper 配合
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;

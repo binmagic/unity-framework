@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 UnityEngine 的 Application/RuntimePlatform,依赖 System.IO 路径拼接
+ * [OUTPUT]: 对外提供 GameUtility 静态类,统一解析 AssetBundle 输出目录/StreamingAssets/平台名等运行时路径
+ * [POS]: Common/Utils 的平台路径中枢,资源加载与热更的路径来源,与 FileUtils(文件读写)分工
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using UnityEngine;
 using System.IO;

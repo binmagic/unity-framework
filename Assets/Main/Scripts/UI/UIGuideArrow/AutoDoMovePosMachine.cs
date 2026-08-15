@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 AutoDoMovePos 宿主,依赖三个 BaseAutoDoMovePosState 子状态(Down/Move/Up)
+ * [OUTPUT]: 对外提供 AutoDoMovePosMachine 状态机与 AutoDoMovePosState 枚举(管理按下→移动→抬起循环)
+ * [POS]: UIGuideArrow 模块的有限状态机核心,持有并切换三个具体状态,是 AutoDoMovePos 与各 State 之间的调度中枢
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System.Collections.Generic;
 using UnityEngine;
 

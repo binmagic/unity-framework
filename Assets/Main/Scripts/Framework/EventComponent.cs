@@ -5,6 +5,12 @@
 // Feedback: mailto:jiangyin@gameframework.cn
 //------------------------------------------------------------
 
+/**
+ * [INPUT]: 依赖 EventId 事件枚举、GameEntry.Lua 做 C#/Lua 事件引用计数与派发，依赖内建对象池复用 handler 列表
+ * [OUTPUT]: 对外提供 EventComponent 与 EventPoolMode，实现订阅/取消/抛出事件的事件池
+ * [POS]: Framework 层的事件中枢(实现 IGameController)，跨越 C# 与 Lua 双端——C# 侧维护 handler 表并将同一事件同步通知 Lua，由 GameEntry.Event 持有
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using GameFramework;
 
 using System;

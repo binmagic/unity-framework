@@ -3,6 +3,12 @@
 --- Created by Beef.
 --- DateTime: 2024/7/15 21:43
 ---
+--[[
+-- [INPUT]: 依赖 UIBaseContainer 基类、UI.UICommonIcon.UICommonPlayerHead 业务头像预设组件
+-- [OUTPUT]: 对外提供 UIPlayerHeadNew 组件类，含 SetData 设置头像、SetClickable 可点开关、OnClick 点击回调、ComponentDefine/DataDefine 生命周期辅助
+-- [POS]: Component 层的新版玩家头像容器，桥接 UI 层业务头像组件 UICommonPlayerHead；与 UIPlayerHead/UICommonHead 同为头像展示家族
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 ---@class UIPlayerHeadNew : UIBaseContainer
 local UIPlayerHeadNew = BaseClass("UIPlayerHeadNew", UIBaseContainer)
 local base = UIBaseContainer

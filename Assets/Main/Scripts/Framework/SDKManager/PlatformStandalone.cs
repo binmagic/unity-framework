@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 IPlatformNative 契约(仅 Unity 基础类型)
+ * [OUTPUT]: 对外提供 PlatformStandalone，PC 单机平台的空实现(无登录支付渠道)
+ * [POS]: Framework SDK 子系统在 UNITY_STANDALONE 下的平台实现，供 SDKManager 注入——PC 端无第三方 SDK 时的占位实现
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 #if UNITY_STANDALONE
 using System.Collections;
 using System.Collections.Generic;

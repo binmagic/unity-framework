@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Localization 判断阿语环境,依赖 BidirectionalHorizontalLayoutGroup 承接反向布局,依赖 NewTMPText/Text/Image 做子节点识别
+ * [OUTPUT]: 对外提供 ArabicHorizonLayout 组件(挂节点即在阿语下反转子节点顺序、镜像图片、纠正文本对齐)
+ * [POS]: Arabic 模块的"逐节点手工适配器",与 ArabicMirror 的整树自动镜像互补——用于策划手动挂载、精细控制单个水平布局容器的 RTL 行为
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;

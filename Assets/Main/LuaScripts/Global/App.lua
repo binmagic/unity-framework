@@ -1,5 +1,12 @@
+--[[
+-- [INPUT]: 依赖 CS.GameEntry/CS.CommonUtils/CS.SDKManager 等 C# 侧接口读取平台与版本信息，依赖 Logger/PostEventLog/UIUtil
+-- [OUTPUT]: 对外提供 App 表，暴露版本/包名/平台/设备/调试态查询及旧资源清理等静态方法
+-- [POS]: Global 模块的应用环境信息中枢，把散落的 C# 平台查询收敛并缓存为 Lua 侧只读快照，被全局各处直接调用
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
+
 -- APP信息功能类
--- 
+--
 
 local App = {}
 

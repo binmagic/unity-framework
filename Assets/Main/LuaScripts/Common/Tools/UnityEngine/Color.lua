@@ -1,3 +1,9 @@
+--[[
+-- [INPUT]: 依赖 CS.UnityEngine.Color 原生类型与 Mathf 做分量裁剪/插值
+-- [OUTPUT]: 对外提供纯 Lua 版 Color(rgba 构造、Lerp、运算符重载等)
+-- [POS]: Common/Tools/UnityEngine 的浮点色彩结构体封装(源自 tolua),以 Lua 表承接颜色运算减少 C# 值类型交互
+-- [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+--]]
 --------------------------------------------------------------------------------
 --      Copyright (c) 2015 - 2016 , 蒙占志(topameng) topameng@gmail.com
 --      All rights reserved.

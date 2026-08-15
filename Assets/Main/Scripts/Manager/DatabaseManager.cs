@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 SQLite4Unity3d 的连接与执行能力,依赖 WebRequestManager 从只读资源目录拷贝初始 db,依赖 QueuedThread 在后台线程串行执行 SQL
+ * [OUTPUT]: 对外提供 DatabaseManager 单例及 DBExecResult/DBAnyValue 等结果结构,承担 SQLite 的初始化、异步执行与主线程回调
+ * [POS]: Manager 层的本地 SQLite 数据库底座(MonoBehaviour 单例),被 LuaDatabaseManager 包装后暴露给 Lua,是本地持久化查询的唯一执行通道
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -1,3 +1,9 @@
+/**
+ * [INPUT]: 依赖 GameEntry.Sdk 向原生层发送数据,依赖 LitJson 解析通知配置
+ * [OUTPUT]: 对外提供 PushNoticeManager,封装本地推送通知的注册/取消/计数,桥接原生推送能力
+ * [POS]: Common/Utils 的推送门面,C# 侧收敛推送 JSON 与原生 SDK 的交互,供 Lua 业务层调度本地通知
+ * [PROTOCOL]: 变更时更新此头部,然后检查 CLAUDE.md
+ */
 using System;
 using System.Collections;
 using System.Collections.Generic;
