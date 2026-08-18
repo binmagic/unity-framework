@@ -1,4 +1,10 @@
 --[[
+-- [INPUT]: 依赖 Logger 的 LogError；被 LianLianModifierTypes 触发各 Modifiers/*.lua 的 register
+-- [OUTPUT]: 对外提供 register/get/all + 聚合查询 cellBlocksPath/cellBlocksSelect/cellHasAny
+-- [POS]: 格子修饰器子系统的策略注册中枢，与 LianLianSpecialRegistry（特殊元素）平级；
+--        核心逻辑只依赖本表的稳定接口，具体修饰器（Vine/Ice…）挂在这里，加元素不改核心
+-- [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+--
 -- 连连看「格子修饰器」注册表（策略模式）
 --
 -- 修饰器 = 附着在格子上的持续状态（藤蔓/冰冻/石头/锁链/护盾…），与 cell.id 正交：
@@ -18,8 +24,20 @@
 --   onNeighborCleared(mgr, layer, pos, state) -> newState|nil
 --                                          -- 相邻格发生消除时触发；返回新 state
 --                                          --   （nil=解除该修饰器；数字=递减后的层数；true=保持）
---   onShow(tile, state)                    -- tile 刷新时装扮外观（挂覆盖图/变色等）
+--   onShow(tile, state)                    -- tile 刷新时装扮「静态外观」（挂覆盖图/变色等）；
+--                                          --   幂等：视图层每次刷新都会对现存修饰器调它以恢复显示，
+--                                          --   故此钩子内不要放一次性动画（动画走 onEnter/onRemove）
+--   onEnter(tile, state)                   -- 修饰器由「无」变「有」时的入场过场（结冰铺开/淡入…）；
+--                                          --   视图层仅在「新出现」那一刻调一次，保持态不重播。
+--                                          --   不实现则无入场动画（如藤蔓，直接显示）
+--   onRemove(tile, state, onDone)          -- 修饰器由「有」变「无」时的消亡过场（震碎/消融…）；
+--                                          --   视图层在真正隐藏覆盖层前调此钩子播动画，
+--                                          --   动画结束须调 onDone() 让视图收尾。
+--                                          --   不实现则默认立即隐藏（如藤蔓，直接 SetActive(false)）
+--   -- onEnter/onRemove 是一对对称的「生/死」过场；onShow 只管「此刻长什么样」
 --   defaultState                           -- Debug/布点时的初始 state（缺省 true）
+--   dbg           table   可选：暴露给 Debug 面板实时调节的表现参数（如 { fps, enterDur, tintA }）；
+--                         钩子内读 def.dbg 取值，Debug 侧经 get(type).dbg 就地读写，实现「不改代码调手感」
 --]]
 
 local LianLianModifierRegistry = {}

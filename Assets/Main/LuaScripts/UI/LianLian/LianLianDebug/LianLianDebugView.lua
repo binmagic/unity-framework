@@ -92,6 +92,18 @@ function LianLianDebugView:ComponentDefine()
     -- 设藤蔓：把最近点击的盘面格设/清藤蔓
     self.vineBtn = self:AddComponent(UIButton, "Panel/Content/VineBtn")
     self.vineText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/VineBtn/Text")
+    -- 设薄冰：把最近点击的盘面格设/清薄冰
+    self.iceBtn = self:AddComponent(UIButton, "Panel/Content/IceBtn")
+    self.iceText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/IceBtn/Text")
+    -- 薄冰预览：在最近点击格原地重放冻结/震碎过场（不改盘面数据，可反复看）
+    self.iceEnterBtn = self:AddComponent(UIButton, "Panel/Content/IceEnterBtn")
+    self.iceEnterText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/IceEnterBtn/Text")
+    self.iceShatterBtn = self:AddComponent(UIButton, "Panel/Content/IceShatterBtn")
+    self.iceShatterText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/IceShatterBtn/Text")
+    -- 薄冰表现调参输入框：震碎帧率 / 入场时长 / 霜面透明度（实时写入 def.dbg）
+    self.iceFpsInput = self:AddComponent(UITMPInput, "Panel/Content/IceFpsInput")
+    self.iceEnterInput = self:AddComponent(UITMPInput, "Panel/Content/IceEnterInput")
+    self.iceAlphaInput = self:AddComponent(UITMPInput, "Panel/Content/IceAlphaInput")
     -- 掉落 checkbox（开关稀有度掉落 C 类后果）
     self.dropBtn = self:AddComponent(UIButton, "Panel/Content/DropBtn")
     self.dropText = self:AddComponent(UITextMeshProUGUIEx, "Panel/Content/DropBtn/Text")
@@ -171,6 +183,24 @@ function LianLianDebugView:ComponentDefine()
     if self.vineBtn then
         self.vineBtn:SetOnClick(BindCallback(self, self.OnVineClick))
     end
+    if self.iceBtn then
+        self.iceBtn:SetOnClick(BindCallback(self, self.OnIceClick))
+    end
+    if self.iceEnterBtn then
+        self.iceEnterBtn:SetOnClick(BindCallback(self, self.OnIcePreviewEnter))
+    end
+    if self.iceShatterBtn then
+        self.iceShatterBtn:SetOnClick(BindCallback(self, self.OnIcePreviewShatter))
+    end
+    if self.iceFpsInput then
+        self.iceFpsInput:SetOnEndEdit(BindCallback(self, self.OnIceFpsEdit))
+    end
+    if self.iceEnterInput then
+        self.iceEnterInput:SetOnEndEdit(BindCallback(self, self.OnIceEnterEdit))
+    end
+    if self.iceAlphaInput then
+        self.iceAlphaInput:SetOnEndEdit(BindCallback(self, self.OnIceAlphaEdit))
+    end
     if self.dropBtn then
         self.dropBtn:SetOnClick(BindCallback(self, self.OnDropToggle))
     end
@@ -191,6 +221,21 @@ function LianLianDebugView:ComponentDefine()
     self:RefreshConsequenceLabel("tide", self.tideText, "潮汐")
     if self.rocketText then self.rocketText:SetText("设为火箭") end
     if self.vineText then self.vineText:SetText("设为藤蔓") end
+    if self.iceText then self.iceText:SetText("设为薄冰") end
+    if self.iceEnterText then self.iceEnterText:SetText("冻结预览") end
+    if self.iceShatterText then self.iceShatterText:SetText("震碎预览") end
+    -- 用 def.dbg 当前值回填三个调参输入框
+    self:RefreshIceDbgInputs()
+end
+
+-- 用薄冰 def.dbg 当前值回填调参输入框（打开面板/初始化时）
+function LianLianDebugView:RefreshIceDbgInputs()
+    if not self.ctrl then return end
+    local d = self.ctrl:GetIceDbg()
+    if not d then return end
+    if self.iceFpsInput then self.iceFpsInput:SetText(tostring(d.fps or 20)) end
+    if self.iceEnterInput then self.iceEnterInput:SetText(tostring(d.enterDur or 0.2)) end
+    if self.iceAlphaInput then self.iceAlphaInput:SetText(tostring(d.tintA or 0.45)) end
 end
 
 -- 通用：刷新某 C 类后果 checkbox 文案
@@ -232,6 +277,51 @@ end
 function LianLianDebugView:OnVineClick()
     if not self.ctrl then return end
     self.ctrl:ToggleModifierOnSelected("vine")
+end
+
+-- 点击：给最近点击的盘面格切换薄冰修饰器（有→清除、无→添加）
+function LianLianDebugView:OnIceClick()
+    if not self.ctrl then return end
+    self.ctrl:ToggleModifierOnSelected("ice")
+end
+
+-- 预览：在最近点击格原地重放薄冰「冻结入场」（不改盘面数据）
+function LianLianDebugView:OnIcePreviewEnter()
+    if not self.ctrl then return end
+    self.ctrl:PreviewModifierFx("ice", "enter")
+end
+
+-- 预览：在最近点击格原地重放薄冰「震碎」（不改盘面数据）
+function LianLianDebugView:OnIcePreviewShatter()
+    if not self.ctrl then return end
+    self.ctrl:PreviewModifierFx("ice", "shatter")
+end
+
+-- 调参：震碎帧率（写入 def.dbg.fps，实时生效；非法输入回填当前值）
+function LianLianDebugView:OnIceFpsEdit()
+    if not self.ctrl or not self.iceFpsInput then return end
+    local v = tonumber(self.iceFpsInput:GetText())
+    if v and v > 0 then self.ctrl:SetIceDbgField("fps", v) end
+    self:RefreshIceDbgInputs()
+end
+
+-- 调参：结冰入场时长（秒）
+function LianLianDebugView:OnIceEnterEdit()
+    if not self.ctrl or not self.iceEnterInput then return end
+    local v = tonumber(self.iceEnterInput:GetText())
+    if v and v >= 0 then self.ctrl:SetIceDbgField("enterDur", v) end
+    self:RefreshIceDbgInputs()
+end
+
+-- 调参：霜面透明度（0~1）
+function LianLianDebugView:OnIceAlphaEdit()
+    if not self.ctrl or not self.iceAlphaInput then return end
+    local v = tonumber(self.iceAlphaInput:GetText())
+    if v then
+        if v < 0 then v = 0 elseif v > 1 then v = 1 end
+        self.ctrl:SetIceDbgField("tintA", v)
+    end
+    self:RefreshIceDbgInputs()
 end
 
 -- 刷新「扣血」复选按钮文案

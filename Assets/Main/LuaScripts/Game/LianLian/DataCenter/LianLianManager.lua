@@ -422,6 +422,14 @@ function LianLianManager:setLastClickSpecial(stype)
     self:setCellSpecial(p.layer, p.r, p.c, stype)
 end
 
+--- Debug：取「最近点击格」坐标拷贝（供预览重放定位；未点过返回 nil）
+--- @return table|nil { r, c, layer }
+function LianLianManager:getLastClickPos()
+    local p = self._lastClickPos
+    if not p then return nil end
+    return { r = p.r, c = p.c, layer = p.layer }
+end
+
 --- 取消某层选中（layer 缺省=1）
 function LianLianManager:cancelChecked(layer)
     layer = layer or 1

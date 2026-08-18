@@ -9,6 +9,7 @@ local LianLianPlay = require "Game.LianLian.DataCenter.LianLianPlay"
 local LianLianCard = require "Game.LianLian.DataCenter.LianLianCard"
 local LianLianEnum = require "Game.LianLian.Config.LianLianEnum"
 local LianLianTileItem = require "UI.LianLian.LianLianPlay.LianLianTileItem"
+local LianLianModifier = require "Game.LianLian.Special.LianLianModifierRegistry"
 
 -- 移动方向 → Direction 图集 sprite 名（对应 _Art_LianLian/Direction/*.png）
 local DIRECTION_SPRITE = {
@@ -762,17 +763,24 @@ function LianLianPlayView:OnPlayClear(data)
     self:CancelClearTimer()
     self._clearTimer = TimerManager:GetInstance():GetTimer(0.5, function()
         self:ClearLines()
-        -- 消除两张牌：直接隐藏（先杀入场动画避免干扰）
+        -- 消除两张牌：播爆点演出（胀→飞散淡出，动画内部收尾隐藏）
         local a, b = data.posA, data.posB
         local ta, tb = self:GetTile(a), self:GetTile(b)
-        if ta then ta:KillPopIn(); ta:SetVisible(false) end
-        if tb then tb:KillPopIn(); tb:SetVisible(false) end
-        -- 触发后续（移动 + 胜负判定），只作用该层
+        if ta then ta:PlayClearBurst() end
+        if tb then tb:PlayClearBurst() end
+        self:PlayClearFeedback()   -- 一次消除一次:音效 + 轻震
+        -- 触发后续（移动 + 胜负判定），只作用该层（爆点是并行表现,不阻塞逻辑）
         self.ctrl:OnClearEnd(layer)
         -- 消除后遮挡关系变化（上层牌消失可能露出下层）：无移动时 OnMove 不会触发，这里兜底刷新
         self:RefreshOcclusion()
     end, self, true, false, false)
     self._clearTimer:Start()
+end
+
+-- 消除反馈:音效 + 手机轻震。一次消除调一次(不随两张牌各触发)。
+function LianLianPlayView:PlayClearFeedback()
+    SoundUtil.PlayEffect(SoundAssets.Music_Effect_Collect_Crystal)   -- TODO: 换连连看专属消除音
+    CommonUtil.VibratorLightImpact()
 end
 
 function LianLianPlayView:CancelClearTimer()
@@ -881,6 +889,7 @@ function LianLianPlayView:OnAddListener()
     self:AddUIListener("LianLian_OcclusionRuleChanged", self.OnOcclusionRuleChanged)
     self:AddUIListener("LianLian_GridLineChanged", self.OnGridLineChanged)
     self:AddUIListener("LianLian_RocketFx", self.OnRocketFx)
+    self:AddUIListener("LianLian_DebugPreviewFx", self.OnDebugPreviewFx)
 end
 
 -- Ease 名 → Ease 枚举（供 FX 参数用字符串指定缓动）
@@ -1037,6 +1046,23 @@ function LianLianPlayView:OnItemUpdate(data)
     -- 洗牌/重排只作用某层；带 layer 则只刷该层，否则全刷
     self:UpdateBoard(data and data.layer)
     self:UpdateCardCounts()
+end
+
+-- Debug 预览：在选中格 tile 上原地重放某修饰器过场（不改盘面数据，可反复触发）
+-- 直接复用修饰器 def 的 onEnter/onRemove 钩子——预览即「重跑生/死表现」，零新逻辑。
+function LianLianPlayView:OnDebugPreviewFx(data)
+    if not data or not data.pos then return end
+    local tile = self:GetTile(data.pos)
+    if not tile then return end
+    local def = LianLianModifier.get(data.mtype)
+    if not def then return end
+    if data.phase == "enter" then
+        if def.onShow then def.onShow(tile, true) end       -- 先摆好静态图，入场才有底
+        if def.onEnter then def.onEnter(tile, true) end
+    elseif data.phase == "shatter" then
+        if def.onShow then def.onShow(tile, true) end
+        if def.onRemove then def.onRemove(tile, true, function() end) end   -- 空 onDone：只重放，不动数据
+    end
 end
 
 -- 配对失败：两张牌闪烁反馈

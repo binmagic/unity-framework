@@ -4,6 +4,7 @@
 --]]
 
 local LianLianManager = require "Game.LianLian.DataCenter.LianLianManager"
+local LianLianModifier = require "Game.LianLian.Special.LianLianModifierRegistry"
 
 local LianLianDebugCtrl = BaseClass("LianLianDebugCtrl", UIBaseCtrl)
 
@@ -124,6 +125,33 @@ end
 function LianLianDebugCtrl:ToggleModifierOnSelected(mtype)
     self.manager = LianLianManager:GetInstance()
     self.manager:toggleLastClickModifier(mtype or "vine")
+end
+
+--- 在「最近点击格」原地预览某修饰器的过场动画（不改盘面数据，可反复触发）
+--- @param mtype string 修饰器类型（如 "ice"）
+--- @param phase string "enter"=入场 / "shatter"=震碎
+function LianLianDebugCtrl:PreviewModifierFx(mtype, phase)
+    self.manager = LianLianManager:GetInstance()
+    local pos = self.manager:getLastClickPos()
+    if not pos then return end   -- 未点过任何格：安全无操作
+    EventManager:GetInstance():Broadcast("LianLian_DebugPreviewFx", { pos = pos, mtype = mtype, phase = phase })
+end
+
+--- 读薄冰可调表现参数表（fps/enterDur/tintA），供 Debug 输入框回填默认值
+--- @return table|nil
+function LianLianDebugCtrl:GetIceDbg()
+    local def = LianLianModifier.get("ice")
+    return def and def.dbg
+end
+
+--- 就地改薄冰某个表现参数（Debug 输入框回调用）；数值非法则忽略
+--- @param key string "fps" / "enterDur" / "tintA"
+--- @param v number
+function LianLianDebugCtrl:SetIceDbgField(key, v)
+    local def = LianLianModifier.get("ice")
+    if def and def.dbg and key and type(v) == "number" then
+        def.dbg[key] = v
+    end
 end
 
 --- 读「扣血」开关

@@ -5,5 +5,6 @@
 --]]
 
 require "Game.LianLian.Special.Modifiers.Vine"
+require "Game.LianLian.Special.Modifiers.Ice"
 
 return true
