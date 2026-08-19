@@ -36,13 +36,18 @@ public static class GameViewResHelper
     
     static GameViewSizeGroupType GetCurrentGroupType()
     {
-        #if UNITY_STANDALONE
-                return GameViewSizeGroupType.Standalone;
-        #elif UNITY_IOS
-                return GameViewSizeGroupType.iOS;
-        #elif UNITY_ANDROID
-                return GameViewSizeGroupType.Android;
-        #endif
+    #if UNITY_STANDALONE
+        return GameViewSizeGroupType.Standalone;
+    #elif UNITY_IOS
+        return GameViewSizeGroupType.iOS;
+    #elif UNITY_ANDROID
+        return GameViewSizeGroupType.Android;
+    #elif UNITY_WEBGL
+        // WebGL 在 Game View 里没有独立分组，复用 Standalone
+        return GameViewSizeGroupType.Standalone;
+    #else
+        return GameViewSizeGroupType.Standalone;
+    #endif
     }
     
     [MenuItem( "Tools/zlh/ChangeToLandScape" )]

@@ -322,12 +322,14 @@ namespace VEngine
         public static string GetTemporaryPath(string file)
         {
             var ret = $"{Application.temporaryCachePath}/{file}";
+#if !UNITY_WEBGL
+            // WebGL: 不使用文件系统目录
             var dir = Path.GetDirectoryName(ret);
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
-
+#endif
             return ret;
         }
 
@@ -336,6 +338,11 @@ namespace VEngine
         /// </summary>
         public static void ClearDownloadData()
         {
+#if UNITY_WEBGL
+            // WebGL: 清理 IndexedDB 缓存（通过 JsBridge）
+            // 或仅清理内存缓存
+            BundleWithPathOrUrLs.Clear();
+#else
             if (Directory.Exists(DownloadDataPath))
             {
                 Directory.Delete(DownloadDataPath, true);
@@ -343,6 +350,7 @@ namespace VEngine
             }
 
             BundleWithPathOrUrLs.Clear();
+#endif
         }
 
         /// <summary>
@@ -381,7 +389,13 @@ namespace VEngine
                 FuncCreateManifest = ManifestFile.Create;
             }
 
-            if (Application.platform != RuntimePlatform.OSXEditor &&
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                // WebGL: StreamingAssets 通过 HTTP 访问，LocalProtocol 为空
+                // WebBundle 内部会处理 URL 拼接
+                LocalProtocol = string.Empty;
+            }
+            else if (Application.platform != RuntimePlatform.OSXEditor &&
                 Application.platform != RuntimePlatform.OSXPlayer &&
                 Application.platform != RuntimePlatform.IPhonePlayer)
             {
@@ -417,10 +431,13 @@ namespace VEngine
                 DownloadDataPath = $"{Application.persistentDataPath}/{Utility.buildPath}";
             }
 
+#if !UNITY_WEBGL
+            // WebGL: 不使用本地文件系统目录，资源从 CDN 加载或通过 IndexedDB 缓存
             if (!Directory.Exists(DownloadDataPath))
             {
                 Directory.CreateDirectory(DownloadDataPath);
             }
+#endif
         }
 
         /// <summary>
@@ -517,25 +534,25 @@ namespace VEngine
 
         public static bool IsDownloaded(BundleInfo bundle)
         {
-#if false
-            var pathOrUrl = GetBundlePathOrURL(bundle);
-            if(string.IsNullOrEmpty(pathOrUrl))
+#if UNITY_WEBGL
+            // WebGL: 首包资源视为已下载，CDN 资源在 WebBundle 中按需加载
+            // 不使用 FileInfo 检查（WebGL 不支持文件系统操作）
+            if (SkipUpdate || PlayerAssets.Contains(bundle.name))
             {
-                return false;
+                return true;
             }
-            
-            var file = new FileInfo(pathOrUrl);
-            return file.Exists && (ulong)file.Length == bundle.size;
+            // WebGL 下 CDN 资源总是可用的（由 WebBundle 通过 HTTP 加载）
+            return !string.IsNullOrEmpty(DownloadURL);
 #else
             if (GameEntry.Resource.SplitApk)
             {
-                if (bundle.resMode != (int)ResMode.Normal) //如果是不在包体内的,每次都需要去通过文件的形式查看是否存在
+                if (bundle.resMode != (int)ResMode.Normal)
                 {
                     var file1 = new FileInfo(GetDownloadDataPath(bundle.name));
                     return file1.Exists && (ulong) file1.Length == bundle.size;
                 }
             }
-            
+
             if (SkipUpdate || PlayerAssets.Contains(bundle.name))
             {
                 return true;
@@ -574,35 +591,27 @@ namespace VEngine
             {
                 return path;
             }
-#if false            
-            // 1st.看包内是否有对应资源
-            path = GetPlayerDataPath(assetBundleName);
-            var file1 = new FileInfo(path);
-            if (file1.Exists && (ulong)file1.Length == info.size)
+
+#if UNITY_WEBGL
+            // WebGL (微信小游戏): 所有资源通过 HTTP 加载
+            if (SkipUpdate || PlayerAssets.Contains(assetBundleName))
             {
-                BundleWithPathOrUrLs[assetBundleName] = path;
-                return path;
-            }
-            
-            // 2nd.下载目录中是否有对应资源
-            var downloadPath = GetDownloadDataPath(info.name);
-            var file = new FileInfo(downloadPath);
-            if (file.Exists && (ulong)file.Length == info.size)
-            {
-                path = downloadPath;
+                // 首包资源 — 从 StreamingAssets 加载（WebBundle 会处理 URL 拼接）
+                path = GetPlayerDataPath(assetBundleName);
                 BundleWithPathOrUrLs[assetBundleName] = path;
                 return path;
             }
 
-            return string.Empty;
-
+            // CDN 资源 — 返回下载 URL
+            path = GetDownloadURL(assetBundleName);
+            BundleWithPathOrUrLs[assetBundleName] = path;
+            return path;
 #else
-            //如果说我们拆包,走新逻辑
+            // 原生平台: 本地文件系统逻辑
             if (GameEntry.Resource.SplitApk)
             {
                 if (info.resMode == (int)ResMode.Normal)
                 {
-                    // 看包内是否有
                     if (PlayerAssets.Contains(assetBundleName))
                     {
                         path = GetPlayerDataPath(assetBundleName);
@@ -613,7 +622,6 @@ namespace VEngine
             }
             else
             {
-                // 看包内是否有
                 if (SkipUpdate || PlayerAssets.Contains(assetBundleName))
                 {
                     path = GetPlayerDataPath(assetBundleName);
@@ -621,16 +629,14 @@ namespace VEngine
                     return path;
                 }
             }
-            
-            // 看包外是否有
+
             if (IsDownloaded(info))
             {
                 path = GetDownloadDataPath(assetBundleName);
                 BundleWithPathOrUrLs[assetBundleName] = path;
                 return path;
             }
-            
-            
+
             Log.Error("bundle {0} not find in local return path {1}", assetBundleName, path);
             return path;
 #endif

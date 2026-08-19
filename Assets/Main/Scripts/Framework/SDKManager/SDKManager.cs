@@ -27,6 +27,8 @@ public class SDKManager : IGameController
         Platform = new PlatformAndroid("com.sdkmanager.SdkListener");
 #elif UNITY_IOS
         Platform = new PlatformIOS();
+#elif UNITY_WEBGL
+        Platform = new PlatformWebGL();
 #elif UNITY_STANDALONE
         Platform = new PlatformStandalone();
 #endif
@@ -44,15 +46,17 @@ public class SDKManager : IGameController
 #else
             VersionCode = "1";
 #endif
-#elif UNITY_ANDROID
+#elif UNITY_ANDROID && !UNITY_WEBGL
        VersionCode = Platform.GetDataFromNative("PM_getVersionCode", "");
+#elif UNITY_WEBGL
+       VersionCode = "1";
 #endif
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_WEBGL
         SetAndroidScreenNotch();
 #endif
 
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_WEBGL
         RequestTrackingAuthorization();
 #endif
 
@@ -71,7 +75,7 @@ public class SDKManager : IGameController
 
     public IPlatformNative Platform { get; private set; }
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_WEBGL
     public PlatformAndroid Android
     {
         get
@@ -422,7 +426,7 @@ public class SDKManager : IGameController
 
     public void GotoMarket(string url, string urlCDN)
     {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_WEBGL
         Android?.Call("GotoMarket", url, urlCDN);
 #endif
     }
@@ -801,7 +805,7 @@ public class SDKManager : IGameController
 
     public void HideSplash()
     {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_WEBGL
         Android?.Call("HideSplash");
 #endif
     }
@@ -809,7 +813,7 @@ public class SDKManager : IGameController
     public bool IsShowLogoOk()
     {
         bool? ret = true;
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR && !UNITY_WEBGL
         ret = Android?.Call<bool>("IsShowLogoOk");
 #endif
         return ret.Value;
@@ -859,6 +863,15 @@ public class SDKManager : IGameController
     public static bool IS_UNITY_PC()
     {
 #if UNITY_STANDALONE
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    public static bool IS_UNITY_WEBGL()
+    {
+#if UNITY_WEBGL
         return true;
 #else
         return false;

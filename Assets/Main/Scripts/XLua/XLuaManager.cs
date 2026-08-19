@@ -411,9 +411,13 @@ public partial class XLuaManager
     //这个是为了方便测试lua代码,如果标记为true,所有lua代码优先加载本地,如果没有才加载bundle中的
     private void CheckLoadNativeCode()
     {
-// #if !FINAL_RELEASE
+#if UNITY_WEBGL
+        // WebGL: 不支持 native 文件覆盖，始终使用 AssetBundle 中的 Lua 脚本
+        m_useNative = false;
+        return;
+#else
         string cacheFile = Path.Combine(Application.persistentDataPath, "nativelock.txt");
-        
+
         if (File.Exists(cacheFile))
         {
             m_useNative = true;
@@ -423,7 +427,7 @@ public partial class XLuaManager
         {
             Debug.Log($">>>nativelock -> {cacheFile} ->not exist");
         }
-// #endif
+#endif
     }
     
     // 这里简单处理一下

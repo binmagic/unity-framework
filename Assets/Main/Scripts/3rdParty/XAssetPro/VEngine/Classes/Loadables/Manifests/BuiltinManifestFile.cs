@@ -14,6 +14,13 @@ namespace VEngine
 
         private void DownloadAsync(string url, string savePath)
         {
+#if UNITY_WEBGL
+            // WebGL: 不使用 DownloadHandlerFile（WebGL 不支持文件系统写入）
+            // 直接通过 UnityWebRequest 下载，数据保存在内存中
+            Log.Debug("[WebGL] Download {0}", url);
+            request = UnityWebRequest.Get(url);
+            request.SendWebRequest();
+#else
             if (File.Exists(savePath))
             {
                 File.Delete(savePath);
@@ -22,6 +29,7 @@ namespace VEngine
             request = UnityWebRequest.Get(url);
             request.downloadHandler = new DownloadHandlerFile(savePath);
             request.SendWebRequest();
+#endif
         }
 
         private static string GetTemporaryPath(string filename)
@@ -36,9 +44,15 @@ namespace VEngine
                 return;
             }
             Versions.Override(target);
+
+#if UNITY_WEBGL
+            // WebGL: 直接从 StreamingAssets 加载 manifest，不做本地缓存检查
+            var path = GetTemporaryPath(name);
+            target.Load(path);
+            Log.Debug($"[WebGL] Load manifest {path} {target.version}");
+#else
             var path = Versions.GetDownloadDataPath(Manifest.GetVersionFile(target.name));
             var file = ManifestVersionFile.Load(path);
-            // 服务器版本比包内版本高，装载服务器版本
             if (file.version > versionFile.version)
             {
                 path = Versions.GetDownloadDataPath(target.name);
@@ -60,10 +74,9 @@ namespace VEngine
                 }
             }
             path = GetTemporaryPath(name);
-            
-            //Log.Debug($"Load manifest begin");
             target.Load(path);
             Log.Debug($"Load manifest {path} {target.version}");
+#endif
         }
 
         protected override void OnLoad()
@@ -140,6 +153,24 @@ namespace VEngine
                 return;
             }
 
+#if UNITY_WEBGL
+            // WebGL: 直接从 UnityWebRequest 响应中解析版本信息
+            // 不使用文件系统操作
+            var versionText = request.downloadHandler.text;
+            versionFile = ManifestVersionFile.LoadFromText(versionText);
+            if (versionFile == null)
+            {
+                Finish("version parse failed.");
+                return;
+            }
+            Log.Debug("[WebGL] Read {0} with version {1} crc {2}", name, versionFile.version, versionFile.crc);
+            request.Dispose();
+            request = null;
+
+            // WebGL: 总是下载 manifest（不做本地缓存检查）
+            DownloadAsync(pathOrURL, null);
+            status = LoadableStatus.Downloading;
+#else
             var file = Manifest.GetVersionFile(name);
             var savePath = GetTemporaryPath(file);
             if (!File.Exists(savePath))
@@ -172,6 +203,7 @@ namespace VEngine
             }
             DownloadAsync(pathOrURL, path);
             status = LoadableStatus.Downloading;
+#endif
         }
     }
 }

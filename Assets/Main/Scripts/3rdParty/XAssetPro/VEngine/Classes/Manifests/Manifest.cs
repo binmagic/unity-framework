@@ -113,19 +113,79 @@ namespace VEngine
             //groups.Clear();
             directories.Clear();
 
+#if UNITY_WEBGL
+            // WebGL: 如果 path 是 URL，通过 UnityWebRequest 加载
+            // 如果是本地路径，尝试从 StreamingAssets 加载
+            if (path.StartsWith("http://") || path.StartsWith("https://"))
+            {
+                LoadFromURL(path);
+                return;
+            }
+#endif
+
             if (!File.Exists(path))
             {
                 return;
             }
 
             ParseManifest(path);
-            
+
             // 这东西读完就可以直接释放了，以后也不用了
             //C项目耻辱柱：这个内存俩份的问题 仨人累计工作量小一周才定位，结果是一个极小的问题！！！ 太菜了懂吗？！！！！
             //后续可能reload 为了尽可能容错这里重新赋值下 这样之前大的内存才能被GC掉 --zlh
             directories = new List<string>();
             return;
         }
+
+#if UNITY_WEBGL
+        /// <summary>
+        /// WebGL: 从文本内容加载 manifest（不依赖文件系统）
+        /// </summary>
+        public void LoadFromText(string text)
+        {
+            pathWithAssets.Clear();
+            nameWithBundles.Clear();
+            allAssetPaths.Clear();
+            assets.Clear();
+            bundles.Clear();
+            directories.Clear();
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            ParseManifestFromText(text);
+            directories = new List<string>();
+        }
+
+        /// <summary>
+        /// WebGL: 从 URL 加载 manifest
+        /// </summary>
+        private void LoadFromURL(string url)
+        {
+            // 注意: 这是同步加载，WebGL 上可能有问题
+            // 实际应该在 ManifestFile 的异步流程中处理
+            Log.Warning($"[WebGL] Manifest.LoadFromURL called synchronously for: {url}");
+        }
+
+        private void ParseManifestFromText(string text)
+        {
+            Log.Info("[VER] ParseManifestFromText");
+            var parseType = string.Empty;
+            sb = new StringBuilder(512);
+
+            var reader = new StringReader(text);
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                ParseManifestLine(line.AsSpan(), ref parseType);
+            }
+            reader.Dispose();
+
+            sb = null;
+        }
+#endif
         
            // 解析；快速且不产生GC
         private void ParseManifest(string path)

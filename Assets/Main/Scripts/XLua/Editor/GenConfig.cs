@@ -610,11 +610,15 @@ public static class GenConfig
 	    //typeof(CitySpaceManAnimationListener),
 	    typeof(ColliderEventHandler),
 	    typeof(CameraAniHandler),
-	    
+
 	    //typeof(usky.uSkyTimeline),
 	    //typeof(usky.uSkyLighting),
-	    
+
+#if !UNITY_WEBGL
 	    typeof(GameKit.Base.NetProxy),
+#else
+	    typeof(GameKit.Base.WebSocketNetProxy),
+#endif
 	    //typeof(PVEStaticManager),
 	    typeof(ProfilerGraph),
 	    typeof(FileUtils),

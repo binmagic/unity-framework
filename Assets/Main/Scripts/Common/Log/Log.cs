@@ -181,6 +181,73 @@ namespace GameFramework
         }
         
         /// <summary>
+        /// 打印警告级别日志，用于记录潜在问题但尚不影响正常逻辑的情况。
+        /// </summary>
+        /// <param name="message">日志内容。</param>
+        public static void Warning(string message)
+        {
+            if (WriteLogLevel != 1) return;
+            LogHelper(LogLevel.Warning, message);
+        }
+
+        /// <summary>
+        /// 打印警告级别日志，用于记录潜在问题但尚不影响正常逻辑的情况。
+        /// </summary>
+        /// <param name="message">日志内容。</param>
+        public static void Warning(object message)
+        {
+            if (WriteLogLevel != 1) return;
+            LogHelper(LogLevel.Warning, message);
+        }
+
+        /// <summary>
+        /// 打印警告级别日志，用于记录潜在问题但尚不影响正常逻辑的情况。
+        /// </summary>
+        /// <param name="format">日志格式。</param>
+        /// <param name="arg0">日志参数 0。</param>
+        public static void Warning(string format, object arg0)
+        {
+            if (WriteLogLevel != 1) return;
+            LogHelper(LogLevel.Warning, string.Format(format, arg0));
+        }
+
+        /// <summary>
+        /// 打印警告级别日志，用于记录潜在问题但尚不影响正常逻辑的情况。
+        /// </summary>
+        /// <param name="format">日志格式。</param>
+        /// <param name="arg0">日志参数 0。</param>
+        /// <param name="arg1">日志参数 1。</param>
+        public static void Warning(string format, object arg0, object arg1)
+        {
+            if (WriteLogLevel != 1) return;
+            LogHelper(LogLevel.Warning, string.Format(format, arg0, arg1));
+        }
+
+        /// <summary>
+        /// 打印警告级别日志，用于记录潜在问题但尚不影响正常逻辑的情况。
+        /// </summary>
+        /// <param name="format">日志格式。</param>
+        /// <param name="arg0">日志参数 0。</param>
+        /// <param name="arg1">日志参数 1。</param>
+        /// <param name="arg2">日志参数 2。</param>
+        public static void Warning(string format, object arg0, object arg1, object arg2)
+        {
+            if (WriteLogLevel != 1) return;
+            LogHelper(LogLevel.Warning, string.Format(format, arg0, arg1, arg2));
+        }
+
+        /// <summary>
+        /// 打印警告级别日志，用于记录潜在问题但尚不影响正常逻辑的情况。
+        /// </summary>
+        /// <param name="format">日志格式。</param>
+        /// <param name="args">日志参数。</param>
+        public static void Warning(string format, params object[] args)
+        {
+            if (WriteLogLevel != 1) return;
+            LogHelper(LogLevel.Warning, string.Format(format, args));
+        }
+
+        /// <summary>
         /// 打印错误级别日志，建议在发生功能逻辑错误，但尚不会导致游戏崩溃或异常时使用。
         /// </summary>
         /// <param name="message">日志内容。</param>

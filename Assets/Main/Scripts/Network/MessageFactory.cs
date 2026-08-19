@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using GameFramework;
+#if !UNITY_WEBGL
 using Sfs2X.Core;
+#endif
 using Sfs2X.Entities.Data;
 using Sfs2X.Util;
 using UnityEngine;
@@ -114,13 +116,14 @@ public class MessageFactory
         }
     }
 
+#if !UNITY_WEBGL
+    // SFS 事件分发入口 — iOS/Android/PC 使用
     public void DispatchResponse(BaseEvent e)
     {
         ExtensionEvent ee = e as ExtensionEvent;
         if (ee != null)
         {
             DispatchResponse(ee.cmd, ee.rawData as ByteArray);
-            // 这个地方的rawData其实可以使用pool系统，但是分配在底层（HandleNewPacket），同时跨越了线程，暂时就这样吧，手动置null
             ee.rawData = null;
         }
         else
@@ -131,7 +134,7 @@ public class MessageFactory
         }
     }
 
-    // 消息统一分发处理
+    // 消息统一分发处理 — SFS ByteArray 版本
     public void DispatchResponse(string cmd, ByteArray rawData)
     {
         try
@@ -215,7 +218,101 @@ public class MessageFactory
         }
 
     }
-    
+#endif // !UNITY_WEBGL
+
+    // ========== WebGL (微信小游戏) 分发入口 ==========
+
+    /// <summary>
+    /// WebGL: 直接接收 byte[] 数据进行分发
+    /// 由 WebSocketNetProxy 调用
+    /// 数据格式: SFSObject 二进制协议（与服务端一致）
+    /// </summary>
+    public void DispatchResponse(string cmd, byte[] rawData)
+    {
+#if UNITY_WEBGL
+        try
+        {
+            // 使用 SFSObject 解析二进制数据
+            var ba = new Sfs2X.Util.ByteArray(rawData, 0, rawData.Length);
+            var sfs = SFSObject.NewFromBinaryData(ba);
+
+            // 从 SFSObject 中提取 cmd（如果没有传入）
+            if (string.IsNullOrEmpty(cmd) && sfs.ContainsKey("c"))
+            {
+                cmd = sfs.GetUtfString("c");
+            }
+
+            if (string.IsNullOrEmpty(cmd))
+            {
+                Debug.LogError("[WebGL] DispatchResponse: cmd is empty");
+                return;
+            }
+
+            if (mHandlers.ContainsKey(cmd))
+            {
+                var so = sfs.GetSFSObject("p").GetSFSObject("p");
+                if (so.ContainsKey("_id"))
+                {
+                    int fuId = so.GetInt("_id");
+                    int serverTime = so.TryGetInt("_time");
+                    GameEntry.Network.getFutureManager().onServerMsgCome(fuId, serverTime);
+                }
+
+                if (CommonUtils.IsDebug())
+                {
+                    if (!cmd.Equals("survival.pve.heartbeat"))
+                    {
+                        var s = so.ToJson();
+                        Log.Info($"<color=green>#message# [res] <{cmd}> |</color> {s}");
+                    }
+                }
+
+                mHandlers[cmd].Handle(so);
+            }
+            else
+            {
+                // Lua 处理的消息
+                var l = GameEntry.Lua.Env.L;
+                int oldTop = LuaAPI.lua_gettop(l);
+                var ret = XLua.LuaDLL.Lua.BinToStackTable(l, rawData, rawData.Length);
+                if (ret == 0)
+                {
+                    throw new Exception("BinToStackTable Native Error [1]!");
+                }
+
+                bool is_ok = false;
+                if (LuaAPI.lua_istable(l, oldTop + 1))
+                {
+                    var stackTable1 = new LuaStackTable(l, oldTop + 1);
+                    var index1 = stackTable1.GetTableIndex("p");
+                    if (index1 != 0)
+                    {
+                        var stackTable2 = new LuaStackTable(l, index1);
+                        var index2 = stackTable2.GetTableIndex("p");
+                        if (index2 != 0)
+                        {
+                            var stackTable3 = new LuaStackTable(l, index2);
+                            GameEntry.Lua.DispatchResponse(cmd, stackTable3);
+                            is_ok = true;
+                        }
+                    }
+                }
+
+                if (is_ok == false)
+                {
+                    Debug.LogErrorFormat("[WebGL] BIGBUG!!! {0} error!", cmd);
+                }
+
+                LuaAPI.lua_settop(l, oldTop);
+            }
+        }
+        catch (System.Exception excep)
+        {
+            Log.Error("[WebGL] process msg {0} error, {1}", cmd, excep);
+        }
+#endif
+    }
+
 }
 
 
