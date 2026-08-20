@@ -550,7 +550,7 @@ public static class GenConfig
 	    typeof(LuaBuildData),
 	    typeof(List<LuaBuildData>),
 
-	    //typeof(Vibrator),
+	    typeof(Vibrator),
 	    typeof(UIGoodsFly),
 	    typeof(CommonUtils),
 	    typeof(LuaStringLookupTable),
