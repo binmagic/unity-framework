@@ -13,16 +13,18 @@
 ---@class UIWindowNames
 UIWindowNames = {
     -- 连连看游戏
-    UILianLianMain = "UILianLianMain",
-    UILianLianPlay = "UILianLianPlay",
-    UILianLianWin = "UILianLianWin",
-    UILianLianLose = "UILianLianLose",
-    UILianLianRevive = "UILianLianRevive",
-    UILianLianLevelup = "UILianLianLevelup",
-    UILianLianSettings = "UILianLianSettings",
-    UILianLianSkin = "UILianLianSkin",
-    UILianLianToast = "UILianLianToast",
-    UILianLianTest = "UILianLianTest",
+    LianLianMain = "LianLianMain",
+    LianLianPlay = "LianLianPlay",
+    LianLianWin = "LianLianWin",
+    LianLianLose = "LianLianLose",
+    LianLianRevive = "LianLianRevive",
+    LianLianLevelup = "LianLianLevelup",
+    LianLianSettings = "LianLianSettings",
+    LianLianSkin = "LianLianSkin",
+    LianLianToast = "LianLianToast",
+    LianLianTest = "LianLianTest",
+    LianLianDebug = "LianLianDebug",
+    LianLianUnlock = "LianLianUnlock",
 }
 
 return ConstClass("UIWindowNames", UIWindowNames)

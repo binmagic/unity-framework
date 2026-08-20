@@ -19,6 +19,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b9f2bc543367748489439c93b46da2b8, type: 2}
   - {fileID: 11400000, guid: 1519cfc0b4b9e40bbad6b6fe1dbd7339, type: 2}
   - {fileID: 11400000, guid: 32488710dbbb44b1a9848455908d0872, type: 2}
+  - {fileID: 11400000, guid: 244decf5028fa41b5aeaf7885cca3834, type: 2}
   size: 0
   settings: {fileID: 11400000, guid: 99494e57557954eb1b11f8a5ad17bbfd, type: 2}
   buildAssetBundleOptions: 256

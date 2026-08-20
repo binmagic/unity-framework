@@ -1,0 +1,27 @@
+{
+    "name": "MoreMountains.NiceVibrations.Rumble.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:426ad1839a76a3e4db8c1e4fde3eb745",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "MOREMOUNTAINS_INPUTSYSTEM_INSTALLED"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "0.0.1",
+            "define": "MOREMOUNTAINS_INPUTSYSTEM_INSTALLED"
+        }
+    ],
+    "noEngineReferences": false
+}

@@ -19,8 +19,7 @@
 ---@class UIManager:Singleton
 local UIManager = BaseClass("UIManager", Singleton)
 
-local UIRootPath = "GameFramework/UI"
-local MainCamera = "GameFramework/JustForShake/Main Camera"
+-- 框架根节点名由 ApplicationLaunch 面板配置的 prefab 决定，运行时动态拼接（见 __init）
 local ResourceManager = CS.GameEntry.Resource
 local GameObject = CS.UnityEngine.GameObject
 local Sound = CS.GameEntry.Sound
@@ -44,6 +43,11 @@ local function __init(self)
     self.windowsConfig = {}
     -- 所有可用的层级
     self.layers = {}
+
+    -- 框架路径由 FrameworkEnv 统一提供（根节点名来自 ApplicationLaunch 面板配置的 prefab）
+    local UIRootPath = CS.FrameworkEnv.UIRoot
+    local MainCamera = CS.FrameworkEnv.MainCameraPath
+
     -- 初始化组件
     self.transform = GameObject.Find(UIRootPath).transform
 
@@ -484,7 +488,9 @@ local function OpenWindow(self, ui_name, ...)
     end
 
     if not self:NoSoundPlayed(ui_name) then
-        SoundUtil.PlayUISoundEffect(ui_name)
+        if SoundUtil and SoundUtil.PlayUISoundEffect then
+            SoundUtil.PlayUISoundEffect(ui_name)
+        end
     end
     self:StopWorldCameraMove(window)
 
@@ -1295,6 +1301,7 @@ function UIManager:IsNeedMuteWorldScopeAudio(view)
 end
 
 function UIManager:TryMuteWorldScopeAudio()
+    if not SoundUtil or not SoundUtil.SetWorldScopeVolume then return end
     if not SceneManager.IsInWorld() then
         SoundUtil.SetWorldScopeVolume(1.0)
         return
