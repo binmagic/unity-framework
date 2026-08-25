@@ -136,10 +136,6 @@ atlas/
 *Settings.lighting
 *Settings.lighting.meta
 
-# --- 字体：origin/master 已有同名文件，等同步 master 时自然获得，避免 22M 重复 ---
-/Assets/Main/Fonts/
-/Assets/Main/Fonts.meta
-
 # --- 空目录的孤儿 meta（对应目录内容已被忽略或不存在）---
 /Assets/Main/Scripts/XLuaGen.meta
 /Assets/Main/LuaScripts/Game/LianLian.meta
