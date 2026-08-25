@@ -15,7 +15,18 @@ MonoBehaviour:
   comment: "UI\u76F8\u5173\u7684sprites"
   bundleMode: 7
   manifest: {fileID: 11400000, guid: edcf2d90aa32b48938eeedd2f15cd600, type: 2}
-  assets: []
+  assets:
+  - comment:
+    bundleMode: 2
+    label:
+    dependencies: []
+    readOnly: 0
+    path: Assets/Main/Sprites
+    excludePaths: []
+    rootPath:
+    parentGroup: {fileID: 0}
+    bundle:
+    index: -1
   readOnly: 0
   autoStrip: 0
   resMode: 0

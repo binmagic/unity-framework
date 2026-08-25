@@ -1215,8 +1215,24 @@ SoundAssets =
 -- 缺失会让该回调在调用用户回调之前抛异常 —— 表现为「异步实例化的对象永远建不出来、且无报错」。
 UICameraOffsetZ = -10
 
+-- 船舱建筑状态（ShipBuildingData.lua 依赖）
+ShipBuildingState =
+{
+    Locked    = 0, -- 未解锁
+    Idle      = 1, -- 空闲（已解锁，未在升级）
+    Unlocking = 2, -- 解锁中（倒计时）
+    Upgrading = 3, -- 升级中（倒计时）
+    Done      = 4, -- 完成待领取（倒计时结束，等玩家手动领取）
+}
+
 TableName =
 {
+    -- 隆隆冒险号船舱
+    Building_Config = "Building_Config",                    -- 飞船建筑基础配置表
+    Building_Levelup_Config = "Building_Levelup_Config",    -- 飞船建筑等级配置表
+    Furniture_Config = "Furniture_Config",                  -- 飞船家具基础配置表
+    Furniture_Levelup_Config = "Furniture_Levelup_Config",  -- 飞船家具升级配置表
+    WorkQueue_Config = "WorkQueue_Config",                  -- 飞船建造队列配置表
 
     AllianceResBuild = "alliance_res_build",
 	VisitorWelcome = "lw_base_visitor_welcome",

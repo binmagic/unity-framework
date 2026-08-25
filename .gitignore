@@ -110,3 +110,36 @@ Podfile.lock
 # --- TexturePacker ---
 *.tps
 atlas/
+
+# --- Claude 知识库（本地，不入库）---
+/requirements/history/
+/requirements/knowledge/
+
+# --- Claude 本地配置（含个人权限设置，不入库）---
+/.claude/
+
+# --- 构建产物 ---
+/AssetBundles/
+
+# --- 开发期验证截图（非美术资源）---
+/Assets/Screenshots/
+/Assets/Screenshots.meta
+
+# --- 本地文档与素材（暂不入库）---
+/Docs/
+/Assets/Landscape/
+/Assets/Landscape.meta
+/Assets/images/
+/Assets/images.meta
+
+# --- Unity 打开示例场景时自动生成的光照设置 ---
+*Settings.lighting
+*Settings.lighting.meta
+
+# --- 字体：origin/master 已有同名文件，等同步 master 时自然获得，避免 22M 重复 ---
+/Assets/Main/Fonts/
+/Assets/Main/Fonts.meta
+
+# --- 空目录的孤儿 meta（对应目录内容已被忽略或不存在）---
+/Assets/Main/Scripts/XLuaGen.meta
+/Assets/Main/LuaScripts/Game/LianLian.meta

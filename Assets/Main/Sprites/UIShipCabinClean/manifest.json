@@ -1,0 +1,2600 @@
+{
+  "source": "D:\\unitytest\\500a5195-d759-4a67-8c4c-d39fb05bd409.png",
+  "count": 187,
+  "note": "Clean v3 final: production folders exclude baked Chinese labels. Use Rooms_*, BuildingPieces, UI, UI_Icons_Only, Characters_72x96_NoText, Props_NoText, Generated_UI_NoText. ReferenceOnly_* folders are not for direct production assignment.",
+  "items": [
+    {
+      "category": "Rooms_Full",
+      "name": "command_center_lv1",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        589,
+        67,
+        691,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "command_center_lv1",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        589,
+        67,
+        691,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "command_center_lv1",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        589,
+        67,
+        691,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "command_center_lvmax",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        699,
+        67,
+        801,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "command_center_lvmax",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        699,
+        67,
+        801,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "command_center_lvmax",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        699,
+        67,
+        801,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "lab_lv1",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        810,
+        67,
+        912,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "lab_lv1",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        810,
+        67,
+        912,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "lab_lv1",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        810,
+        67,
+        912,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "lab_lvmax",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        921,
+        67,
+        1023,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "lab_lvmax",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        921,
+        67,
+        1023,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "lab_lvmax",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        921,
+        67,
+        1023,
+        155
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "power_room_lv1",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        589,
+        195,
+        691,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "power_room_lv1",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        589,
+        195,
+        691,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "power_room_lv1",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        589,
+        195,
+        691,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "power_room_lvmax",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        699,
+        195,
+        801,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "power_room_lvmax",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        699,
+        195,
+        801,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "power_room_lvmax",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        699,
+        195,
+        801,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "medical_lv1",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        810,
+        195,
+        912,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "medical_lv1",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        810,
+        195,
+        912,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "medical_lv1",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        810,
+        195,
+        912,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "medical_lvmax",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        921,
+        195,
+        1023,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "medical_lvmax",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        921,
+        195,
+        1023,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "medical_lvmax",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        921,
+        195,
+        1023,
+        283
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "dorm_lv1",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        589,
+        324,
+        691,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "dorm_lv1",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        589,
+        324,
+        691,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "dorm_lv1",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        589,
+        324,
+        691,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "dorm_lvmax",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        699,
+        324,
+        801,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "dorm_lvmax",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        699,
+        324,
+        801,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "dorm_lvmax",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        699,
+        324,
+        801,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "warehouse_lv1",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        810,
+        324,
+        912,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "warehouse_lv1",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        810,
+        324,
+        912,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "warehouse_lv1",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        810,
+        324,
+        912,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "warehouse_lvmax",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        921,
+        324,
+        1023,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "warehouse_lvmax",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        921,
+        324,
+        1023,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "warehouse_lvmax",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        921,
+        324,
+        1023,
+        412
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "shipyard_lv1",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        589,
+        452,
+        691,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "shipyard_lv1",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        589,
+        452,
+        691,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "shipyard_lv1",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        589,
+        452,
+        691,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "shipyard_lvmax",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        699,
+        452,
+        801,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "shipyard_lvmax",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        699,
+        452,
+        801,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "shipyard_lvmax",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        699,
+        452,
+        801,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "comms_lv1",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        810,
+        452,
+        912,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "comms_lv1",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        810,
+        452,
+        912,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "comms_lv1",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        810,
+        452,
+        912,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_Full",
+      "name": "comms_lvmax",
+      "size": [
+        102,
+        88
+      ],
+      "source_box": [
+        921,
+        452,
+        1023,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_223x180",
+      "name": "comms_lvmax",
+      "size": [
+        223,
+        180
+      ],
+      "source_box": [
+        921,
+        452,
+        1023,
+        540
+      ]
+    },
+    {
+      "category": "Rooms_256x192",
+      "name": "comms_lvmax",
+      "size": [
+        256,
+        192
+      ],
+      "source_box": [
+        921,
+        452,
+        1023,
+        540
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "room_frame_1x1",
+      "size": [
+        96,
+        96
+      ],
+      "source_box": [
+        26,
+        68,
+        122,
+        164
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "room_frame_2x1",
+      "size": [
+        171,
+        95
+      ],
+      "source_box": [
+        171,
+        69,
+        342,
+        164
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "room_frame_2x2",
+      "size": [
+        185,
+        189
+      ],
+      "source_box": [
+        369,
+        68,
+        554,
+        257
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "empty_floor",
+      "size": [
+        83,
+        55
+      ],
+      "source_box": [
+        16,
+        203,
+        99,
+        258
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "floor_tile",
+      "size": [
+        69,
+        55
+      ],
+      "source_box": [
+        115,
+        203,
+        184,
+        258
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "ceiling_tile",
+      "size": [
+        58,
+        54
+      ],
+      "source_box": [
+        195,
+        204,
+        253,
+        258
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "wall_pipe",
+      "size": [
+        77,
+        54
+      ],
+      "source_box": [
+        269,
+        203,
+        346,
+        257
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "elevator_shaft",
+      "size": [
+        79,
+        91
+      ],
+      "source_box": [
+        17,
+        311,
+        96,
+        402
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "elevator_open",
+      "size": [
+        107,
+        90
+      ],
+      "source_box": [
+        122,
+        312,
+        229,
+        402
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "elevator_closed",
+      "size": [
+        67,
+        90
+      ],
+      "source_box": [
+        270,
+        312,
+        337,
+        402
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "cable_track_a",
+      "size": [
+        31,
+        101
+      ],
+      "source_box": [
+        393,
+        306,
+        424,
+        407
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "cable_track_b",
+      "size": [
+        31,
+        101
+      ],
+      "source_box": [
+        453,
+        306,
+        484,
+        407
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "cable_track_c",
+      "size": [
+        31,
+        101
+      ],
+      "source_box": [
+        517,
+        306,
+        548,
+        407
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "floor_connector",
+      "size": [
+        95,
+        28
+      ],
+      "source_box": [
+        16,
+        452,
+        111,
+        480
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "wall_connector",
+      "size": [
+        96,
+        28
+      ],
+      "source_box": [
+        139,
+        452,
+        235,
+        480
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "pipe_thick",
+      "size": [
+        84,
+        28
+      ],
+      "source_box": [
+        262,
+        452,
+        346,
+        480
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "pipe_thin",
+      "size": [
+        84,
+        28
+      ],
+      "source_box": [
+        369,
+        452,
+        453,
+        480
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "vent",
+      "size": [
+        82,
+        28
+      ],
+      "source_box": [
+        473,
+        452,
+        555,
+        480
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "blue_light_strip",
+      "size": [
+        79,
+        26
+      ],
+      "source_box": [
+        18,
+        516,
+        97,
+        542
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "yellow_light_strip",
+      "size": [
+        80,
+        26
+      ],
+      "source_box": [
+        130,
+        516,
+        210,
+        542
+      ]
+    },
+    {
+      "category": "BuildingPieces",
+      "name": "damaged_state",
+      "size": [
+        99,
+        26
+      ],
+      "source_box": [
+        454,
+        514,
+        553,
+        540
+      ]
+    },
+    {
+      "category": "ReferenceOnly_TextIncluded",
+      "name": "coin_bar_reference_text",
+      "size": [
+        128,
+        37
+      ],
+      "source_box": [
+        1070,
+        64,
+        1198,
+        101
+      ]
+    },
+    {
+      "category": "ReferenceOnly_TextIncluded",
+      "name": "gem_bar_reference_text",
+      "size": [
+        123,
+        37
+      ],
+      "source_box": [
+        1200,
+        64,
+        1323,
+        101
+      ]
+    },
+    {
+      "category": "ReferenceOnly_TextIncluded",
+      "name": "energy_bar_reference_text",
+      "size": [
+        112,
+        37
+      ],
+      "source_box": [
+        1324,
+        64,
+        1436,
+        101
+      ]
+    },
+    {
+      "category": "ReferenceOnly_TextIncluded",
+      "name": "crystal_bar_reference_text",
+      "size": [
+        92,
+        37
+      ],
+      "source_box": [
+        1437,
+        64,
+        1529,
+        101
+      ]
+    },
+    {
+      "category": "ReferenceOnly_TextIncluded",
+      "name": "countdown_green_reference_text",
+      "size": [
+        165,
+        56
+      ],
+      "source_box": [
+        1353,
+        143,
+        1518,
+        199
+      ]
+    },
+    {
+      "category": "ReferenceOnly_TextIncluded",
+      "name": "countdown_red_reference_text",
+      "size": [
+        165,
+        56
+      ],
+      "source_box": [
+        1353,
+        223,
+        1518,
+        279
+      ]
+    },
+    {
+      "category": "ReferenceOnly_TextIncluded",
+      "name": "countdown_orange_reference_text",
+      "size": [
+        165,
+        56
+      ],
+      "source_box": [
+        1353,
+        300,
+        1518,
+        356
+      ]
+    },
+    {
+      "category": "UI",
+      "name": "button_default",
+      "size": [
+        62,
+        35
+      ],
+      "source_box": [
+        1069,
+        482,
+        1131,
+        517
+      ]
+    },
+    {
+      "category": "UI",
+      "name": "button_pressed",
+      "size": [
+        62,
+        35
+      ],
+      "source_box": [
+        1139,
+        482,
+        1201,
+        517
+      ]
+    },
+    {
+      "category": "UI",
+      "name": "button_disabled",
+      "size": [
+        62,
+        35
+      ],
+      "source_box": [
+        1209,
+        482,
+        1271,
+        517
+      ]
+    },
+    {
+      "category": "UI",
+      "name": "button_highlight",
+      "size": [
+        62,
+        35
+      ],
+      "source_box": [
+        1280,
+        482,
+        1342,
+        517
+      ]
+    },
+    {
+      "category": "UI",
+      "name": "exp_bar_bg",
+      "size": [
+        134,
+        15
+      ],
+      "source_box": [
+        1375,
+        514,
+        1509,
+        529
+      ]
+    },
+    {
+      "category": "UI",
+      "name": "progress_bar_fill",
+      "size": [
+        101,
+        10
+      ],
+      "source_box": [
+        1375,
+        539,
+        1476,
+        549
+      ]
+    },
+    {
+      "category": "UI",
+      "name": "plus_button",
+      "size": [
+        31,
+        35
+      ],
+      "source_box": [
+        1494,
+        64,
+        1525,
+        99
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "side_challenge",
+      "size": [
+        42,
+        40
+      ],
+      "source_box": [
+        1076,
+        147,
+        1118,
+        187
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "side_build",
+      "size": [
+        42,
+        40
+      ],
+      "source_box": [
+        1076,
+        200,
+        1118,
+        240
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "side_tech",
+      "size": [
+        42,
+        40
+      ],
+      "source_box": [
+        1076,
+        253,
+        1118,
+        293
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "side_shipyard",
+      "size": [
+        42,
+        40
+      ],
+      "source_box": [
+        1076,
+        306,
+        1118,
+        346
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "side_achievement",
+      "size": [
+        42,
+        23
+      ],
+      "source_box": [
+        1076,
+        358,
+        1118,
+        398
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "activity_gift",
+      "size": [
+        42,
+        41
+      ],
+      "source_box": [
+        1200,
+        143,
+        1242,
+        184
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "gift_box",
+      "size": [
+        42,
+        41
+      ],
+      "source_box": [
+        1200,
+        195,
+        1242,
+        236
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "lottery",
+      "size": [
+        41,
+        41
+      ],
+      "source_box": [
+        1281,
+        143,
+        1322,
+        184
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "mail",
+      "size": [
+        41,
+        41
+      ],
+      "source_box": [
+        1281,
+        195,
+        1322,
+        236
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "friends",
+      "size": [
+        41,
+        41
+      ],
+      "source_box": [
+        1281,
+        247,
+        1322,
+        288
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "guild",
+      "size": [
+        41,
+        41
+      ],
+      "source_box": [
+        1281,
+        299,
+        1322,
+        340
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "bottom_fleet",
+      "size": [
+        43,
+        34
+      ],
+      "source_box": [
+        1202,
+        371,
+        1245,
+        405
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "bottom_develop",
+      "size": [
+        45,
+        34
+      ],
+      "source_box": [
+        1274,
+        371,
+        1319,
+        405
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "bottom_explore",
+      "size": [
+        45,
+        35
+      ],
+      "source_box": [
+        1347,
+        370,
+        1392,
+        405
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "bottom_guild",
+      "size": [
+        42,
+        34
+      ],
+      "source_box": [
+        1420,
+        371,
+        1462,
+        405
+      ]
+    },
+    {
+      "category": "UI_Icons_Only",
+      "name": "bottom_world",
+      "size": [
+        38,
+        34
+      ],
+      "source_box": [
+        1490,
+        371,
+        1528,
+        405
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "coin",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        21,
+        607,
+        51,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "gem",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        74,
+        607,
+        104,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "power",
+      "size": [
+        56,
+        63
+      ],
+      "source_box": [
+        127,
+        607,
+        157,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "fuel",
+      "size": [
+        54,
+        64
+      ],
+      "source_box": [
+        180,
+        607,
+        210,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "food",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        233,
+        607,
+        263,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "water",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        286,
+        607,
+        316,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "steel",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        339,
+        607,
+        369,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "alloy",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        392,
+        607,
+        422,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "parts",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        445,
+        607,
+        475,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "chip",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        498,
+        607,
+        528,
+        632
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "tech",
+      "size": [
+        64,
+        58
+      ],
+      "source_box": [
+        21,
+        660,
+        51,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "build",
+      "size": [
+        64,
+        59
+      ],
+      "source_box": [
+        74,
+        660,
+        104,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "repair",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        127,
+        660,
+        157,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "speedup",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        180,
+        660,
+        210,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "finish_now",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        233,
+        660,
+        263,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "upgrade",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        286,
+        660,
+        316,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "info",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        339,
+        660,
+        369,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "lock",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        392,
+        660,
+        422,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "search",
+      "size": [
+        41,
+        56
+      ],
+      "source_box": [
+        445,
+        660,
+        475,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "settings",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        498,
+        660,
+        528,
+        685
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "quest",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        21,
+        713,
+        51,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "achievement",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        74,
+        713,
+        104,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "ranking",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        127,
+        713,
+        157,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "reward",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        180,
+        713,
+        210,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "chest",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        233,
+        713,
+        263,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "mail",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        286,
+        713,
+        316,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "friends",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        339,
+        713,
+        369,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "guild",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        392,
+        713,
+        422,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "world",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        445,
+        713,
+        475,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "back",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        498,
+        713,
+        528,
+        738
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "battle",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        21,
+        766,
+        51,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "defense",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        74,
+        766,
+        104,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "attack",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        127,
+        766,
+        157,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "protect",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        180,
+        766,
+        210,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "explosion",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        233,
+        766,
+        263,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "target",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        286,
+        766,
+        316,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "dash",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        339,
+        766,
+        369,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "life",
+      "size": [
+        51,
+        63
+      ],
+      "source_box": [
+        392,
+        766,
+        422,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "medical",
+      "size": [
+        43,
+        64
+      ],
+      "source_box": [
+        445,
+        766,
+        475,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "danger",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        498,
+        766,
+        528,
+        791
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "ship",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        21,
+        819,
+        51,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "submarine",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        74,
+        819,
+        104,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "robot",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        127,
+        819,
+        157,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "weapon",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        180,
+        819,
+        210,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "radar",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        233,
+        819,
+        263,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "signal",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        286,
+        819,
+        316,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "trade",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        339,
+        819,
+        369,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "shop",
+      "size": [
+        50,
+        64
+      ],
+      "source_box": [
+        392,
+        819,
+        422,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "event",
+      "size": [
+        43,
+        64
+      ],
+      "source_box": [
+        445,
+        819,
+        475,
+        844
+      ]
+    },
+    {
+      "category": "ReferenceOnly_IconButtons_TextRisk",
+      "name": "help",
+      "size": [
+        64,
+        64
+      ],
+      "source_box": [
+        498,
+        819,
+        528,
+        844
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "engineer_m",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        596,
+        617,
+        645,
+        700
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "engineer_f",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        668,
+        617,
+        718,
+        700
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "scientist_m",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        742,
+        616,
+        792,
+        700
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "scientist_f",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        815,
+        616,
+        866,
+        700
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "doctor_m",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        890,
+        616,
+        940,
+        700
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "doctor_f",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        948,
+        616,
+        995,
+        700
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "soldier",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        594,
+        744,
+        645,
+        829
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "special_force",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        668,
+        744,
+        719,
+        829
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "robot_assistant",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        743,
+        748,
+        794,
+        827
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "mechanic",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        816,
+        744,
+        867,
+        829
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "chef",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        890,
+        744,
+        940,
+        829
+      ]
+    },
+    {
+      "category": "Characters_72x96_NoText",
+      "name": "commander",
+      "size": [
+        72,
+        96
+      ],
+      "source_box": [
+        946,
+        744,
+        995,
+        829
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "computer_terminal",
+      "size": [
+        45,
+        42
+      ],
+      "source_box": [
+        1026,
+        615,
+        1071,
+        657
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "lab_bench",
+      "size": [
+        50,
+        39
+      ],
+      "source_box": [
+        1106,
+        618,
+        1156,
+        657
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "generator",
+      "size": [
+        48,
+        42
+      ],
+      "source_box": [
+        1180,
+        615,
+        1228,
+        657
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "medical_bed",
+      "size": [
+        49,
+        42
+      ],
+      "source_box": [
+        1252,
+        615,
+        1301,
+        657
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "workbench",
+      "size": [
+        52,
+        39
+      ],
+      "source_box": [
+        1325,
+        618,
+        1377,
+        657
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "console",
+      "size": [
+        48,
+        47
+      ],
+      "source_box": [
+        1401,
+        610,
+        1449,
+        657
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "large_screen",
+      "size": [
+        53,
+        47
+      ],
+      "source_box": [
+        1471,
+        610,
+        1525,
+        657
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "shelf",
+      "size": [
+        39,
+        45
+      ],
+      "source_box": [
+        1027,
+        718,
+        1071,
+        763
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "safe",
+      "size": [
+        32,
+        45
+      ],
+      "source_box": [
+        1104,
+        718,
+        1149,
+        763
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "server_rack",
+      "size": [
+        24,
+        45
+      ],
+      "source_box": [
+        1180,
+        718,
+        1222,
+        763
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "storage_cabinet",
+      "size": [
+        30,
+        45
+      ],
+      "source_box": [
+        1252,
+        718,
+        1297,
+        763
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "toolbox",
+      "size": [
+        51,
+        42
+      ],
+      "source_box": [
+        1327,
+        721,
+        1378,
+        763
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "oil_barrel",
+      "size": [
+        43,
+        43
+      ],
+      "source_box": [
+        1401,
+        720,
+        1444,
+        763
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "container",
+      "size": [
+        54,
+        42
+      ],
+      "source_box": [
+        1472,
+        721,
+        1526,
+        763
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "ladder",
+      "size": [
+        13,
+        50
+      ],
+      "source_box": [
+        1027,
+        821,
+        1057,
+        873
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "cart",
+      "size": [
+        49,
+        31
+      ],
+      "source_box": [
+        1104,
+        839,
+        1153,
+        873
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "pipe_valve",
+      "size": [
+        31,
+        44
+      ],
+      "source_box": [
+        1181,
+        823,
+        1226,
+        873
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "fire_extinguisher",
+      "size": [
+        31,
+        46
+      ],
+      "source_box": [
+        1254,
+        821,
+        1285,
+        873
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "warning_sign",
+      "size": [
+        38,
+        40
+      ],
+      "source_box": [
+        1328,
+        823,
+        1366,
+        873
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "cable",
+      "size": [
+        36,
+        31
+      ],
+      "source_box": [
+        1398,
+        833,
+        1446,
+        873
+      ]
+    },
+    {
+      "category": "Props_NoText",
+      "name": "vent_duct",
+      "size": [
+        52,
+        38
+      ],
+      "source_box": [
+        1472,
+        833,
+        1524,
+        873
+      ]
+    },
+    {
+      "category": "Generated_UI_NoText",
+      "name": "panel_dark_9slice",
+      "size": [
+        96,
+        96
+      ],
+      "source_box": null
+    },
+    {
+      "category": "Generated_UI_NoText",
+      "name": "room_slot_9slice",
+      "size": [
+        96,
+        96
+      ],
+      "source_box": null
+    },
+    {
+      "category": "Generated_UI_NoText",
+      "name": "tab_bg_blue_9slice",
+      "size": [
+        120,
+        88
+      ],
+      "source_box": null
+    },
+    {
+      "category": "Generated_UI_NoText",
+      "name": "tab_bg_orange_9slice",
+      "size": [
+        120,
+        88
+      ],
+      "source_box": null
+    },
+    {
+      "category": "Generated_UI_NoText",
+      "name": "red_dot",
+      "size": [
+        24,
+        24
+      ],
+      "source_box": null
+    }
+  ]
+}

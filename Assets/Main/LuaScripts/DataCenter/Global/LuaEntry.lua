@@ -17,6 +17,12 @@ function LuaEntry:Init()
     -- self.Player = xxx.New()
     -- self.Resource = xxx.New()
     -- self.Network = xxx.New()
+
+    -- 船舱数据层启动（barrel 里在 LuaEntry:StartGame() 第 146 行起的三行，
+    -- 本项目没有 StartGame，放在 Init 末尾。不启动的话 View 首次刷新拿到空列表，格子数为 0）
+    DataCenter.ShipPlayerDataManager:Startup()
+    DataCenter.ShipFurnitureManager:Startup()
+    DataCenter.ShipWorkQueueManager:Startup()
 end
 
 -- 销毁

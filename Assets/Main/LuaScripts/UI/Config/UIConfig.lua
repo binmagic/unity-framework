@@ -15,6 +15,18 @@ local UIConfig = {
 	[UIWindowNames.UILianLianSkin] = "UI.LianLian.LianLianSkin.Config",
 	[UIWindowNames.UILianLianToast] = "UI.LianLian.LianLianToast.Config",
 	[UIWindowNames.UILianLianTest] = "UI.LianLian.LianLianTest.Config",
+
+	-- 通用消息提示条（UIUtil.ShowTips 依赖）
+	[UIWindowNames.UICommonMessageBar] = "UI.UICommonMessageBar.Config",
+
+	-- 隆隆冒险号船舱
+	[UIWindowNames.UIShipCabin] = "UI.UIShipCabin.Config",
+	-- 船舱背景（其 Ctrl 提供解锁/升级的权威校验，被 UIShipCabinCtrl require）
+	[UIWindowNames.UIShipBackground] = "UI.UIShipBackground.Config",
+	-- 船舱详情面板
+	[UIWindowNames.UIShipCabinDetail] = "UI.UIShipCabinDetail.Config",
+	-- 建筑解锁/升级弹窗
+	[UIWindowNames.UIBuildingPanel] = "UI.UIBuildingPanel.Config",
 }
 --[[
 local UIConfig = {}

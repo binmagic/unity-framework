@@ -432,10 +432,10 @@ EnterGameState = BaseClass("EnterGameState", BaseState)
 function EnterGameState:OnEnter(args)
     Logger.Log("[Loading] EnterGameState:OnEnter")
 
-    -- 初始化连连看游戏管理器并打开主界面
-    local LianLianManager = require "Game.LianLian.Manager.LianLianManager"
-    LianLianManager:GetInstance()
-    UIManager:GetInstance():OpenWindow(UIWindowNames.UILianLianTest)
+    -- 打开船舱主界面
+    -- 原先这里 require "Game.LianLian.Manager.LianLianManager" 并打开 UILianLianTest，
+    -- 但 Game/LianLian/ 下只有孤儿 .meta 没有 .lua，会在这一步直接断掉。
+    UIManager:GetInstance():OpenWindow(UIWindowNames.UIShipCabin)
 
     -- 关闭加载流程
     self._loading:Shutdown()

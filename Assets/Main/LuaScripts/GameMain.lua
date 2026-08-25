@@ -29,9 +29,8 @@ end
 
 -- 退出
 local function Exit()
-    -- 销毁连连看游戏管理器
-    local LianLianManager = require "Game.LianLian.Manager.LianLianManager"
-    LianLianManager:Delete()
+    -- 原先这里 require "Game.LianLian.Manager.LianLianManager" 再 Delete()，
+    -- 但该模块不存在（Game/LianLian/ 下只有孤儿 .meta），退出时会抛异常。
 
     UIManager:GetInstance():DestroyAllWindow()
 

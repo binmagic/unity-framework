@@ -6,6 +6,10 @@ local Managers =
 
 	GuideManager = "DataCenter.GuideManager.GuideManager",
 
+	-- 隆隆冒险号船舱
+	ShipPlayerDataManager  = "DataCenter.ShipPlayerData.ShipPlayerDataManager",
+	ShipFurnitureManager   = "DataCenter.ShipPlayerData.ShipFurnitureManager",
+	ShipWorkQueueManager   = "DataCenter.ShipPlayerData.ShipWorkQueueManager",
 
 }
 

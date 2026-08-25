@@ -2907,6 +2907,29 @@ local EventId = {
 	OnGetCrossWonderUserScoreRanklist = 240100, -- 跨服王座积分排行刷新
 	AllianceVerticalInviteInfoUpdate = 240110, --联盟邀请领奖功能数据刷新
 	HospitalSmallPeopleUpdate = 240120, --医院上阵的小人刷新
+
+	----------------------------------------------------------------
+	-- 隆隆冒险号船舱
+	-- barrel 用的是 2500xx 段，但本项目 250001-250003 已被
+	-- SecondArrow / WorldFortressActivityUpdate / SetALRankName 占用，
+	-- 所以改用空闲的 2501xx 段（事件 id 只要项目内唯一即可）。
+	----------------------------------------------------------------
+	ShipBuildingUnlockStart    = 250101, -- 建筑开始解锁
+	ShipBuildingUnlockFinish   = 250102, -- 建筑解锁完成（领取后）
+	ShipBuildingUpgradeStart   = 250103, -- 建筑开始升级
+	ShipBuildingUpgradeFinish  = 250104, -- 建筑升级完成（领取后）
+	ShipResourceUpdated        = 250105, -- 飞船资源数据变更
+	ShipPlayerInfoUpdated      = 250106, -- 自身玩家信息变更（改名/升级/战力等）
+	ShipOtherPlayerDataUpdated = 250107, -- 其他玩家数据缓存刷新
+	ShipBuildingUnlockDone     = 250108, -- 建筑解锁倒计时结束，待领取
+	ShipBuildingUpgradeDone    = 250109, -- 建筑升级倒计时结束，待领取
+	ShipFurnitureUnlockFinish  = 250110, -- 家具解锁完成（领取后）
+	ShipFurnitureUpgradeStart  = 250111, -- 家具开始升级
+	ShipFurnitureUpgradeFinish = 250112, -- 家具升级完成（领取后）
+	ShipFurnitureUpgradeDone   = 250113, -- 家具升级倒计时结束，待领取
+	ShipWorkQueueSlotUnlocked  = 250120, -- 队列槽位解锁
+	ShipWorkQueueTaskStart     = 250121, -- 队列任务开始
+	ShipWorkQueueTaskFinish    = 250122, -- 队列任务完成
 }
 
 return ConstClass("EventId", EventId)
