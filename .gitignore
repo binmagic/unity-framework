@@ -127,10 +127,12 @@ atlas/
 
 # --- 本地文档与素材（暂不入库）---
 /Docs/
+# Landscape：仅 Common_btn_green_S.png，全项目零引用，不入库
 /Assets/Landscape/
 /Assets/Landscape.meta
-/Assets/images/
-/Assets/images.meta
+# 注意：Assets/images/ 不能整体忽略 —— icon/locked.png 被
+# ShipRoomCell.prefab 的 ImgLock 引用（格子锁图标）。prefab 已入库而图没入库时，
+# 别人拉下来就是 missing 引用。与字体那次是同一个坑，故只忽略未被引用的部分。
 
 # --- Unity 打开示例场景时自动生成的光照设置 ---
 *Settings.lighting
