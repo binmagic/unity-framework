@@ -1212,6 +1212,11 @@ SoundAssets =
 --    SeasonWorldCost = 6,--赛季外城点击资源
 --}
 
+-- UI 相机 Z 轴偏移。barrel 定义在 Global/ConstDefine.lua:669，本框架裁剪时没有那个文件。
+-- UIBaseComponent.lua:286 的 GameObjectInstantiateAsync 回调里会读它，
+-- 缺失会让该回调在调用用户回调之前抛异常 —— 表现为「异步实例化的对象永远建不出来、且无报错」。
+UICameraOffsetZ = -10
+
 -- datatable 表名
 TableName =
 {

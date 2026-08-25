@@ -33,10 +33,29 @@ public class NewTMPText : TextMeshProUGUI, IPointerClickHandler
 
     private bool arabicFontSizeProcessFlag;
 
-    public Action<PointerEventData> onPointerClick;
+    // 纯展示文字必须 raycastTarget=false，否则会吃掉父级 Button 的点击：
+    // StandaloneInputModule 判定 click 成立要求「按下时的 pointerPress == 抬起时的 clickHandler」。
+    // 本类实现了 IPointerClickHandler，若 raycastTarget=true 且覆盖按钮热区，
+    // 抬起时 GetEventHandler<IPointerClickHandler> 会停在文字自身、不再往上找到 Button，
+    // 于是 pointerPress(Button) != clickHandler(文字) → onClick 永不触发。
+    // 表现是：pointerDown/Up 都到了按钮，但 onClick 静默不响应。
+    // 所以只在真正订阅了 onPointerClick（富文本超链接等）时才接收射线。
+    private Action<PointerEventData> _onPointerClick;
+    public Action<PointerEventData> onPointerClick
+    {
+        get { return _onPointerClick; }
+        set { _onPointerClick = value; raycastTarget = value != null; }
+    }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        if (_onPointerClick == null) raycastTarget = false;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
-        onPointerClick?.Invoke(eventData);
+        _onPointerClick?.Invoke(eventData);
     }
 
     // 阿拉伯语是否自动右对齐，这个处理不同于lastwar

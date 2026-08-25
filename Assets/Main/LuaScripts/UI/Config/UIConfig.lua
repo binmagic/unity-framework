@@ -24,6 +24,9 @@ local UIConfig = {
 	[UIWindowNames.LianLianTest] = "UI.LianLian.LianLianTest.Config",
 	[UIWindowNames.LianLianDebug] = "UI.LianLian.LianLianDebug.Config",
 	[UIWindowNames.LianLianUnlock] = "UI.LianLian.LianLianUnlock.Config",
+
+	-- 通用消息提示条（UIUtil.ShowTips 依赖）
+	[UIWindowNames.UICommonMessageBar] = "UI.UICommonMessageBar.Config",
 }
 --[[
 local UIConfig = {}
