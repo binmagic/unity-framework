@@ -126,6 +126,15 @@ function Logger.LogErrorFormat(fmt, ...)
 	end
 end
 
+-- 本项目原本缺这个方法（barrel Logger.lua:129 有）。
+-- 缺失时调用方会抛 "attempt to call a nil value (field 'LogWarning')"，
+-- 而调用点往往在 pcall/ProtectCall 里，表现为静默失败。
+function Logger.LogWarning(...)
+	local msg = MakeMsg(...)
+	if not msg then return end
+	Debug_Log("[WARN] " .. msg)
+end
+
 function Logger.LogTable(tbl, desc, nesting)
 	if writeLogLevel == 0 or writeLogLevel == 2 then
 		return nil

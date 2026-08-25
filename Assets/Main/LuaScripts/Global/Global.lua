@@ -48,6 +48,10 @@ RenderSetting =require "Framework.Render.RenderSetting"
 LuaEntry = require "DataCenter.Global.LuaEntry"
 AppStartupLoading = require "Loading.AppStartupLoading"
 
+-- 配置表访问层（提供 GetTableData / GetTableNumber / visitTable 等全局函数）
+-- 必须在 LuaEntry 之后、CommonUtil/SoundUtil 之前加载：它依赖 LuaEntry，而后两者依赖它
+LocalController = require "Common.LocalController"
+
 -- util 类
 CommonUtil = require "Util.CommonUtil"
 UIStrCache = require "Util.UIStrCache"
@@ -111,6 +115,16 @@ UIConfig = require "UI.Config.UIConfig"
 UILayer = require "Framework.UI.UILayer"
 UIWindow = require "Framework.UI.UIWindow"
 UIManager = require "Framework.UI.UIManager"
+
+-- 打开窗体是否使用动画（barrel Global.lua:142 有，本项目裁剪时漏了）
+-- 这几个常量必须是 table：UIManager:OpenWindow(name, opts, userData...) 靠
+-- `type(arg1) == "table"` 区分 opts 和 userData。传 nil 会让后面的真实参数
+-- 被当成 opts 之后的可变参整体打包，GetUserData() 取到 nil ——
+-- 表现为「窗口开了但不知道显示哪条数据」（详情面板底部按钮全部不显示）。
+OpenWinAnimTrue = table.const_table({anim = true})
+OpenWinAnimFalse = table.const_table({anim = false})
+OpenWinAnimTrueWithMainHide = table.const_table({anim = true, UIMainAnim = UIMainAnimType.AllHide})
+OpenWinAnimFalseWithMainHide = table.const_table({anim = false, UIMainAnim = UIMainAnimType.AllHide})
 
 -- update & time
 Timer = require "Framework.Updater.Timer"

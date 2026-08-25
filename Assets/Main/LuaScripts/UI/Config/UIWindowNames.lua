@@ -16,6 +16,9 @@ UIWindowNames = {
     UILianLianSkin = "UILianLianSkin",
     UILianLianToast = "UILianLianToast",
     UILianLianTest = "UILianLianTest",
+
+    -- 通用消息提示条（UIUtil.ShowTips 依赖它，缺失会让所有提示调用报错）
+    UICommonMessageBar = "UICommonMessageBar",
 }
 
 return ConstClass("UIWindowNames", UIWindowNames)

@@ -544,11 +544,14 @@ SkinType = {
 --    WaitEnd = 7 ,--等待结束
 --}
 
---[[
+-- 裁剪时这块被整体注释掉了，导致 UIAssets 为 nil。
+-- 但 UIBaseComponent.lua:265/278 的 GameObjectInstantiateAsync 回调里
+-- 会读 UIAssets.UICommonResItem / UICommonSimpleItem / WorldPointRewardItem 做路径比对，
+-- nil 会让该回调在调用用户回调之前抛异常 —— 表现为「异步实例化的对象永远建不出来且无报错」。
+-- 保留空表：几个 if 都不成立，正是裁剪后想要的行为。
 UIAssets =
 {
 }
-]]
 
 --VFXAssets =
 --{
@@ -1207,8 +1210,14 @@ SoundAssets =
 --    SeasonWorldCost = 6,--赛季外城点击资源
 --}
 
+-- UI 相机 Z 轴偏移。barrel 定义在 Global/ConstDefine.lua:669，本项目裁剪时没有那个文件。
+-- UIBaseComponent.lua:286 的 GameObjectInstantiateAsync 回调里会读它，
+-- 缺失会让该回调在调用用户回调之前抛异常 —— 表现为「异步实例化的对象永远建不出来、且无报错」。
+UICameraOffsetZ = -10
+
 TableName =
 {
+
     AllianceResBuild = "alliance_res_build",
 	VisitorWelcome = "lw_base_visitor_welcome",
     HeroBattle_Skill = "herobattle_skill",
