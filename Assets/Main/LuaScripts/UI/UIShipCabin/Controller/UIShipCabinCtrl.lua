@@ -207,12 +207,20 @@ function UIShipCabinCtrl:GetTopResources()
         if mgr.GetResourceRatePerMinute then
             rate = mgr:GetResourceRatePerMinute(itemId)
         end
+        -- 库存上限：0 = 无仓库约束（仓库还没解锁，或该资源没有对应仓库）
+        local maxCount, isFull = 0, false
+        if mgr.GetResourceMax then
+            maxCount = mgr:GetResourceMax(itemId)
+            isFull   = mgr:IsResourceFull(itemId)
+        end
         table.insert(result, {
             itemId     = itemId,
             name       = RESOURCE_NAME[itemId] or "",
             count      = mgr:GetResourceCount(itemId),
             icon       = RESOURCE_ICON[itemId],
             ratePerMin = rate,
+            maxCount   = maxCount,
+            isFull     = isFull,
         })
     end
     return result
@@ -229,6 +237,67 @@ function UIShipCabinCtrl:GetPlayerInfo()
         level      = mgr:GetSelfLevel() or 1,
         name       = mgr:GetSelfDisplayName() or "",
         totalPower = mgr:CalcTotalPower() or 0,
+    }
+end
+
+--- ---------------------------------------------------------------
+--- 建造队列
+--- ---------------------------------------------------------------
+
+--- 获取建造队列概览
+---
+--- 供左侧 BtnQueue 的角标展示：占用数 / 已解锁槽位数，以及最近一个完成的倒计时。
+---@return table { running, unlocked, total, nearestRemain, slots }
+function UIShipCabinCtrl:GetQueueInfo()
+    local qMgr = DataCenter.ShipWorkQueueManager
+    if qMgr == nil then
+        return { running = 0, unlocked = 0, total = 0, nearestRemain = 0, slots = {} }
+    end
+
+    local slots = {}
+    local nearestRemain = 0
+
+    for _, slot in ipairs(qMgr:GetAllSlots()) do
+        local buildId = slot.buildId
+        local name = buildId > 0
+            and (GetTableData(TableName.Building_Config, buildId, "name") or "")
+            or ""
+        local remain = slot:GetRemainSeconds()
+
+        -- 取所有在跑任务里剩余时间最短的那个（最先完成）
+        if not slot:IsIdle() and remain > 0 then
+            if nearestRemain == 0 or remain < nearestRemain then
+                nearestRemain = remain
+            end
+        end
+
+        -- 动作文案在 Ctrl 里定好，View 不必依赖数据层的 ShipWorkQueueTaskType 全局
+        local actionDesc = ""
+        if not slot:IsIdle() then
+            actionDesc = (slot.taskType == ShipWorkQueueTaskType.Unlock)
+                and "解锁"
+                or string.format("升到%d级", slot.targetLevel)
+        end
+
+        table.insert(slots, {
+            slotIndex     = slot.slotIndex,
+            isUnlocked    = slot.isUnlocked,
+            isIdle        = slot:IsIdle(),
+            isFinished    = slot:IsFinished(),
+            buildId       = buildId,
+            buildName     = name,
+            targetLevel   = slot.targetLevel,
+            actionDesc    = actionDesc,
+            remainSeconds = remain,
+        })
+    end
+
+    return {
+        running       = qMgr:GetRunningCount(),
+        unlocked      = qMgr:GetUnlockedSlotCount(),
+        total         = qMgr:GetSlotCount(),
+        nearestRemain = nearestRemain,
+        slots         = slots,
     }
 end
 

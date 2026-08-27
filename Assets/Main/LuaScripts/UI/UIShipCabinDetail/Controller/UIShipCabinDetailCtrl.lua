@@ -34,7 +34,6 @@ function UIShipCabinDetailCtrl:GetBuildingConfig(buildId)
     cfg.produce_cd  = GetTableNumber(TableName.Building_Config, buildId, "produce_cd")  or 0
     cfg.product_base = GetTableNumber(TableName.Building_Config, buildId, "product_base") or 0
     cfg.product     = GetTableData(TableName.Building_Config, buildId, "product")       or ""
-    cfg.produce_limit = GetTableNumber(TableName.Building_Config, buildId, "produce_limit") or 0
     return cfg
 end
 
@@ -73,7 +72,17 @@ function UIShipCabinDetailCtrl:GetCabinDetail(buildId)
     local productName = RESOURCE_NAME[productId] or ""
     local productBase = cfg.product_base or 0
     local produceCD   = cfg.produce_cd or 0
-    local produceLimit = cfg.produce_limit or 0
+
+    -- 生产上限 = 挂机结算上限（8小时）内最多能累积的产量。
+    -- 注意：Building_Config 里**没有** produce_limit 字段（字段止于 product_base），
+    -- 原先读它恒为 nil→0，这一列永远不显示。改由数据层按 CD 和产量换算。
+    local produceLimit = 0
+    local produceCapHours = 0
+    local mgr = DataCenter.ShipPlayerDataManager
+    if mgr and mgr.GetProduceCapAmount then
+        produceLimit    = mgr:GetProduceCapAmount(buildId)
+        produceCapHours = math.floor(mgr:GetProduceCapSeconds() / 3600)
+    end
 
     -- 家具加成
     local outputInc = 0
@@ -122,6 +131,7 @@ function UIShipCabinDetailCtrl:GetCabinDetail(buildId)
         realCD         = realCD,
         outputPerHour  = outputPerHour,
         produceLimit   = produceLimit,
+        produceCapHours = produceCapHours,
 
         -- 家具
         furnitureList  = furnitureList,

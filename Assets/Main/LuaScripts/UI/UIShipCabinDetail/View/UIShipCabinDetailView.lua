@@ -816,9 +816,40 @@ end
 --- 按钮回调
 --- ---------------------------------------------------------------
 
+--- 底部主按钮：按当前状态分别是「解锁」/「升级」/「加速」
+--- 倒计时中时按钮文案是"加速"（见 RefreshFooter），此时不该再开升级弹窗 ——
+--- 那个弹窗是为"发起升级"设计的，升级中打开只会显示一个点不动的灰按钮。
 function UIShipCabinDetailView:OnClickUpgrade()
     if not self.buildId then return end
+
+    local buildData = self.ctrl:GetBuildingData(self.buildId)
+    if buildData and (buildData:IsUpgrading() or buildData:IsUnlocking()) then
+        self:_DoSpeedUp()
+        return
+    end
+
     self.ctrl:OpenUpgradePanel(self.buildId)
+end
+
+--- 花钻石抹掉当前倒计时
+function UIShipCabinDetailView:_DoSpeedUp()
+    local mgr = DataCenter.ShipPlayerDataManager
+    if mgr == nil then return end
+
+    local cost = mgr:CalcSpeedUpDiamond(self.buildId)
+    if cost <= 0 then
+        UIUtil.ShowTips("当前无需加速")
+        return
+    end
+
+    local ok, errMsg = mgr:SpeedUpBuilding(self.buildId)
+    if ok then
+        UIUtil.ShowTips(string.format("已花费 %s 钻石立即完成", FormatNumber(cost)))
+        self:Refresh()
+    else
+        UIUtil.ShowTips(errMsg or "加速失败")
+        Logger.LogWarning("[UIShipCabinDetailView] SpeedUpBuilding 失败: " .. tostring(errMsg))
+    end
 end
 
 function UIShipCabinDetailView:OnClickCollect()

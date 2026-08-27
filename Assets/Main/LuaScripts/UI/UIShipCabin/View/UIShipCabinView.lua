@@ -93,6 +93,11 @@ local RIGHT_FLOAT_ENTRIES = {
 --- 资源图标所在目录（Ctrl 只给 sprite 名，这里拼完整路径加载）
 local RES_ICON_DIR = "Assets/Main/Sprites/ItemIcons/"
 
+--- 顶部资源栏配色：满仓转红提示玩家去升仓库，正常态用 prefab 原本的白字/淡蓝
+local RES_COLOR_NORMAL = Color(1, 1, 1, 1)
+local RES_COLOR_FULL   = Color(1, 0.35, 0.32, 1)      -- 红 #FF5A52
+local RES_COLOR_RATE   = Color(0.62, 0.78, 0.95, 1)   -- 淡蓝，与速率副标签原色一致
+
 --- 格子 prefab（运行时按 GetRoomList 条数动态实例化到 Rooms/Viewport/Content 下）
 local ROOM_CELL_PREFAB = "Assets/Main/Prefabs/UI/UIShipCabin/ShipRoomCell.prefab"
 
@@ -466,6 +471,7 @@ function UIShipCabinView:RefreshAll()
     self:RefreshPlayerInfo()
     self:RefreshRooms()
     self:RefreshProgress()
+    self:RefreshQueueBadge()
 end
 
 --- 顶部资源栏（6 项：图标 + 数值 + 速率副标签）
@@ -482,12 +488,19 @@ function UIShipCabinView:RefreshTopResources()
             if res then
                 if cell.count then
                     cell.count:SetText(FormatNumber(res.count))
+                    -- 满仓时数值转红，配合下方"已满"副标签
+                    cell.count:SetColor(res.isFull and RES_COLOR_FULL or RES_COLOR_NORMAL)
                 end
-                -- 速率副标签：仅有产出时显示，参考原版 "N/分钟"
+                -- 副标签：满仓时提示"已满"，否则显示速率（参考原版 "N/分钟"）
                 if cell.rate then
-                    if res.ratePerMin and res.ratePerMin > 0 then
+                    if res.isFull then
+                        cell.rate:SetActive(true)
+                        cell.rate:SetText("已满")
+                        cell.rate:SetColor(RES_COLOR_FULL)
+                    elseif res.ratePerMin and res.ratePerMin > 0 then
                         cell.rate:SetActive(true)
                         cell.rate:SetText(FormatNumber(res.ratePerMin) .. "/分钟")
+                        cell.rate:SetColor(RES_COLOR_RATE)
                     else
                         cell.rate:SetActive(false)
                     end
@@ -717,18 +730,78 @@ end
 
 --- 左侧悬浮按钮点击分发
 --- 这些入口对应的业务系统尚未接入，先统一提示；接入时在这里分发到各自流程
+--- queue 已接入真实数据，不走这张表
 local LEFT_FLOAT_TIPS = {
     level     = "玩家等级功能开发中",
     list      = "任务列表开发中",
     challenge = "挑战功能开发中",
-    queue     = "建造队列开发中",
     tip       = "提示功能开发中",
     notice    = "通知功能开发中",
     more      = "更多功能开发中",
 }
 
 function UIShipCabinView:OnClickLeftFloat(key)
+    if key == "queue" then
+        self:OnClickQueue()
+        return
+    end
     UIUtil.ShowTips(LEFT_FLOAT_TIPS[key] or "功能开发中")
+end
+
+--- 点建造队列：列出当前占用情况
+---
+--- 队列面板需要独立 prefab（+6 处窗口注册），这里先用 Tips 把队列内容如实报出来，
+--- 让"有几条队列、谁在占、还剩多久"变成可见信息。prefab 就位后换成 OpenWindow。
+function UIShipCabinView:OnClickQueue()
+    if self.ctrl.GetQueueInfo == nil then
+        UIUtil.ShowTips("建造队列开发中")
+        return
+    end
+
+    local info = self.ctrl:GetQueueInfo()
+    if info.unlocked <= 0 then
+        UIUtil.ShowTips("暂无可用的建造队列")
+        return
+    end
+
+    local lines = { string.format("建造队列 %d/%d", info.running, info.unlocked) }
+    for _, slot in ipairs(info.slots) do
+        if not slot.isUnlocked then
+            table.insert(lines, string.format("队列%d：未解锁", slot.slotIndex))
+        elseif slot.isIdle then
+            table.insert(lines, string.format("队列%d：空闲", slot.slotIndex))
+        elseif slot.isFinished then
+            table.insert(lines, string.format("队列%d：%s 已完成，待领取", slot.slotIndex, slot.buildName))
+        else
+            table.insert(lines, string.format("队列%d：%s %s，剩余 %s",
+                slot.slotIndex, slot.buildName, slot.actionDesc, FormatTime(slot.remainSeconds)))
+        end
+    end
+    UIUtil.ShowTips(table.concat(lines, "\n"))
+end
+
+--- 刷新左侧建造队列按钮的角标
+--- 红点数字 = 正在占用的队列数，倒计时 = 最先完成的那条队列
+function UIShipCabinView:RefreshQueueBadge()
+    local entry = self.leftFloatBtns and self.leftFloatBtns["queue"]
+    if entry == nil or self.ctrl.GetQueueInfo == nil then return end
+
+    local info = self.ctrl:GetQueueInfo()
+
+    if entry.redDot then
+        entry.redDot.gameObject:SetActive(info.running > 0)
+    end
+    if entry.redDotNum then
+        entry.redDotNum:SetText(string.format("%d/%d", info.running, info.unlocked))
+    end
+    if entry.countdown then
+        if info.nearestRemain > 0 then
+            entry.countdown:SetActive(true)
+            entry.countdown:SetText(FormatTime(info.nearestRemain))
+        else
+            entry.countdown:SetActive(false)
+        end
+    end
 end
 
 --- 右侧悬浮按钮点击分发
@@ -872,6 +945,9 @@ function UIShipCabinView:_StopCountdownTimer()
 end
 
 function UIShipCabinView:_OnCountdownTick()
+    -- 队列角标的倒计时也要每秒走（它读的是队列槽位，与房间格子无关）
+    self:RefreshQueueBadge()
+
     -- 只更新升级中房间的倒计时文字和进度条，避免全量刷新
     for i = 1, #self.roomList do
         local room = self.roomList[i]

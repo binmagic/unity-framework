@@ -72,6 +72,10 @@ function ShipResourceData:SetResourceMax(itemId, maxAmount)
 end
 
 --- 增加资源（不超过上限，上限为 0 时不限制）
+---
+--- 上限只拦"增加"，不会把已经超出上限的存量倒扣回去：
+--- 服务器下发、活动补偿、测试默认值都可能让存量高于当前仓库容量，
+--- 那种情况下继续产出应该是"涨不上去"，而不是"一产出就被没收到上限"。
 ---@param itemId number
 ---@param delta number  正数增加，负数减少
 ---@return boolean  是否操作成功（减少时资源不足返回 false）
@@ -82,11 +86,21 @@ function ShipResourceData:ChangeResource(itemId, delta)
         return false
     end
     local maxVal = self:GetResourceMax(itemId)
-    if maxVal > 0 then
-        newVal = math.min(newVal, maxVal)
+    if maxVal > 0 and delta > 0 and newVal > maxVal then
+        -- already-over-cap 时保持原值（cur），否则夹到上限
+        newVal = math.max(cur, maxVal)
     end
     self.resources[itemId] = newVal
     return true
+end
+
+--- 某资源是否已达/超过上限（上限为 0 视为不限制，永不满）
+---@param itemId number
+---@return boolean
+function ShipResourceData:IsResourceFull(itemId)
+    local maxVal = self:GetResourceMax(itemId)
+    if maxVal <= 0 then return false end
+    return self:GetResource(itemId) >= maxVal
 end
 
 --- 批量消耗资源（原子操作：全部满足才扣除，否则不扣）

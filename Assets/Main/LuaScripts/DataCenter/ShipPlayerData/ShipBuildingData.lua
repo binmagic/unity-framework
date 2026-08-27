@@ -39,7 +39,11 @@ function ShipBuildingData:Reset()
     --- ---- 资源产出（对标 BuildingDate）----
     self.lastCollectTime  = 0   -- 上次收取资源时间戳（对标 BuildingDate.lastCollectTime）
     self.produceEndTime   = 0   -- 资源产出结束时间，0 = 无限产出（对标 BuildingDate.produceEndTime）
-    self.cdAccum          = 0   -- 产出CD累计秒数（浮点，每秒+1，达到实际CD后产出并减去CD）
+    self.cdAccum          = 0   -- 产出CD累计秒数（达到实际CD后产出并减去CD，保留余量）
+    --- 上次产出结算的时间戳（秒），0 = 尚未结算过
+    --- _TickProduction 用 now - lastProduceTime 推进 cdAccum，
+    --- 这样漏 tick（切后台/卡顿）也能补回来，不依赖 Timer 精确每秒触发。
+    self.lastProduceTime  = 0
 
     --- ---- 战力缓存（新增，BuildingDate 无此字段）----
     self.power            = 0   -- 当前等级战力，从 CfgBuildingLevel 读取后缓存

@@ -3068,26 +3068,50 @@ function M.TestBuildingProduction()
     -- 重置 cdAccum
     bd.cdAccum = 0
 
+    -- 产出改为按墙钟时间差结算（见 _TickProduction 注释）后，"连续调 N 次 Tick"
+    -- 不再等于"过了 N 秒"—— 同一秒内调多少次 elapsed 都是 0。
+    -- 因此这里通过把 lastProduceTime 往回拨来模拟时间流逝。
+    local function tickAfterSeconds(seconds)
+        bd.lastProduceTime = os.time() - seconds
+        m:_TickProduction()
+    end
+
     -- ── 场景1：累积不足 CD，不产出 ──────────────────────────
     log(INFO .. " ── 场景1：累积不足 CD，不产出 ──")
     local resBefore = m:GetResourceCount(prodItemId)
-    -- 手动 Tick prodCD-1 次
-    for i = 1, prodCD - 1 do
-        m:_TickProduction()
-    end
+    tickAfterSeconds(prodCD - 1)
     local resAfter1 = m:GetResourceCount(prodItemId)
     assert_eq("累积不足 CD 时资源未变化", resAfter1, resBefore)
-    log(INFO .. string.format(" Tick %d 次后资源=%d（未变化）✓", prodCD - 1, resAfter1))
+    assert_eq("cdAccum 累积了 CD-1 秒", bd.cdAccum, prodCD - 1)
+    log(INFO .. string.format(" 过了 %d 秒后资源=%d（未变化）✓", prodCD - 1, resAfter1))
 
-    -- ── 场景2：再 Tick 1 次，触发产出 ───────────────────────
-    log(INFO .. " ── 场景2：再 Tick 1 次，触发产出 ──")
-    m:_TickProduction()
+    -- ── 场景2：再过 1 秒，触发产出 ──────────────────────────
+    log(INFO .. " ── 场景2：再过 1 秒，触发产出 ──")
+    tickAfterSeconds(1)
     local resAfter2 = m:GetResourceCount(prodItemId)
     assert_true("触发产出后资源增加", resAfter2 > resBefore)
     local delta = resAfter2 - resBefore
     assert_eq("产出量 = product_base（无家具加成）", delta, prodBase)
     log(INFO .. string.format(" 产出触发：资源 %d → %d  delta=%d  product_base=%d ✓",
         resBefore, resAfter2, delta, prodBase))
+
+    -- ── 场景2b：一次跨越多个 CD 时按笔数一次性入账 ──────────
+    log(INFO .. " ── 场景2b：跨越 3 个 CD 一次入账 3 笔 ──")
+    bd.cdAccum = 0
+    local resBefore2b = m:GetResourceCount(prodItemId)
+    tickAfterSeconds(prodCD * 3)
+    local delta2b = m:GetResourceCount(prodItemId) - resBefore2b
+    assert_eq("3 个 CD = 3 笔产出", delta2b, prodBase * 3)
+    log(INFO .. string.format(" 跨 %d 秒入账 %d（=3×%d）✓", prodCD * 3, delta2b, prodBase))
+
+    -- ── 场景2c：超过 8 小时的空档只补算 8 小时 ──────────────
+    log(INFO .. " ── 场景2c：离开 100 小时只补算 8 小时 ──")
+    bd.cdAccum = 0
+    local resBefore2c = m:GetResourceCount(prodItemId)
+    tickAfterSeconds(100 * 3600)
+    local delta2c = m:GetResourceCount(prodItemId) - resBefore2c
+    assert_eq("补算量 = 8小时上限内的产量", delta2c, m:GetProduceCapAmount(prodBid))
+    log(INFO .. string.format(" 100 小时空档只补 %d（8小时上限）✓", delta2c))
 
     -- ── 场景3：produce_cd <= 0 的建筑不产出 ─────────────────
     log(INFO .. " ── 场景3：produce_cd=0 的建筑不产出 ──")
@@ -3132,7 +3156,9 @@ function M.TestBuildingProduction()
     if bd3 then
         bd3.cdAccum = 0
         local resBefore4 = m:GetResourceCount(prodItemId)
-        for i = 1, prodCD + 1 do m:_TickProduction() end
+        -- 时间戳往回拨足够长，未解锁也不该结算
+        bd3.lastProduceTime = os.time() - (prodCD + 1)
+        m:_TickProduction()
         local resAfter4 = m:GetResourceCount(prodItemId)
         assert_eq("未解锁建筑不产出", resAfter4, resBefore4)
         assert_eq("未解锁建筑 cdAccum 保持 0", bd3.cdAccum, 0)
@@ -3297,10 +3323,13 @@ function M.TestFurnitureAffectsProduction()
             end)
 
             bd.cdAccum = 0
-            -- 先 Tick prodCD-1 次（不触发产出）
-            for i = 1, prodCD - 1 do m:_TickProduction() end
+            -- 产出按墙钟差值结算，"Tick N 次" ≠ "过了 N 秒"，改为拨时间戳模拟流逝
+            -- 先过 prodCD-1 秒（不触发产出）
+            bd.lastProduceTime = os.time() - (prodCD - 1)
+            m:_TickProduction()
             local resBefore = m:GetResourceCount(prodItemId)
-            -- 再 Tick 1 次触发产出
+            -- 再过 1 秒触发产出
+            bd.lastProduceTime = os.time() - 1
             m:_TickProduction()
             local resAfter = m:GetResourceCount(prodItemId)
             local delta = resAfter - resBefore
@@ -3349,15 +3378,18 @@ function M.TestFurnitureAffectsProduction()
 
             bd.cdAccum = 0
             local realCD = math.max(prodCD - lv1Cfg.effArg, 1)
-            -- Tick realCD-1 次，不应产出
+            -- 产出按墙钟差值结算，用拨时间戳代替"连续 Tick N 次"
+            -- 过 realCD-1 秒，不应产出
             local resBefore = m:GetResourceCount(prodItemId)
-            for i = 1, realCD - 1 do m:_TickProduction() end
+            bd.lastProduceTime = os.time() - (realCD - 1)
+            m:_TickProduction()
             local resAfterPartial = m:GetResourceCount(prodItemId)
-            assert_eq("减CD后 Tick realCD-1 次不产出", resAfterPartial, resBefore)
-            -- 再 Tick 1 次，触发产出
+            assert_eq("减CD后过 realCD-1 秒不产出", resAfterPartial, resBefore)
+            -- 再过 1 秒，触发产出
+            bd.lastProduceTime = os.time() - 1
             m:_TickProduction()
             local resAfterFull = m:GetResourceCount(prodItemId)
-            assert_true("减CD后 Tick realCD 次触发产出", resAfterFull > resBefore)
+            assert_true("减CD后过 realCD 秒触发产出", resAfterFull > resBefore)
             log(INFO .. string.format(" produce_cd=%d  cdDec=%d  realCD=%d  产出触发 ✓",
                 prodCD, lv1Cfg.effArg, realCD))
             -- 验证玩家实际持有资源数量也正确增加

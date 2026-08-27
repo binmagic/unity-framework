@@ -23,6 +23,46 @@ local function NextLocalUuid()
     return LOCAL_UUID_COUNTER
 end
 
+--- 挂机产出结算上限：8 小时
+--- 超过这个时长的空档只按 8 小时补算，多出来的直接丢弃（参考原版"离线累积上限8小时"）。
+--- 详情面板"生产上限"那一列展示的就是这个值。
+local PRODUCE_CAP_SECONDS = 8 * 3600
+
+--- ---------------------------------------------------------------
+--- 仓库容量
+---
+--- **为什么写在代码里而不是读配置表**：Building_Config 里没有可用的容量字段。
+---   - 没有 capacity / storage 之类的字段（字段止于 58 product_base）
+---   - `depot_type` 看似可用，但 id=5/6 两行的列整体错位（policy_property 的值
+---     跑到了 feature 的位置），读出来的值不可信
+---   - `reserves` 在食材/金属/电力仓库是 100/101/102，在舰员居住舱 1-4 组
+---     又是 100/101/102/103 —— 是个占位编号，不是容量
+--- 配表补上容量字段后，把 _RefreshResourceMax 换成读表即可，这两张表可以删掉。
+---
+--- ---------------------------------------------------------------
+--- 钻石加速
+---
+--- 计价规则：每 DIAMOND_PER_SECONDS 秒剩余时长收 1 钻，向上取整，至少 1 钻。
+--- 只要还在倒计时就能加速，剩 1 秒也是 1 钻（原版同样如此，不做免费窗口）。
+--- 配表补上加速计价字段后替换 CalcSpeedUpDiamond 即可。
+local DIAMOND_PER_SECONDS = 60
+
+--- 仓库 buildId → 它管哪种资源
+local DEPOT_BUILD_RESOURCE = {
+    [4] = 102001,  -- 食材仓库
+    [5] = 102002,  -- 金属仓库
+    [6] = 102003,  -- 电力仓库
+}
+
+--- 容量公式：基础 + 每级增量 × 等级
+---
+--- 基础值取 800000：Building_Levelup_Config 里单次升级的最大消耗是
+--- 金属 720000，容量低于它会导致高级升级永远攒不够钱、直接卡死。
+--- 仓库未解锁（等级 0）时容量为 0，此时 SetResourceMax(0) = 不限制，
+--- 与"仓库还没造出来所以还没有容量约束"的体验一致。
+local DEPOT_CAPACITY_BASE = 800000
+local DEPOT_CAPACITY_PER_LEVEL = 400000
+
 --- ---------------------------------------------------------------
 --- 生命周期
 --- ---------------------------------------------------------------
@@ -47,6 +87,8 @@ function ShipPlayerDataManager:__init()
     self:_InitDefaultBuildings()
     self:_InitDefaultResources()
     self:_InitDefaultSelfPlayer()
+    -- 仓库都还没解锁，这一步只是把上限置成 0（=不限制）并建立初始状态
+    self:_RefreshResourceMax()
 end
 
 function ShipPlayerDataManager:__delete()
@@ -95,6 +137,10 @@ end
 
 --- 初始化本地测试用资源默认值
 --- 服务器联调后由 InitFromServer 替换，届时可删除此函数
+---
+--- 这里的 999999999 远高于任何仓库容量，属于"存量已超上限"的情况。
+--- ChangeResource 对这种情况只是不再增长、不会倒扣，所以测试期照旧能随便升级；
+--- 要验证满仓逻辑得先把存量调到上限附近（见 ShipSystemTest 的仓库容量用例）。
 function ShipPlayerDataManager:_InitDefaultResources()
     self.resourceData:SetResource(102001, 999999999)  -- 食材
     self.resourceData:SetResource(102002, 999999999)  -- 金属
@@ -102,6 +148,8 @@ function ShipPlayerDataManager:_InitDefaultResources()
     self.resourceData:SetResource(102004, 999999999)  -- 有机质
     self.resourceData:SetResource(102005, 999999999)  -- 科技点
     self.resourceData:SetResource(102006, 0)          -- 科技点（新增，科技研究中心产出）
+    -- 钻石：加速功能要花它。不给的话本地测试点"立即完成"永远是"钻石不足"。
+    self.resourceData.diamond = 100000
 end
 
 --- 初始化本地测试用玩家数据默认值
@@ -339,6 +387,62 @@ function ShipPlayerDataManager:GetResourceRatePerMinute(itemId)
     return math.floor(total)
 end
 
+--- 某资源的库存上限（0 = 不限制）
+---@param itemId number
+---@return number
+function ShipPlayerDataManager:GetResourceMax(itemId)
+    return self.resourceData:GetResourceMax(itemId)
+end
+
+--- 某资源是否已满（上限为 0 时永不满）
+---@param itemId number
+---@return boolean
+function ShipPlayerDataManager:IsResourceFull(itemId)
+    return self.resourceData:IsResourceFull(itemId)
+end
+
+--- 按仓库建筑等级重算所有资源上限
+---
+--- 建筑等级变化后必须调用（解锁完成、升级领取、服务器全量下发）。
+--- 仓库未解锁时不写上限，保持 0 = 不限制。
+function ShipPlayerDataManager:_RefreshResourceMax()
+    for buildId, itemId in pairs(DEPOT_BUILD_RESOURCE) do
+        local level = self:GetMaxBuildingLevel(buildId)
+        local cap = 0
+        if self:IsBuildingUnlocked(buildId) and level > 0 then
+            cap = DEPOT_CAPACITY_BASE + DEPOT_CAPACITY_PER_LEVEL * level
+        end
+        self.resourceData:SetResourceMax(itemId, cap)
+    end
+end
+
+--- 挂机产出的结算上限秒数（8 小时）
+--- 详情面板"生产上限"一列用它换算成"这段时间最多能产多少"。
+---@return number
+function ShipPlayerDataManager:GetProduceCapSeconds()
+    return PRODUCE_CAP_SECONDS
+end
+
+--- 某建筑在结算上限内最多能累积的产量
+--- = 每 CD 产量 × (上限秒数 / 实际CD)，与 _TickProduction 的算法一致。
+--- 非产出建筑返回 0。
+---@param buildId number
+---@return number
+function ShipPlayerDataManager:GetProduceCapAmount(buildId)
+    local produceCD = GetTableNumber(TableName.Building_Config, buildId, "produce_cd") or 0
+    if produceCD <= 0 then return 0 end
+
+    local productBase = GetTableNumber(TableName.Building_Config, buildId, "product_base") or 0
+    local outputInc, cdDec = 0, 0
+    if DataCenter.ShipFurnitureManager then
+        outputInc = DataCenter.ShipFurnitureManager:GetBuildingOutputInc(buildId)
+        cdDec     = DataCenter.ShipFurnitureManager:GetBuildingCDDec(buildId)
+    end
+    local realOutput = productBase + outputInc
+    local realCD     = math.max(produceCD - cdDec, 1)
+    return math.floor(realOutput * (PRODUCE_CAP_SECONDS / realCD))
+end
+
 --- 检查费用列表是否全部满足
 --- costList 格式：{{itemId=102001, count=200000}, ...}
 ---@return boolean ok
@@ -392,6 +496,7 @@ function ShipPlayerDataManager:StartUnlockBuilding(buildId, costList, unlockSeco
         buildData.updateTime  = now
         self:_RefreshBuildingPower(buildData)
         self:CalcTotalPower()
+        self:_RefreshResourceMax()
         EventManager:GetInstance():Broadcast(EventId.ShipBuildingUnlockFinish,
             { buildId = buildId, uuid = buildData.uuid })
         EventManager:GetInstance():Broadcast(EventId.ShipPlayerInfoUpdated)
@@ -426,6 +531,91 @@ function ShipPlayerDataManager:FinishUnlockBuilding(uuid)
 
     EventManager:GetInstance():Broadcast(EventId.ShipBuildingUnlockDone,
         { buildId = buildData.itemId, uuid = uuid })
+end
+
+--- ---------------------------------------------------------------
+--- 钻石加速（立即完成）
+--- ---------------------------------------------------------------
+
+--- 把一段时长折算成钻石价
+--- 供升级弹窗给"还没开始的升级"标价（此时没有剩余倒计时可读，用配置里的总耗时）。
+---@param seconds number
+---@return number
+function ShipPlayerDataManager:CalcDiamondForSeconds(seconds)
+    if seconds == nil or seconds <= 0 then return 0 end
+    return math.max(1, math.ceil(seconds / DIAMOND_PER_SECONDS))
+end
+
+--- 计算把某建筑的剩余倒计时抹掉需要多少钻石
+--- 不在倒计时中（含待领取）返回 0，表示"不需要也不能加速"。
+---@param buildId number
+---@return number 钻石数（0 = 无需加速）
+---@return number 剩余秒数
+function ShipPlayerDataManager:CalcSpeedUpDiamond(buildId)
+    local buildData = self:GetMaxLevelBuilding(buildId)
+    if buildData == nil then return 0, 0 end
+    if not (buildData:IsUpgrading() or buildData:IsUnlocking()) then return 0, 0 end
+
+    local remain = buildData:GetRemainSeconds()
+    if remain <= 0 then return 0, 0 end
+    return math.max(1, math.ceil(remain / DIAMOND_PER_SECONDS)), remain
+end
+
+--- 花钻石立即完成建筑的解锁/升级
+---
+--- 完成后走的是**待领取**流程（与倒计时自然结束一致），不直接写等级 ——
+--- 这样"加速→领取"和"等完→领取"两条路径的后续逻辑完全相同，
+--- 领取时的战力刷新、队列清理、仓库上限重算都不需要在这里重复一遍。
+---@param buildId number
+---@return boolean ok
+---@return string|nil errMsg
+---@return number|nil 花费的钻石
+function ShipPlayerDataManager:SpeedUpBuilding(buildId)
+    local buildData = self:GetMaxLevelBuilding(buildId)
+    if buildData == nil then
+        return false, "找不到建筑数据 buildId=" .. tostring(buildId)
+    end
+
+    local isUnlocking = buildData:IsUnlocking()
+    local isUpgrading = buildData:IsUpgrading()
+    if not (isUnlocking or isUpgrading) then
+        if buildData:IsDone() then
+            return false, "已完成，请直接领取"
+        end
+        return false, "该舱室当前没有进行中的建造"
+    end
+
+    local cost = self:CalcSpeedUpDiamond(buildId)
+    if cost <= 0 then
+        return false, "无需加速"
+    end
+    if self.resourceData.diamond < cost then
+        return false, string.format("钻石不足，需要 %d，当前 %d", cost, self.resourceData.diamond)
+    end
+    if not self.resourceData:ConsumeDiamond(cost) then
+        return false, "扣除钻石失败"
+    end
+
+    -- 把完成时间拨到当前，交给既有的完成流程写入 Done 状态
+    buildData.updateTime = os.time()
+    if isUnlocking then
+        self:FinishUnlockBuilding(buildData.uuid)
+    else
+        self:FinishUpgradeBuilding(buildData.uuid)
+    end
+
+    -- 队列槽位同步加速，否则槽位会一直挂着占用并行位
+    if DataCenter.ShipWorkQueueManager then
+        local slot = DataCenter.ShipWorkQueueManager:FindSlotByBuildId(buildId)
+        if slot then
+            DataCenter.ShipWorkQueueManager:SpeedUpSlot(slot.slotIndex)
+        end
+    end
+
+    EventManager:GetInstance():Broadcast(EventId.ShipResourceUpdated, { itemId = 0, delta = 0 })
+    Logger.Log(string.format("[ShipPlayerDataManager] 钻石加速 buildId=%d uuid=%d 花费=%d 剩余钻石=%d",
+        buildId, buildData.uuid, cost, self.resourceData.diamond))
+    return true, nil, cost
 end
 
 --- ---------------------------------------------------------------
@@ -469,6 +659,9 @@ function ShipPlayerDataManager:CollectBuildingResult(uuid)
     else
         return false, "未知 doneType"
     end
+
+    -- 仓库等级变了要重算库存上限（非仓库建筑走这里是空转，成本可忽略）
+    self:_RefreshResourceMax()
 
     -- 刷新总战力并通知 UI
     self:CalcTotalPower()
@@ -602,12 +795,39 @@ end
 --- 仅处理 Building_Config.produce_cd > 0 的建筑
 --- ---------------------------------------------------------------
 
+--- 按墙钟时间差结算，而不是假定"每次 Tick 恰好过了 1 秒"。
+---
+--- 原实现是 `cdAccum = cdAccum + 1`：Timer 漏一次（切后台、卡顿、掉帧）产出就少一秒，
+--- 而且退到后台再回来完全不补。改成用 os.time() 差值推进后，丢多少 tick 都能补回来。
+---
+--- elapsed 会夹到 PRODUCE_CAP_SECONDS（8 小时）—— 这就是"生产上限"的落地点。
+--- 首次进入（lastProduceTime==0）不补算，只记时间戳，避免把建筑解锁前的时间也算进去。
 function ShipPlayerDataManager:_TickProduction()
+    local now = os.time()
+
     for _, buildData in pairs(self.buildingMap) do
         -- 只处理已解锁且有等级的建筑
         if buildData.unlock ~= 1 or buildData.level <= 0 then
             goto continue
         end
+
+        -- 本栋建筑上次结算的时刻。解锁后首个 Tick 只打时间戳，不产出。
+        if buildData.lastProduceTime == 0 then
+            buildData.lastProduceTime = now
+            goto continue
+        end
+
+        local elapsed = now - buildData.lastProduceTime
+        if elapsed <= 0 then
+            -- 时间没走（同一秒内被调了两次），或系统时间被往前调过 —— 都不产出。
+            -- 往前调时重置时间戳，否则 elapsed 会一直是负数、永远不再产出。
+            if elapsed < 0 then buildData.lastProduceTime = now end
+            goto continue
+        end
+        if elapsed > PRODUCE_CAP_SECONDS then
+            elapsed = PRODUCE_CAP_SECONDS
+        end
+        buildData.lastProduceTime = now
 
         local produceCD = GetTableNumber(TableName.Building_Config, buildData.itemId, "produce_cd") or 0
         if produceCD <= 0 then
@@ -633,14 +853,27 @@ function ShipPlayerDataManager:_TickProduction()
         local realOutput = productBase + outputInc
         local realCD     = math.max(produceCD - cdDec, 1)  -- CD最小1秒，防止除零
 
-        buildData.cdAccum = buildData.cdAccum + 1
+        -- 累计经过的秒数，够一个 CD 就产一次。
+        -- elapsed 可能跨越多个 CD（补算 8 小时时 realCD=30 会有 960 次），
+        -- 所以用整除一次算出笔数，不要循环产出 —— 循环会广播上千次事件把 UI 刷爆。
+        buildData.cdAccum = buildData.cdAccum + elapsed
         if buildData.cdAccum >= realCD then
-            buildData.cdAccum = buildData.cdAccum - realCD  -- 保留余量，不归零
-            self.resourceData:ChangeResource(productId, realOutput)
-            EventManager:GetInstance():Broadcast(EventId.ShipResourceUpdated,
-                { itemId = productId, delta = realOutput })
-            Logger.Log(string.format("[ShipPlayerDataManager] 产出触发 buildId=%d productId=%d output=%s realCD=%.2fs",
-                buildData.itemId, productId, tostring(realOutput), realCD))
+            local times = math.floor(buildData.cdAccum / realCD)
+            buildData.cdAccum = buildData.cdAccum - times * realCD  -- 保留余量，不归零
+
+            local gain = realOutput * times
+            local before = self.resourceData:GetResource(productId)
+            self.resourceData:ChangeResource(productId, gain)
+            -- 仓库满时 ChangeResource 会把值夹在上限，实际入账可能少于 gain。
+            -- 广播的 delta 要用真实入账量，否则 UI 上的飘字和资源栏对不上。
+            local actual = self.resourceData:GetResource(productId) - before
+
+            if actual > 0 then
+                EventManager:GetInstance():Broadcast(EventId.ShipResourceUpdated,
+                    { itemId = productId, delta = actual })
+            end
+            Logger.Log(string.format("[ShipPlayerDataManager] 产出触发 buildId=%d productId=%d 笔数=%d 应得=%s 实得=%s realCD=%.2fs elapsed=%ds",
+                buildData.itemId, productId, times, tostring(gain), tostring(actual), realCD, elapsed))
         end
 
         ::continue::
@@ -742,6 +975,8 @@ function ShipPlayerDataManager:InitFromServer(message)
     --
     -- -- 刷新总战力
     -- self:CalcTotalPower()
+    -- -- 按仓库等级重算库存上限（必须在建筑数据就位之后）
+    -- self:_RefreshResourceMax()
 end
 
 --- 服务器玩家信息增量推送（改名、升级、战力变化等）
@@ -774,6 +1009,7 @@ function ShipPlayerDataManager:ApplyServerUnlockResult(message)
     -- end
     -- self.resourceData:ApplyServerDelta(message)
     -- self:CalcTotalPower()
+    -- self:_RefreshResourceMax()   -- 解锁的可能是仓库，要重算库存上限
     -- EventManager:GetInstance():Broadcast(EventId.ShipBuildingUnlockFinish, { uuid = uuid })
 end
 
@@ -789,6 +1025,7 @@ function ShipPlayerDataManager:ApplyServerUpgradeResult(message)
     -- end
     -- self.resourceData:ApplyServerDelta(message)
     -- self:CalcTotalPower()
+    -- self:_RefreshResourceMax()   -- 升级的可能是仓库，要重算库存上限
     -- EventManager:GetInstance():Broadcast(EventId.ShipBuildingUpgradeFinish, { uuid = uuid })
 end
 
