@@ -424,11 +424,14 @@ function UIShipBackgroundView:RefreshBottomBar()
     if self.btnUpgrade then self.btnUpgrade:SetActive(showUpgrade) end
 
     -- 升级/解锁按钮灰化
+    -- 第 3 参 canClick 恒传 true：它直接决定 `Button.enabled`（UIGray.cs:155），
+    -- 传 false 会让原生 onClick 压根不触发。这两个按钮点了只是打开确认弹窗，
+    -- 而弹窗正是展示"缺哪样资源 / 差什么前置"的地方 —— 禁用掉玩家就无从得知原因。
     if self.btnUpgrade and showUpgrade then
-        UIGray.SetGray(self.btnUpgrade.transform, not d.canOperate, d.canOperate)
+        UIGray.SetGray(self.btnUpgrade.transform, not d.canOperate, true)
     end
     if self.btnUnlock and showUnlock then
-        UIGray.SetGray(self.btnUnlock.transform, not d.canOperate, d.canOperate)
+        UIGray.SetGray(self.btnUnlock.transform, not d.canOperate, true)
     end
 
     self:_UpdateCountdownTimer(d.isUpgrading)
