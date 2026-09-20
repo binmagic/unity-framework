@@ -28,6 +28,9 @@ local UIConfig = {
 	-- 建筑解锁/升级弹窗
 	[UIWindowNames.UIBuildingPanel] = "UI.UIBuildingPanel.Config",
 
+	-- 探险玩法：2D飞机 + 数字门 战斗
+	[UIWindowNames.UIPlaneBattle] = "UI.UIPlaneBattle.Config",
+
 	-- 英雄模块
 	[UIWindowNames.UIHeroList]   = "UI.UIHeroList.Config",
 	[UIWindowNames.UIHeroDetail] = "UI.UIHeroDetail.Config",

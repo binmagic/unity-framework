@@ -1234,6 +1234,11 @@ TableName =
     Furniture_Levelup_Config = "Furniture_Levelup_Config",  -- 飞船家具升级配置表
     WorkQueue_Config = "WorkQueue_Config",                  -- 飞船建造队列配置表
 
+    -- 探险玩法：2D飞机 + 数字门 战斗
+    PlaneLevel_Config = "PlaneLevel_Config",                -- 关卡元数据配置表
+    PlaneSpawn_Config = "PlaneSpawn_Config",                -- 关卡内容出生点配置表（怪/门/桶/boss 按时间轴排列）
+    PlaneTrigger_Config = "PlaneTrigger_Config",            -- 触发效果配置表（门/桶命中后执行的效果）
+
     -- 英雄模块
     Hero_Config = "Hero_Config",                            -- 英雄基础配置表（阵营/定位/稀有度/四维）
 

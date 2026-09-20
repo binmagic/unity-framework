@@ -911,10 +911,17 @@ end
 
 function UIShipCabinView:OnClickTab(tabIndex)
     -- 1=船舱(当前) 2=英雄 3=探险 4=公会 5=世界
-    -- 英雄(2) 是弹出式子窗口，不是常驻页签内容——点几次都要能重新打开，
+    -- 英雄(2)/探险(3) 都是弹出式子窗口，不是常驻页签内容——点几次都要能重新打开，
     -- 不能套用"同一页签不重复处理"的判重（那是给1/4/5这类原地切换内容的页签用的）。
+    -- 之前把 tabIndex==3 也计入 curTabIndex 判重，导致关闭飞机大战回到船舱后，
+    -- curTabIndex 停留在3，再点探险 tabIndex==curTabIndex 直接 return，探险再也打不开。
+    -- 英雄入口照同样的写法摘出去，不要重蹈覆辙。
     if tabIndex == 2 then
         UIManager:GetInstance():OpenWindow(UIWindowNames.UIHeroList, { anim = true })
+        return
+    end
+    if tabIndex == 3 then
+        UIManager:GetInstance():OpenWindow(UIWindowNames.UIPlaneBattle, { anim = true })
         return
     end
 

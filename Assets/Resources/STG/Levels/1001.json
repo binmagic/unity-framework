@@ -1,0 +1,154 @@
+{
+  "version": "1.0",
+  "levelId": "1001",
+  "levelName": "第1关",
+  "description": "STG格式样例，由原 PlaneSpawn_Config 1001 关转换",
+  "seed": 0,
+  "basicScroll": {
+    "baseSpeed": 300,
+    "speedMultiplier": 1.0,
+    "rampUpTime": 0,
+    "rampUpTargetSpeed": 300
+  },
+  "backgroundLayers": [],
+  "objectPool": {
+    "backgroundLayerPoolSize": 20,
+    "enemyPoolSize": 30,
+    "bossPoolSize": 2,
+    "bulletPoolSize": 100,
+    "itemPoolSize": 50,
+    "trapPoolSize": 15,
+    "preloadOnStart": true
+  },
+  "itemConfigs": [],
+  "globalDropTables": [],
+  "spawnAreaConfigs": [],
+  "enemyWaveTemplates": [
+    {
+      "templateId": "w_enemy_pair",
+      "templateName": "双机编队",
+      "enemyType": "8001",
+      "count": 2,
+      "formation": { "type": "row", "spacing": 200, "rowDelay": 0 },
+      "entryPath": { "type": "from_top_straight", "speed": 200, "amplitude": 0 },
+      "behavior": { "type": "straight_down", "fireInterval": 2.0, "bulletType": "" },
+      "hp": 100,
+      "score": 100,
+      "dropTableId": ""
+    },
+    {
+      "templateId": "w_enemy_trio",
+      "templateName": "三机编队",
+      "enemyType": "8001",
+      "count": 3,
+      "formation": { "type": "row", "spacing": 160, "rowDelay": 0 },
+      "entryPath": { "type": "from_top_straight", "speed": 200, "amplitude": 0 },
+      "behavior": { "type": "straight_down", "fireInterval": 2.0, "bulletType": "" },
+      "hp": 100,
+      "score": 100,
+      "dropTableId": ""
+    },
+    {
+      "templateId": "w_enemy_advanced_pair",
+      "templateName": "进阶双机",
+      "enemyType": "8002",
+      "count": 2,
+      "formation": { "type": "row", "spacing": 240, "rowDelay": 0 },
+      "entryPath": { "type": "from_top_straight", "speed": 200, "amplitude": 0 },
+      "behavior": { "type": "straight_down", "fireInterval": 1.5, "bulletType": "" },
+      "hp": 150,
+      "score": 150,
+      "dropTableId": ""
+    }
+  ],
+  "bossConfigs": [
+    {
+      "bossId": "boss_9001",
+      "bossName": "首关Boss",
+      "prefabPath": "",
+      "entryAnimation": "fly_in_from_top",
+      "totalHp": 5000,
+      "score": 5000,
+      "phases": [
+        {
+          "phaseId": 1,
+          "hpThreshold": 1.0,
+          "movePattern": "horizontal_patrol",
+          "skills": [
+            { "skillId": "spread_shot", "interval": 2.0, "bulletCount": 5, "spreadAngle": 60 }
+          ]
+        }
+      ],
+      "dropOnDeath": [],
+      "onDefeatEvent": ""
+    }
+  ],
+  "trapConfigs": [
+    {
+      "trapId": "gate_plus2_left",
+      "trapName": "加2左门",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": { "x": -0.15, "y": 0 },
+      "params": {
+        "gateType": "gate_counter",
+        "paraTable": "-5|0|eff_zero;1|5|eff_plus5;6|100|eff_plus2",
+        "initialValue": 3,
+        "effectTableRef": "20001"
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": true
+    },
+    {
+      "trapId": "gate_minus1_right",
+      "trapName": "减1右门",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": { "x": 0.15, "y": 0 },
+      "params": {
+        "gateType": "gate_counter",
+        "paraTable": "-100|0|eff_minus1;1|100|eff_plus1",
+        "initialValue": 0,
+        "effectTableRef": "20003"
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": true
+    },
+    {
+      "trapId": "barrel_hp15",
+      "trapName": "油桶",
+      "type": "destructible",
+      "prefabPath": "",
+      "position": { "x": 0, "y": 0 },
+      "params": {},
+      "hp": 15,
+      "destroyable": true,
+      "dropTableId": ""
+    }
+  ],
+  "timeline": {
+    "duration": 90,
+    "events": [
+      { "time": 3,  "type": "spawn_enemy_wave", "templateId": "w_enemy_pair", "offsetX": 0 },
+      { "time": 10, "type": "drop_digital_gate", "gateType": "gate_counter", "count": 2, "interval": 0.1,
+        "offsetRange": { "xMin": -0.15, "xMax": -0.15, "yMin": 0, "yMax": 0 },
+        "dropAniDuration": 0.5, "position": { "x": 0, "y": 900 } },
+      { "time": 18, "type": "spawn_enemy_wave", "templateId": "w_enemy_trio", "offsetX": 0 },
+      { "time": 28, "type": "spawn_trap", "trapId": "barrel_hp15", "position": { "x": 0, "y": 900 } },
+      { "time": 40, "type": "drop_digital_gate", "gateType": "gate_counter", "count": 2, "interval": 0.1,
+        "offsetRange": { "xMin": -0.15, "xMax": 0.15, "yMin": 0, "yMax": 0 },
+        "dropAniDuration": 0.5, "position": { "x": 0, "y": 900 } },
+      { "time": 50, "type": "spawn_enemy_wave", "templateId": "w_enemy_advanced_pair", "offsetX": 0 },
+      { "time": 60, "type": "spawn_trap", "trapId": "barrel_hp15", "position": { "x": 0, "y": 900 } },
+      { "time": 75, "type": "drop_digital_gate", "gateType": "gate_counter", "count": 2, "interval": 0.1,
+        "offsetRange": { "xMin": -0.15, "xMax": 0.15, "yMin": 0, "yMax": 0 },
+        "dropAniDuration": 0.5, "position": { "x": 0, "y": 900 } },
+      { "time": 79, "type": "spawn_trap", "trapId": "gate_plus2_left" },
+      { "time": 85, "type": "spawn_boss", "bossId": "boss_9001" }
+    ]
+  }
+}

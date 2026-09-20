@@ -29,6 +29,9 @@ UIWindowNames = {
     -- 建筑解锁/升级弹窗
     UIBuildingPanel = "UIBuildingPanel",
 
+    -- 探险玩法：2D飞机 + 数字门 战斗
+    UIPlaneBattle = "UIPlaneBattle",
+
     -- 英雄模块
     UIHeroList   = "UIHeroList",
     UIHeroDetail = "UIHeroDetail",

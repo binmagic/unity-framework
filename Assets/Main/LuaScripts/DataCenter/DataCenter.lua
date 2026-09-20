@@ -11,6 +11,9 @@ local Managers =
 	ShipFurnitureManager   = "DataCenter.ShipPlayerData.ShipFurnitureManager",
 	ShipWorkQueueManager   = "DataCenter.ShipPlayerData.ShipWorkQueueManager",
 
+	-- 探险玩法：2D飞机 + 数字门 战斗
+	PlaneBattleDataManager = "DataCenter.PlaneBattle.PlaneBattleDataManager",
+
 	-- 英雄模块
 	HeroDataManager = "DataCenter.Hero.HeroDataManager",
 
