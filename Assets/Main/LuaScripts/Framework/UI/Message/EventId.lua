@@ -2930,6 +2930,11 @@ local EventId = {
 	ShipWorkQueueSlotUnlocked  = 250120, -- 队列槽位解锁
 	ShipWorkQueueTaskStart     = 250121, -- 队列任务开始
 	ShipWorkQueueTaskFinish    = 250122, -- 队列任务完成
+
+	----------------------------------------------------------------
+	-- 英雄模块
+	----------------------------------------------------------------
+	HeroDeployedChanged        = 250301, -- 出战英雄变化
 }
 
 return ConstClass("EventId", EventId)

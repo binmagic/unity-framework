@@ -27,6 +27,10 @@ local UIConfig = {
 	[UIWindowNames.UIShipCabinDetail] = "UI.UIShipCabinDetail.Config",
 	-- 建筑解锁/升级弹窗
 	[UIWindowNames.UIBuildingPanel] = "UI.UIBuildingPanel.Config",
+
+	-- 英雄模块
+	[UIWindowNames.UIHeroList]   = "UI.UIHeroList.Config",
+	[UIWindowNames.UIHeroDetail] = "UI.UIHeroDetail.Config",
 }
 --[[
 local UIConfig = {}

@@ -1234,6 +1234,9 @@ TableName =
     Furniture_Levelup_Config = "Furniture_Levelup_Config",  -- 飞船家具升级配置表
     WorkQueue_Config = "WorkQueue_Config",                  -- 飞船建造队列配置表
 
+    -- 英雄模块
+    Hero_Config = "Hero_Config",                            -- 英雄基础配置表（阵营/定位/稀有度/四维）
+
     AllianceResBuild = "alliance_res_build",
 	VisitorWelcome = "lw_base_visitor_welcome",
     HeroBattle_Skill = "herobattle_skill",

@@ -28,6 +28,10 @@ UIWindowNames = {
     UIShipCabinDetail = "UIShipCabinDetail",
     -- 建筑解锁/升级弹窗
     UIBuildingPanel = "UIBuildingPanel",
+
+    -- 英雄模块
+    UIHeroList   = "UIHeroList",
+    UIHeroDetail = "UIHeroDetail",
 }
 
 return ConstClass("UIWindowNames", UIWindowNames)

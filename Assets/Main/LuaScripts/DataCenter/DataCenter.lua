@@ -11,6 +11,9 @@ local Managers =
 	ShipFurnitureManager   = "DataCenter.ShipPlayerData.ShipFurnitureManager",
 	ShipWorkQueueManager   = "DataCenter.ShipPlayerData.ShipWorkQueueManager",
 
+	-- 英雄模块
+	HeroDataManager = "DataCenter.Hero.HeroDataManager",
+
 }
 
 -- 已经加载的manager

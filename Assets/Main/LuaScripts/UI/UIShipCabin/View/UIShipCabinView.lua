@@ -316,6 +316,12 @@ function UIShipCabinView:ComponentDefine()
         end
     end
     self.curTabIndex = 1
+
+    -- "养成"改"英雄"：运行时覆盖文案，不碰 prefab 里的美术文本，
+    -- 避免影响其他还没规划到的地方引用这个 prefab 节点文本。
+    if self.tabLabels[2] then
+        self.tabLabels[2]:SetText("英雄")
+    end
 end
 
 function UIShipCabinView:DataDefine()
@@ -904,7 +910,14 @@ function UIShipCabinView:RefreshTabBar(selectedIdx)
 end
 
 function UIShipCabinView:OnClickTab(tabIndex)
-    -- 1=船舱(当前) 2=养成 3=探险 4=公会 5=世界
+    -- 1=船舱(当前) 2=英雄 3=探险 4=公会 5=世界
+    -- 英雄(2) 是弹出式子窗口，不是常驻页签内容——点几次都要能重新打开，
+    -- 不能套用"同一页签不重复处理"的判重（那是给1/4/5这类原地切换内容的页签用的）。
+    if tabIndex == 2 then
+        UIManager:GetInstance():OpenWindow(UIWindowNames.UIHeroList, { anim = true })
+        return
+    end
+
     if tabIndex == self.curTabIndex then return end
     self.curTabIndex = tabIndex
     self:RefreshTabBar(tabIndex)
