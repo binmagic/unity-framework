@@ -53,8 +53,6 @@ public class StgBackgroundLayer
     // （单张图的情况就是列表里只放一条，效果等价于原来的 tileSpritePath）
     public List<string> tileSpritePaths = new List<string>();
     public bool useTileLoop = false;
-    // 单张贴图在世界坐标下的高度；决定何时该在带尾接下一张。<=0 时运行时按画幅高度兜底
-    public float tileWorldHeight = 0f;
 
     // ---- 随机散布（可选，任意 layerType 都可以启用）----
     public bool enableScatterSpawn = false;

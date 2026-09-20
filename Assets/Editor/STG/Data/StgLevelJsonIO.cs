@@ -85,7 +85,6 @@ public static class StgLevelJsonIO
         var tilePaths = StgJsonValue.NewArray();
         foreach (var path in l.tileSpritePaths) tilePaths.Add(path);
         j["tileSpritePaths"] = tilePaths;
-        j["tileWorldHeight"] = l.tileWorldHeight;
 
         j["enableScatterSpawn"] = l.enableScatterSpawn;
         if (l.enableScatterSpawn)
@@ -522,7 +521,6 @@ public static class StgLevelJsonIO
             var arr = j["tileSpritePaths"];
             for (int i = 0; i < arr.Count; i++) l.tileSpritePaths.Add((string)arr[i]);
         }
-        l.tileWorldHeight = GetFloat(j, "tileWorldHeight", 0f);
 
         l.enableScatterSpawn = GetBool(j, "enableScatterSpawn", false);
         if (j.ContainsKey("scatterInterval") && j["scatterInterval"].IsArray && j["scatterInterval"].Count >= 2)

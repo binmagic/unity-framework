@@ -253,10 +253,7 @@ public class BackgroundConfigPanel : IStgPanel
         host.Clear();
 
         host.Add(StgUiUtil.HintLabel("列表顺序即拼接顺序：多张图首尾相接滚过去，滚完最后一张接回第一张。只放一张时就是单图循环。"));
-
-        var tileWorldHeight = new FloatField("单张贴图世界高度 tileWorldHeight（<=0 时按画幅高度兜底）") { value = layer.tileWorldHeight };
-        tileWorldHeight.RegisterValueChangedCallback(evt => { layer.tileWorldHeight = evt.newValue; m_Context.MarkDirty(); });
-        host.Add(tileWorldHeight);
+        host.Add(StgUiUtil.HintLabel("贴图不做缩放，按原生高度无缝接带；仅横向拉伸铺满画幅宽度。"));
 
         var label = new Label("贴图路径列表 tileSpritePaths（可将 Sprite 拖入格子，或点击圆点从 Project 面板选择）");
         label.style.marginTop = 6;

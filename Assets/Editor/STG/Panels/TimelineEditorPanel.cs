@@ -363,6 +363,8 @@ public class TimelineEditorPanel : IStgPanel
         if (StgPreviewRuntime.IsPaused) hud += "　⏸ 已暂停";
         if (StgPreviewRuntime.LoopCount > 0) hud += $"　已循环 {StgPreviewRuntime.LoopCount} 次";
         if (StgPreviewRuntime.PlaceholderFallbackCount > 0) hud += $"\n⚠ {StgPreviewRuntime.PlaceholderFallbackCount} 个对象使用占位图形";
+        // 贴图带几何缝隙自检：黑块反馈排查用，报出具体间隙数值和涉及的贴图，避免只能靠肉眼估算
+        hud += StgPreviewTileStrip.GetGapReport();
         m_ViewportHud.text = hud;
     }
 
