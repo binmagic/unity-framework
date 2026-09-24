@@ -917,7 +917,8 @@ function UIShipCabinView:OnClickTab(tabIndex)
     -- curTabIndex 停留在3，再点探险 tabIndex==curTabIndex 直接 return，探险再也打不开。
     -- 英雄入口照同样的写法摘出去，不要重蹈覆辙。
     if tabIndex == 2 then
-        UIManager:GetInstance():OpenWindow(UIWindowNames.UIHeroList, { anim = true })
+        -- 首开偶发 Loading 过慢导致列表空白：先无动画打开更稳
+        UIManager:GetInstance():OpenWindow(UIWindowNames.UIHeroList, { anim = false })
         return
     end
     if tabIndex == 3 then
