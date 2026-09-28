@@ -1,26 +1,23 @@
 ---
 --- 英雄模块 — 数据管理
---- 职责：包装 Hero_Config 配置表读取 + 出战英雄的本地存档。
---- 首期不做抽卡/碎片解锁：配置表里的英雄默认视为全部已拥有，等级固定为1，
---- 不接升级消耗流程（那是养成玩法的核心数值循环，超出"打通英雄模块出战联动"的范围）。
---- 出战英雄做**全局单选**（不是设计文档 §5 的多槎位部署系统），足够支撑
---- "出战英雄的带兵量增加 → 抬高探险战斗僚机初始数量" 这条联动链路。
+--- 包装 Hero_Config（称号/等级/立绘路径/军衔预览等截图对齐字段）+ 出战英雄本地存档。
+--- owned=0 的英雄参与图鉴展示，但不可出战；详情页走满级预览/获取。
 ---@class HeroDataManager : Singleton
 local HeroDataManager = BaseClass("HeroDataManager", Singleton)
 
 local CACHE_KEY_DeployedHeroId = "Hero_DeployedHeroId"
 
 function HeroDataManager:__init()
-    self.deployedHeroId = nil  -- nil = 还没从存档读过；0 = 存档里就是没选（走默认兜底）
-    self.allHeroIds = nil      -- 缓存一次配置表全部 id，避免每次 GetAllHeroIds 都 visitTable
+    self.deployedHeroId = nil
+    self.allHeroIds = nil
+    self.runtimeLevel = {}
+    self.runtimeStar = {}
 end
 
 --- ---------------------------------------------------------------
 --- 配置表读取
 --- ---------------------------------------------------------------
 
---- 获取单个英雄配置（不存在返回 nil）
---- 返回 { id, name, faction, role, rarity, base_firepower, base_durability, base_armor, base_troop }
 function HeroDataManager:GetHeroConfig(heroId)
     if heroId == nil then return nil end
     local line = LocalController:instance():getLine(TableName.Hero_Config, heroId)
@@ -31,6 +28,7 @@ function HeroDataManager:GetHeroConfig(heroId)
     return {
         id               = line:getValue("id"),
         name             = line:getValue("name"),
+        title            = line:getValue("title"),
         faction          = line:getValue("faction"),
         role             = line:getValue("role"),
         rarity           = line:getValue("rarity"),
@@ -39,28 +37,51 @@ function HeroDataManager:GetHeroConfig(heroId)
         base_armor       = line:getValue("base_armor"),
         base_troop       = line:getValue("base_troop"),
         star             = line:getValue("star"),
+        owned            = line:getValue("owned"),
+        level            = line:getValue("level"),
+        power            = line:getValue("power"),
         skill_name       = line:getValue("skill_name"),
         skill_cooldown   = line:getValue("skill_cooldown"),
         skill_tag        = line:getValue("skill_tag"),
+        skill_dmg_type   = line:getValue("skill_dmg_type"),
         skill_desc       = line:getValue("skill_desc"),
         skill_rank_bonus = line:getValue("skill_rank_bonus"),
+        skill_level      = line:getValue("skill_level"),
+        skill_max_level  = line:getValue("skill_max_level"),
+        portrait         = line:getValue("portrait"),
+        card             = line:getValue("card"),
+        avatar           = line:getValue("avatar"),
+        rank_durability  = line:getValue("rank_durability"),
+        rank_firepower   = line:getValue("rank_firepower"),
+        rank_armor       = line:getValue("rank_armor"),
+        upgrade_cost     = line:getValue("upgrade_cost"),
+        promote_cost_1   = line:getValue("promote_cost_1"),
+        promote_cost_2   = line:getValue("promote_cost_2"),
+        shard_progress   = line:getValue("shard_progress"),
+        max_level        = line:getValue("max_level"),
     }
 end
 
---- 获取全部英雄 id 列表（按配置表定义顺序，不保证稳定顺序，UI 侧如需固定顺序自行 sort）
 function HeroDataManager:GetAllHeroIds()
-    if self.allHeroIds == nil then
-        self.allHeroIds = {}
-        LocalController:instance():visitTable(TableName.Hero_Config, function(id, lineData)
-            table.insert(self.allHeroIds, id)
-        end)
-        table.sort(self.allHeroIds)
+    -- 空结果绝不缓存：首开配置表偶发未就绪
+    if self.allHeroIds ~= nil and #self.allHeroIds > 0 then
+        return self.allHeroIds
     end
+    local ids = {}
+    local ok = pcall(function()
+        LocalController:instance():visitTable(TableName.Hero_Config, function(id, lineData)
+            table.insert(ids, id)
+        end)
+    end)
+    if not ok or #ids == 0 then
+        self.allHeroIds = nil
+        return {}
+    end
+    table.sort(ids)
+    self.allHeroIds = ids
     return self.allHeroIds
 end
 
---- 按阵营筛选英雄 id 列表；faction 为 nil 时返回全部（对应"全部"页签）
---- @param faction string|nil "Empire"|"Federation"|"FreeArmy"|nil
 function HeroDataManager:GetHeroIdsByFaction(faction)
     local allIds = self:GetAllHeroIds()
     if faction == nil then
@@ -78,47 +99,57 @@ function HeroDataManager:GetHeroIdsByFaction(faction)
 end
 
 --- ---------------------------------------------------------------
---- 拥有 / 等级（首期占位：全部已拥有，等级固定1，不接升级流程）
+--- 拥有 / 等级
 --- ---------------------------------------------------------------
 
 function HeroDataManager:IsHeroOwned(heroId)
-    return self:GetHeroConfig(heroId) ~= nil
+    local cfg = self:GetHeroConfig(heroId)
+    if cfg == nil then return false end
+    local owned = cfg.owned
+    if owned == nil then return true end
+    return tonumber(owned) == 1
 end
 
 function HeroDataManager:GetHeroLevel(heroId)
-    return 1
+    local cfg = self:GetHeroConfig(heroId)
+    if cfg == nil then return 0 end
+    return tonumber(cfg.level) or 0
 end
 
---- 当前军衔星级（0~5），来自配置表 `star` 字段，纯展示用，不接真实军衔提升消耗流程
 function HeroDataManager:GetHeroStar(heroId)
     local cfg = self:GetHeroConfig(heroId)
     return cfg ~= nil and (cfg.star or 0) or 0
 end
 
 --- ---------------------------------------------------------------
---- 出战英雄（全局单选）
+--- 出战英雄（全局单选，仅已拥有）
 --- ---------------------------------------------------------------
 
---- 获取当前出战英雄 id；存档为空或指向的英雄配置已不存在时，兜底选配置表第一个英雄
 function HeroDataManager:GetDeployedHeroId()
     if self.deployedHeroId == nil then
         self.deployedHeroId = Setting:GetPrivateInt(CACHE_KEY_DeployedHeroId, 0)
     end
 
-    if self.deployedHeroId == 0 or self:GetHeroConfig(self.deployedHeroId) == nil then
+    local valid = self.deployedHeroId ~= nil
+        and self.deployedHeroId ~= 0
+        and self:IsHeroOwned(self.deployedHeroId)
+    if not valid then
         local allIds = self:GetAllHeroIds()
-        if #allIds > 0 then
-            self.deployedHeroId = allIds[1]
+        self.deployedHeroId = 0
+        for _, heroId in ipairs(allIds) do
+            if self:IsHeroOwned(heroId) then
+                self.deployedHeroId = heroId
+                break
+            end
         end
     end
 
     return self.deployedHeroId
 end
 
---- 设置出战英雄；heroId 必须是已拥有的合法英雄，否则忽略并返回 false
 function HeroDataManager:SetDeployedHero(heroId)
     if not self:IsHeroOwned(heroId) then
-        Logger.LogError('#Hero# 尝试设置出战英雄失败，英雄不存在 heroId=' .. tostring(heroId))
+        Logger.LogError('#Hero# 尝试设置出战英雄失败，英雄不存在或未拥有 heroId=' .. tostring(heroId))
         return false
     end
 
@@ -128,13 +159,92 @@ function HeroDataManager:SetDeployedHero(heroId)
     return true
 end
 
---- 便捷方法：直接拿当前出战英雄的配置（给 PlaneBattle 等外部模块用，nil = 没有可出战英雄）
 function HeroDataManager:GetDeployedHeroConfig()
     local heroId = self:GetDeployedHeroId()
     if heroId == nil or heroId == 0 then
         return nil
     end
     return self:GetHeroConfig(heroId)
+end
+
+--- ---------------------------------------------------------------
+--- 升级 / 军衔（本地运行时状态，对齐截图的消耗展示）
+--- 消耗格式 "have/need"，have 不足则失败
+--- ---------------------------------------------------------------
+
+local function ParseCost(cost)
+    if cost == nil or cost == "" or cost == "-" then return nil, nil end
+    local have, need = string.match(tostring(cost), "^(%d+)/(%d+)")
+    if have == nil then return nil, nil end
+    return tonumber(have), tonumber(need)
+end
+
+function HeroDataManager:TryUpgradeHero(heroId)
+    if not self:IsHeroOwned(heroId) then
+        return false, "未拥有该英雄"
+    end
+    local cfg = self:GetHeroConfig(heroId)
+    if cfg == nil then return false, "配置缺失" end
+    local maxLv = tonumber(cfg.max_level) or 150
+    local have, need = ParseCost(cfg.upgrade_cost)
+    if have == nil then
+        return false, "无升级消耗配置"
+    end
+    if have < need then
+        return false, "材料不足 " .. tostring(have) .. "/" .. tostring(need)
+    end
+    self.runtimeLevel = self.runtimeLevel or {}
+    local cur = self.runtimeLevel[heroId] or (tonumber(cfg.level) or 1)
+    if cur >= maxLv then
+        return false, "已满级"
+    end
+    self.runtimeLevel[heroId] = cur + 1
+    EventManager:GetInstance():Broadcast(EventId.HeroDeployedChanged, heroId)
+    return true, "升级成功 " .. (cur + 1) .. "级"
+end
+
+function HeroDataManager:TryPromoteHero(heroId)
+    if not self:IsHeroOwned(heroId) then
+        return false, "未拥有该英雄"
+    end
+    local cfg = self:GetHeroConfig(heroId)
+    if cfg == nil then return false, "配置缺失" end
+    local have1, need1 = ParseCost(cfg.promote_cost_1)
+    local have2, need2 = ParseCost(cfg.promote_cost_2)
+    if have1 == nil and have2 == nil then
+        return false, "无军衔消耗配置"
+    end
+    if have1 ~= nil and have1 < need1 then
+        return false, "材料不足"
+    end
+    if have2 ~= nil and have2 < need2 then
+        return false, "材料不足"
+    end
+    self.runtimeStar = self.runtimeStar or {}
+    local cur = self.runtimeStar[heroId] or (tonumber(cfg.star) or 0)
+    if cur >= 5 then
+        return false, "军衔已满"
+    end
+    self.runtimeStar[heroId] = cur + 1
+    EventManager:GetInstance():Broadcast(EventId.HeroDeployedChanged, heroId)
+    return true, "提升军衔成功 " .. (cur + 1) .. "星"
+end
+
+function HeroDataManager:GetHeroLevel(heroId)
+    if self.runtimeLevel ~= nil and self.runtimeLevel[heroId] ~= nil then
+        return self.runtimeLevel[heroId]
+    end
+    local cfg = self:GetHeroConfig(heroId)
+    if cfg == nil then return 0 end
+    return tonumber(cfg.level) or 0
+end
+
+function HeroDataManager:GetHeroStar(heroId)
+    if self.runtimeStar ~= nil and self.runtimeStar[heroId] ~= nil then
+        return self.runtimeStar[heroId]
+    end
+    local cfg = self:GetHeroConfig(heroId)
+    return cfg ~= nil and (tonumber(cfg.star) or 0) or 0
 end
 
 return HeroDataManager

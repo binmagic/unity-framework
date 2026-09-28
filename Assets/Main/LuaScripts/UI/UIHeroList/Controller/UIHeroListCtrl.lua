@@ -1,45 +1,66 @@
 ---
 --- 英雄图鉴列表 — Controller
---- 职责：组装卡片数据（阵营筛选 + 稀有度/定位展示信息 + 出战角标）
+--- 卡片数据：已拥有优先 + 等级/星级/立绘/碎片进度
 ---@class UIHeroListCtrl : UIBaseCtrl
 local UIHeroListCtrl = BaseClass("UIHeroListCtrl", UIBaseCtrl)
 
---- 阵营筛选页签定义：nil = 全部。UI 侧按这个顺序渲染四个 Tab 按钮
 UIHeroListCtrl.FactionTabs = {
-    { key = nil,            name = "全部" },
-    { key = "Empire",       name = "帝国" },
-    { key = "Federation",   name = "联邦" },
-    { key = "FreeArmy",     name = "自由军" },
+    { key = nil,            name = "全部",   icon = "Assets/Main/Sprites/HeroUI/HeroUI_faction_all.png" },
+    { key = "Empire",       name = "帝国",   icon = "Assets/Main/Sprites/HeroUI/HeroUI_faction_empire.png" },
+    { key = "Federation",   name = "联邦",   icon = "Assets/Main/Sprites/HeroUI/HeroUI_faction_federation.png" },
+    { key = "FreeArmy",     name = "自由军", icon = "Assets/Main/Sprites/HeroUI/HeroUI_faction_freearmy.png" },
 }
 
---- 阵营中文名（卡片/详情页展示用）
+--- 截图里带「待修复」黄条的英雄位（纯展示，不接修复流程）
+local NEED_REPAIR = {
+    [1013] = true, -- 琪拉（对齐截图猫耳位）
+    [1010] = true,
+}
+
 local FACTION_NAME = {
     Empire     = "帝国",
     Federation = "联邦",
     FreeArmy   = "自由军",
 }
 
---- 定位中文名
 local ROLE_NAME = {
     Output  = "输出",
     Defense = "防守",
     Support = "辅助",
 }
 
---- 稀有度 → 底色（无美术资源，用纯色块代替卡面，对应设计文档：绿/蓝/紫/橙金）
 local RARITY_COLOR = {
-    [1] = { 0.35, 0.72, 0.40, 1 }, -- 普通 绿
-    [2] = { 0.30, 0.55, 0.90, 1 }, -- 稀有 蓝
-    [3] = { 0.60, 0.35, 0.85, 1 }, -- 卓越/史诗 紫
-    [4] = { 0.95, 0.70, 0.20, 1 }, -- 传说 橙金
+    [1] = { 0.20, 0.48, 0.30, 1 },
+    [2] = { 0.16, 0.34, 0.62, 1 },
+    [3] = { 0.40, 0.24, 0.62, 1 },
+    [4] = { 0.70, 0.48, 0.14, 1 },
 }
 
---- 阵营 → 强调色（左上角圆点/详情页立绘区底色）
 local FACTION_COLOR = {
-    Empire     = { 0.75, 0.20, 0.20, 1 }, -- 帝国 红
-    Federation = { 0.20, 0.45, 0.80, 1 }, -- 联邦 蓝
-    FreeArmy   = { 0.55, 0.55, 0.55, 1 }, -- 自由军 灰
+    Empire     = { 0.75, 0.20, 0.20, 1 },
+    Federation = { 0.20, 0.45, 0.80, 1 },
+    FreeArmy   = { 0.55, 0.55, 0.55, 1 },
 }
+
+local FACTION_ICON = {
+    Empire     = "Assets/Main/Sprites/HeroUI/HeroUI_faction_empire.png",
+    Federation = "Assets/Main/Sprites/HeroUI/HeroUI_faction_federation.png",
+    FreeArmy   = "Assets/Main/Sprites/HeroUI/HeroUI_faction_freearmy.png",
+}
+
+local ROLE_ICON = {
+    Output  = "Assets/Main/Sprites/HeroUI/HeroUI_role_output.png",
+    Defense = "Assets/Main/Sprites/HeroUI/HeroUI_role_defense.png",
+    Support = "Assets/Main/Sprites/HeroUI/HeroUI_role_support.png",
+}
+
+function UIHeroListCtrl:GetFactionIcon(faction)
+    return FACTION_ICON[faction]
+end
+
+function UIHeroListCtrl:GetRoleIcon(role)
+    return ROLE_ICON[role]
+end
 
 function UIHeroListCtrl:GetFactionName(faction)
     return FACTION_NAME[faction] or ""
@@ -57,53 +78,91 @@ function UIHeroListCtrl:GetFactionColor(faction)
     return FACTION_COLOR[faction] or { 0.5, 0.5, 0.5, 1 }
 end
 
---- 星级 → 显示字符串，如 star=3 时返回 "***--"（对应截图卡片右下角的星级行）
---- 用 * 不用 ★：NotoSansSC-Bold SDF 源字体没有 ★/☆ 字形，TryAddCharacters 也加不进来，
---- 实测会被替换成方块 □（参考 [[dynamic-tmp-chinese-font-loading]] 同类坑）
+--- 星级文本：字体无★字形，用 * / - + 颜色区分
 local function StarText(star)
-    star = star or 0
+    star = tonumber(star) or 0
     local filled = math.min(math.max(star, 0), 5)
     return string.rep("*", filled) .. string.rep("-", 5 - filled)
 end
 
---- 组装某个筛选页签下的卡片数据列表
---- @param faction string|nil nil = 全部
---- 返回 { { id, name, faction, factionName, role, roleName, rarity, rarityColor, factionColor,
----        isDeployed, level, levelText, starText }, ... }
+--- 组装卡片列表：已拥有优先，其次按 id
 function UIHeroListCtrl:GetCardList(faction)
     local mgr = DataCenter.HeroDataManager
     if mgr == nil then return {} end
 
+    local ok, result = pcall(function()
+        return self:_BuildCardList(mgr, faction)
+    end)
+    if not ok then
+        Logger.LogWarning("UIHeroListCtrl GetCardList err " .. tostring(result))
+        return {}
+    end
+    return result or {}
+end
+
+function UIHeroListCtrl:_BuildCardList(mgr, faction)
     local deployedId = mgr:GetDeployedHeroId()
     local heroIds = mgr:GetHeroIdsByFaction(faction)
+    if heroIds == nil or #heroIds == 0 then
+        heroIds = mgr:GetAllHeroIds()
+    end
     local result = {}
 
-    for _, heroId in ipairs(heroIds) do
+    for _, heroId in ipairs(heroIds or {}) do
         local cfg = mgr:GetHeroConfig(heroId)
         if cfg ~= nil then
+            local owned = mgr:IsHeroOwned(cfg.id)
             local level = mgr:GetHeroLevel(cfg.id)
+            local star = tonumber(mgr.GetHeroStar and mgr:GetHeroStar(cfg.id) or cfg.star) or 0
+            local levelText
+            if owned then
+                levelText = tostring(level) .. "级"
+            else
+                levelText = cfg.shard_progress or "0/10"
+            end
+            local maxLevel = tonumber(cfg.max_level) or 0
             table.insert(result, {
-                id           = cfg.id,
-                name         = cfg.name,
-                faction      = cfg.faction,
-                factionName  = self:GetFactionName(cfg.faction),
-                role         = cfg.role,
-                roleName     = self:GetRoleName(cfg.role),
-                rarity       = cfg.rarity,
-                rarityColor  = self:GetRarityColor(cfg.rarity),
-                factionColor = self:GetFactionColor(cfg.faction),
-                isDeployed   = (cfg.id == deployedId),
-                level        = level,
-                levelText    = level .. "级",
-                starText     = StarText(cfg.star),
+                id             = cfg.id,
+                name           = cfg.name,
+                title          = cfg.title or "",
+                faction        = cfg.faction,
+                factionName    = self:GetFactionName(cfg.faction),
+                role           = cfg.role,
+                roleName       = self:GetRoleName(cfg.role),
+                rarity         = tonumber(cfg.rarity) or 1,
+                rarityColor    = self:GetRarityColor(cfg.rarity),
+                factionColor   = self:GetFactionColor(cfg.faction),
+                owned          = owned,
+                isDeployed     = (cfg.id == deployedId),
+                level          = level,
+                levelText      = levelText,
+                starText       = StarText(star),
+                star           = star,
+                card           = cfg.card,
+                avatar         = cfg.avatar,
+                shardProgress  = cfg.shard_progress or "0/10",
+                factionIcon    = self:GetFactionIcon(cfg.faction),
+                roleIcon       = self:GetRoleIcon(cfg.role),
+                starNum        = star,
+                needRepair     = (not owned) and NEED_REPAIR[cfg.id] == true,
+                maxLevel       = maxLevel,
             })
         end
     end
 
+    table.sort(result, function(a, b)
+        if a.owned ~= b.owned then
+            return a.owned
+        end
+        if a.owned and b.owned and a.level ~= b.level then
+            return a.level > b.level
+        end
+        return a.id < b.id
+    end)
+
     return result
 end
 
---- 点卡片打开详情
 function UIHeroListCtrl:OpenHeroDetail(heroId)
     UIManager:GetInstance():OpenWindow(UIWindowNames.UIHeroDetail, { anim = true }, heroId)
 end
