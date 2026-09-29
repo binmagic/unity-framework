@@ -17,6 +17,7 @@ local BucketComponent      = require "UI.UIPlaneBattle.Component.BucketComponent
 -- STG 运行时：时间轴/波次/门/结算由 StgBattleLogic 驱动，View 只做表现
 local StgBattleLogic       = require "Game.STG.Logic.StgBattleLogic"
 local StgGateFactory       = require "Game.STG.Entity.Gate.StgGateFactory"
+local StgBackgroundRenderer= require "Game.STG.Render.StgBackgroundRenderer"
 
 local GameObject     = CS.UnityEngine.GameObject
 local RectTransform  = typeof(CS.UnityEngine.RectTransform)
@@ -104,6 +105,7 @@ function UIPlaneBattleView:OnCreate()
     self.stgGates = {}     -- StgGate 实例列表（STG 路径的门）
 
     self:_CreateBattleContentRoot()
+    self.bgRenderer = StgBackgroundRenderer.New(self.backgroundRootTf)
     self:_CreatePlayerPlane()
     self.bulletPool = BulletPool.New(self.battleContentTf)
     self.lastHudEnemyCount = -1
@@ -128,6 +130,10 @@ function UIPlaneBattleView:OnDestroy()
     if self.bulletPool ~= nil then
         self.bulletPool:Clear()
         self.bulletPool = nil
+    end
+    if self.bgRenderer ~= nil then
+        self.bgRenderer:Destroy()
+        self.bgRenderer = nil
     end
 
     -- 关键：窗口关闭走的是对象池 SetActive(false)（GameObject 会被复用），不是真正 Destroy。
@@ -154,9 +160,16 @@ function UIPlaneBattleView:OnDestroy()
     if self.levelSelectGo ~= nil and not IsNull(self.levelSelectGo) then
         self.levelSelectGo:Destroy()
     end
+    -- BackgroundRoot 同样是 OnCreate 时建在 BattleContent（prefab 节点，会被池化复用）下的，
+    -- 不显式销毁的话，下次 OnCreate 会再建一个，背景层就会一局叠一层
+    if self.backgroundRootGo ~= nil and not IsNull(self.backgroundRootGo) then
+        self.backgroundRootGo:Destroy()
+    end
 
     self.playerPlaneGo = nil
     self.playerPlaneRt = nil
+    self.backgroundRootGo = nil
+    self.backgroundRootTf = nil
     self.battleContentTf = nil
     self.hudContentTf = nil
     self.hudLevelNameText = nil
@@ -306,6 +319,16 @@ function UIPlaneBattleView:_BuildStgCallbacks()
                 end
             end
             view:_SetWingmanCount(baseWingman + heroTroopBonus)
+
+            -- 背景层：编辑器配的滚屏贴图带/散布装饰在这里接起来。
+            -- 滚动速度读 basicScroll.baseSpeed（change_scroll_speed 时间轴事件目前 StgBattleLogic
+            -- 未消费，等它支持动态调速后，这里改成读 logic 上的当前速度字段即可）
+            if view.bgRenderer ~= nil then
+                local scroll = cfg.basicScroll or {}
+                local baseSpeed = (tonumber(scroll.baseSpeed) or 0)
+                    * (tonumber(scroll.speedMultiplier) or 1)
+                view.bgRenderer:Setup(cfg, function() return baseSpeed end)
+            end
         end,
 
         -- 波次生成请求：创建敌机
@@ -544,6 +567,20 @@ end
 function UIPlaneBattleView:_CreateBattleContentRoot()
     self.battleContentTf = self.transform:Find("BattleContent")
     self.hudContentTf = self.transform:Find("HudContent")
+
+    -- 背景根节点：SetSiblingIndex(0) 压到 BattleContent 的最底层，
+    -- 保证主机/僚机/敌机/门/子弹（都是后创建的，sibling index 更大）永远画在背景之上
+    local bgRootGo = GameObject("BackgroundRoot", RectTransform)
+    bgRootGo.transform:SetParent(self.battleContentTf, false)
+    local bgRootRt = bgRootGo:GetComponent(RectTransform)
+    bgRootRt.anchorMin = Vector2(0, 0)
+    bgRootRt.anchorMax = Vector2(1, 1)
+    bgRootRt.offsetMin = Vector2(0, 0)
+    bgRootRt.offsetMax = Vector2(0, 0)
+    bgRootGo.transform:SetSiblingIndex(0)
+
+    self.backgroundRootGo = bgRootGo
+    self.backgroundRootTf = bgRootGo.transform
 end
 
 --- 主机：屏幕下方固定高度，左右拖动
@@ -651,6 +688,12 @@ function UIPlaneBattleView:Update()
 
     local dt = CS.UnityEngine.Time.deltaTime
     self.battleTime = self.battleTime + dt
+
+    -- 背景滚动：放在 STG/Legacy 分支之外统一驱动。
+    -- Legacy 路径没有 backgroundLayers 配置，Setup 从未被调用，这里是空转（无层可推）
+    if self.bgRenderer ~= nil then
+        self.bgRenderer:Update(dt)
+    end
 
     self:_RefreshWingmanFormation()
     self:_UpdateWingmanFire(dt)
@@ -1721,6 +1764,14 @@ function UIPlaneBattleView:_ClearBattleObjects()
 
     if self.bulletPool ~= nil then
         self.bulletPool:Clear()
+    end
+
+    -- 背景层：清掉旧关卡的贴图带/装饰物节点。
+    -- 这里只清层、不销毁 renderer 本身（renderer 生命周期跟随窗口，见 OnCreate/OnDestroy）——
+    -- _EnterLevel 的调用顺序是先 _ClearBattleObjects 再 OnLevelLoaded→Setup，
+    -- 所以进关时这里清空、紧接着 Setup 重建，正好是"清旧建新"，不会把刚建的背景清掉
+    if self.bgRenderer ~= nil then
+        self.bgRenderer:ClearLayers()
     end
 end
 

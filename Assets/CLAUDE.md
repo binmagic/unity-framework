@@ -89,7 +89,7 @@ GameEntry.BuildAnimatorManager // 建筑动画
 
 **入口文件**: `Assets/Main/LuaScripts/GameMain.lua`
 
-**顶层目录（固定 10 个，不可新建）**:
+**顶层目录（固定 9 个，不可新建）**:
 | 目录 | 职责 |
 |------|------|
 | `Global/` | 全局模块加载与全局命名空间（`Global.lua` 是唯一加载入口，有依赖顺序） |
@@ -99,8 +99,7 @@ GameEntry.BuildAnimatorManager // 建筑动画
 | `DataCenter/` | 数据管理中枢 + 各业务 Manager |
 | `Net/` | 网络协议：消息定义、路由、消息类 |
 | `UI/` | UI 窗口（MVC） |
-| `Slg/` | SLG 业务（UI/DataCenter/Chat/Generated 并行体系） |
-| `Scene/` | 场景内动态对象管理器（血条、气泡、特效、行军等） |
+| `Game/` | 玩法逻辑体系（当前只有 `STG/`：关卡配置、战斗 FSM、波次、门/机关、背景渲染），不依赖 `UI/`，由 `UI/` 反向消费 |
 | `Loading/` | 启动加载流程、热更版本检测 |
 
 **OOP 系统**: 所有类用 `BaseClass(name, super)`；类名=文件名=变量名三者一致；生命周期 `__init`（初始化字段）/ `__delete`（字段置 nil，一一对应）；单例继承 `Singleton` 用 `GetInstance()`；只读常量用 `ConstClass` 包装

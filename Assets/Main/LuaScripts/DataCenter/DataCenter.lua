@@ -17,6 +17,9 @@ local Managers =
 	-- 英雄模块
 	HeroDataManager = "DataCenter.Hero.HeroDataManager",
 
+	-- STG 关卡系统
+	StgLevelManager = "Game.STG.DataCenter.StgLevelManager",
+
 }
 
 -- 已经加载的manager
