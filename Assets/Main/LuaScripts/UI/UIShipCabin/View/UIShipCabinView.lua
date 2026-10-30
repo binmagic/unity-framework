@@ -12,6 +12,19 @@
 local UIShipCabinView = BaseClass("UIShipCabinView", UIBaseView)
 local base = UIBaseView
 
+-- 昨天船舱效果的两套运行时拼装配置。Git 更新后这些配置仍在，但如果不在主 View
+-- 中实例化，界面只会剩下旧的 ShipBody/Rooms 面板，看起来就像背景被换回去了。
+local FortressModularKit   = require "UI.UIShipCabin.FortressModularKit"
+local FortressBackgroundKit= require "UI.UIShipCabin.FortressBackgroundKit"
+local FortressLayout       = require "UI.UIShipCabin.FortressLayout"
+local FortressParallax     = require "UI.UIShipCabin.FortressParallax"
+local GameObject            = CS.UnityEngine.GameObject
+local RectTransform         = typeof(CS.UnityEngine.RectTransform)
+local Vector2               = CS.UnityEngine.Vector2
+local Image                 = typeof(CS.UnityEngine.UI.Image)
+local RectMask2D            = typeof(CS.UnityEngine.UI.RectMask2D)
+local Vector3               = CS.UnityEngine.Vector3
+
 local function SafeAddComponent(self, componentType, nodeName)
     if self.transform:Find(nodeName) == nil then return nil end
     return self:AddComponent(componentType, nodeName)
@@ -115,6 +128,140 @@ function UIShipCabinView:OnCreate()
     base.OnCreate(self)
     self:ComponentDefine()
     self:DataDefine()
+    self:_BuildFortressVisuals()
+end
+
+--- 在船舱主界面下方恢复昨天的天空/远景/地面/模块化车身。
+--- 这些都是独立 Image 节点：背景按层叠加，车身按 FortressModularKit 的模块列表拼装。
+function UIShipCabinView:_BuildFortressVisuals()
+    if self.fortressVehicleRoot ~= nil then return end
+
+    local shipBody = self.transform:Find("ShipBody")
+    local content = self.transform:Find(CONTENT_PATH)
+    if shipBody == nil or content == nil then
+        Logger.LogWarning("UIShipCabinView 恢复堡垒失败：缺少 ShipBody 或 Content")
+        return
+    end
+
+    -- prefab 里的两块纯蓝 Image 只是旧版占位底板。保留节点和 Rooms/点击结构，
+    -- 只把底板透明化，避免它们盖住恢复后的荒漠背景与车身。
+    for _, tf in ipairs({ self.transform:Find("Bg"), shipBody }) do
+        if tf ~= nil then
+            local img = tf:GetComponent(Image)
+            if img ~= nil then
+                local c = img.color
+                img.color = CS.UnityEngine.Color(c.r, c.g, c.b, 0)
+                img.raycastTarget = false
+            end
+        end
+    end
+
+    -- 背景固定在 ShipBody 下，位于 Rooms 之前；横拖车厢时天空和荒漠不会跟着走。
+    local bgGo = GameObject("FortressBackgroundRoot", RectTransform)
+    bgGo.transform:SetParent(shipBody, false)
+    bgGo.transform:SetAsFirstSibling()
+    local bgRt = bgGo:GetComponent(RectTransform)
+    bgRt.anchorMin = Vector2.zero
+    bgRt.anchorMax = Vector2.one
+    bgRt.offsetMin = Vector2.zero
+    bgRt.offsetMax = Vector2.zero
+    bgGo:AddComponent(RectMask2D)
+    self.fortressBackgroundRoot = bgGo
+
+    local bgH = bgRt.rect.height
+    if bgH <= 0 then bgH = FortressBackgroundKit.CANVAS_HEIGHT end
+
+    local function AddSprite(parent, name, path, w, h, x, y, tint)
+        local go = GameObject(name, RectTransform)
+        go.transform:SetParent(parent, false)
+        local rt = go:GetComponent(RectTransform)
+        rt.anchorMin = Vector2(0, 1)
+        rt.anchorMax = Vector2(0, 1)
+        rt.pivot = Vector2(0, 1)
+        rt.sizeDelta = Vector2(w, h)
+        rt.anchoredPosition = Vector2(x, -y)
+        local img = go:AddComponent(Image)
+        img.raycastTarget = false
+        img:LoadSprite(path)
+        if tint ~= nil then img.color = CS.UnityEngine.Color(tint[1], tint[2], tint[3], tint[4]) end
+        return go
+    end
+
+    -- 昨天的分层背景：每层按高度等比铺满，保留原图宽高比，不能压成 914x514。
+    self.parallaxLayers = {}
+    local bgLayers = FortressBackgroundKit.GetLayers("day")
+    for i, layer in ipairs(bgLayers) do
+        local paths = FortressBackgroundKit.GetTileSprites(layer, 20261028 + i)
+        local layerScale = bgH / (layer.nativeH or FortressBackgroundKit.CANVAS_HEIGHT)
+        local tileW = (layer.nativeW or FortressBackgroundKit.CANVAS_WIDTH) * layerScale
+        local holder = GameObject("Layer_" .. layer.id, RectTransform)
+        holder.transform:SetParent(bgGo.transform, false)
+        local holderRt = holder:GetComponent(RectTransform)
+        holderRt.anchorMin = Vector2(0, 1)
+        holderRt.anchorMax = Vector2(0, 1)
+        holderRt.pivot = Vector2(0, 1)
+        holderRt.sizeDelta = Vector2(tileW * #paths, bgH)
+        for tile, path in ipairs(paths) do
+            if path ~= nil and path ~= "" then
+                AddSprite(holder.transform, string.format("Tile_%02d", tile), path,
+                    tileW, bgH, tileW * (tile - 1), 0, layer.tint)
+            end
+        end
+        self.parallaxLayers[layer.id] = {
+            rt = holderRt, loopWidth = tileW, speedRatio = layer.speedRatio or 0,
+        }
+    end
+
+    -- 车身和功能舱共用一个 1872x941 的左上角像素坐标系。
+    -- 这样模块、舱位、轮心不会各算一套坐标，更不会再出现车壳和房间错层。
+    local viewport = self.transform:Find("ShipBody/Rooms/Viewport")
+    local viewRt = viewport and viewport:GetComponent(RectTransform) or nil
+    local viewW = viewRt and viewRt.rect.width or bgRt.rect.width
+    local viewH = viewRt and viewRt.rect.height or bgH
+    local canvasW = FortressModularKit.GetWidth(FortressModularKit.ACTIVE)
+    local canvasH = FortressModularKit.CANVAS_HEIGHT
+    local fortScale = (viewH > 0) and (viewH * 0.62 / canvasH) or 1
+    local groundY = bgH * (FortressBackgroundKit.HORIZON_RATIO + 0.52)
+    local groundOffset = canvasH * fortScale * (802 / 941)
+
+    local rootGo = GameObject("FortressVehicleRoot", RectTransform)
+    rootGo.transform:SetParent(content, false)
+    rootGo.transform:SetAsFirstSibling()
+    local rootRt = rootGo:GetComponent(RectTransform)
+    rootRt.anchorMin = Vector2(0, 1)
+    rootRt.anchorMax = Vector2(0, 1)
+    rootRt.pivot = Vector2(0, 1)
+    rootRt.sizeDelta = Vector2(canvasW, canvasH)
+    rootRt.anchoredPosition = Vector2(0, -(groundY - groundOffset))
+    rootRt.localScale = Vector3(fortScale, fortScale, 1)
+    self.fortressVehicleRoot = rootGo
+    self.fortressVisualRoot = rootGo
+    self.fortressScale = fortScale
+
+    local placements = FortressModularKit.GetPlacements(FortressModularKit.ACTIVE)
+    for _, p in ipairs(placements) do
+        AddSprite(rootGo.transform, "FortressModule_" .. tostring(p.name), p.sprite,
+            p.width, p.height, p.x, p.y, nil)
+    end
+
+    -- 舱位是绝对定位，禁用旧的 3 列 GridLayout；内容宽度决定横向拖动范围。
+    local grid = content:GetComponent(typeof(CS.UnityEngine.UI.GridLayoutGroup))
+    if grid ~= nil then grid.enabled = false end
+    local fitter = content:GetComponent(typeof(CS.UnityEngine.UI.ContentSizeFitter))
+    if fitter ~= nil then fitter.enabled = false end
+    local rooms = self.transform:Find("ShipBody/Rooms")
+    local scroll = rooms and rooms:GetComponent(typeof(CS.UnityEngine.UI.ScrollRect)) or nil
+    if scroll ~= nil then
+        scroll.horizontal = true
+        scroll.vertical = false
+    end
+    local contentRt = content:GetComponent(RectTransform)
+    if contentRt ~= nil then
+        contentRt.anchorMin = Vector2(0, 1)
+        contentRt.anchorMax = Vector2(0, 1)
+        contentRt.pivot = Vector2(0, 1)
+        contentRt.sizeDelta = Vector2(math.max(viewW, canvasW * fortScale), math.max(viewH, canvasH * fortScale))
+    end
 end
 
 --- 渲染排序：船舱作为主视图背景层，与 UIShipBackground 保持一致
@@ -132,6 +279,12 @@ function UIShipCabinView:OnEnable()
     self:RefreshAll()
     self:RefreshTabBar(self.curTabIndex or 1)
     self:_StartCountdownTimer()
+    self:_StartFortressParallax()
+end
+
+function UIShipCabinView:OnDisable()
+    if self.fortressParallax ~= nil then self.fortressParallax:Stop() end
+    base.OnDisable(self)
 end
 
 function UIShipCabinView:OnAddListener()
@@ -160,8 +313,28 @@ end
 
 function UIShipCabinView:OnDestroy()
     self:_StopCountdownTimer()
+    if self.fortressParallax ~= nil then
+        self.fortressParallax:Stop()
+        self.fortressParallax = nil
+    end
     self:DataDestroy()
+    if self.fortressVisualRoot ~= nil and not IsNull(self.fortressVisualRoot) then
+        CS.UnityEngine.Object.Destroy(self.fortressVisualRoot)
+        self.fortressVisualRoot = nil
+    end
     base.OnDestroy(self)
+end
+
+--- 只恢复背景视差和整车轻微颠簸；履带/轮速参数保持原模块里的已验证值不动。
+function UIShipCabinView:_StartFortressParallax()
+    self:_BuildFortressVisuals()
+    if self.parallaxLayers == nil or self.fortressVehicleRoot == nil then return end
+    if self.fortressParallax == nil then
+        self.fortressParallax = FortressParallax.New()
+        self.fortressParallax:Init(self.parallaxLayers,
+            self.fortressVehicleRoot:GetComponent(RectTransform), nil, nil, nil, nil)
+    end
+    self.fortressParallax:Start()
 end
 
 --- ---------------------------------------------------------------
@@ -337,6 +510,10 @@ function UIShipCabinView:DataDestroy()
     self.roomCellCount = 0
     self.pendingCells  = {}
     self.contentNode   = nil
+    self.parallaxLayers = nil
+    self.fortressBackgroundRoot = nil
+    self.fortressVehicleRoot = nil
+    self.fortressScale = nil
 end
 
 --- ---------------------------------------------------------------
@@ -347,6 +524,8 @@ end
 --- 异步加载，加载完成后回调 RefreshRoom 填数据
 function UIShipCabinView:EnsureRoomCells(count)
     if self.contentNode == nil then return end
+
+    self:_BuildFortressVisuals()
 
     for i = 1, count do
         if self.roomCells[i] == nil and not self.pendingCells[i] then
@@ -374,8 +553,9 @@ function UIShipCabinView:CreateRoomCell(index)
             return
         end
 
-        -- 容器可能已被销毁（界面关闭）
-        local content = self.transform and self.transform:Find(CONTENT_PATH)
+        -- 格子挂进车体像素坐标系，才能和车壳开口一起缩放、横向拖动。
+        local content = self.fortressVehicleRoot and self.fortressVehicleRoot.transform
+            or (self.transform and self.transform:Find(CONTENT_PATH))
         if content == nil then return end
 
         local go = request.gameObject
@@ -383,8 +563,8 @@ function UIShipCabinView:CreateRoomCell(index)
         go.transform:SetParent(content, false)
         go.transform.localScale = CS.UnityEngine.Vector3.one
 
-        -- GridLayoutGroup 控制位置和尺寸，这里只需保证顺序正确
-        go.transform:SetSiblingIndex(index - 1)
+        go.transform:SetAsLastSibling()
+        self:_ApplyFortressSlot(go, index)
 
         local cell = {
             go           = go,
@@ -411,6 +591,22 @@ function UIShipCabinView:CreateRoomCell(index)
             self:RefreshRoom(index, room)
         end
     end)
+end
+
+--- 把房间格放进模块声明的舱位；坐标与车身模块共用左上角像素系。
+function UIShipCabinView:_ApplyFortressSlot(go, index)
+    local rect = FortressLayout.GetRectByIndex(index)
+    if rect == nil then
+        go:SetActive(false)
+        return
+    end
+    local rt = go:GetComponent(RectTransform)
+    if rt == nil then return end
+    rt.anchorMin = Vector2(0, 1)
+    rt.anchorMax = Vector2(0, 1)
+    rt.pivot = Vector2(0, 1)
+    rt.sizeDelta = Vector2(rect.w, rect.h)
+    rt.anchoredPosition = Vector2(rect.x, -rect.y)
 end
 
 --- 把 RoomScene 内景加载进格子（按 buildId 选内景，同内景不重复加载）
@@ -443,7 +639,14 @@ function UIShipCabinView:LoadRoomSceneIntoCell(index, buildId)
 
         local inst = request.gameObject
         inst.transform:SetParent(curCell.sceneRoot, false)
-        inst.transform:SetSiblingIndex(0)   -- 垫在最底，ImgProp/ImgCharacter 叠上面
+        inst.transform:SetSiblingIndex(0)
+
+        -- prefab 原来的三块纯色占位图会盖住真正的功能舱 prefab，恢复昨天的做法：
+        -- 内景由 RoomScene_function_* 整套提供，占位块不再参与显示。
+        for _, nm in ipairs({ "ImgRoomBg", "ImgProp", "ImgCharacter" }) do
+            local ph = curCell.sceneRoot:Find(nm)
+            if ph ~= nil then ph.gameObject:SetActive(false) end
+        end
 
         local rt = inst:GetComponent(typeof(CS.UnityEngine.RectTransform))
         if not rt then
@@ -538,7 +741,8 @@ end
 
 --- 船体房间：按数据条数生成格子并逐个刷新
 function UIShipCabinView:RefreshRooms()
-    self.roomList = self.ctrl:GetRoomList()
+    self.roomList = self.ctrl.GetFortressRoomList and self.ctrl:GetFortressRoomList()
+        or self.ctrl:GetRoomList()
 
     self:EnsureRoomCells(#self.roomList)
 

@@ -1,0 +1,10 @@
+资源来源：D:/UnityProject/output/output（原始文件名为中文，已规范化为英文名）
+
+fortress_empty.png             1672x941  空车版移动堡垒，舱室为空（只有舱壁/地板/灯），用于铺格子
+bg_sky.png                     1672x941  天空层，不滚动
+bg_mesa_01/02/03.png           远山层，慢速横向滚动
+bg_foreground_seamless.png     1480x941  前景岩山，横向无缝循环（已做192px crossfade）
+bg_foreground_alt_seamless.png 1576x941  前景岩山备选版
+
+满车版参考图（舱内已画满人/飞机/家具，仅作效果参考，不参与打包）：
+Docs/功能文档/船舱堡垒/fortress_full_ref.png

@@ -6,6 +6,8 @@
 ---@class UIShipCabinCtrl : UIBaseCtrl
 local UIShipCabinCtrl = BaseClass("UIShipCabinCtrl", UIBaseCtrl)
 
+local FortressLayout = require "UI.UIShipCabin.FortressLayout"
+
 --- 资源栏展示的资源ID
 --- 参考原版：6 项资源两行紧凑排布（见 knowledge/codebase/longlong-ui-design-reference.md）
 local TOP_RESOURCE_IDS = {
@@ -84,6 +86,36 @@ function UIShipCabinCtrl:GetRoomList()
     end
 
     return result
+end
+
+--- 车体可见舱位：已有舱室优先，其次展示当前能解锁的下一批。
+--- 车身扩展或缩短后，数量自动跟随 FortressLayout，不再回退到旧 37 格网格。
+function UIShipCabinCtrl:GetFortressRoomList()
+    local all = self:GetRoomList()
+    if #all == 0 then return {} end
+
+    local result = {}
+    local limit = FortressLayout.GetSlotCount()
+    for _, room in ipairs(all) do
+        if #result >= limit then break end
+        if room.unlocked or room.isUpgrading or room.isDone then
+            room.slotIndex = #result + 1
+            table.insert(result, room)
+        end
+    end
+    for _, room in ipairs(all) do
+        if #result >= limit then break end
+        if not (room.unlocked or room.isUpgrading or room.isDone)
+            and self:GetUnlockCondition(room.buildId) then
+            room.slotIndex = #result + 1
+            table.insert(result, room)
+        end
+    end
+    return result
+end
+
+function UIShipCabinCtrl:GetOffboardCount()
+    return math.max(0, #self:GetRoomList() - #self:GetFortressRoomList())
 end
 
 --- 惰性拿一个 UIShipBackgroundCtrl 实例并缓存

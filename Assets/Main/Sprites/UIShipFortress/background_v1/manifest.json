@@ -1,0 +1,62 @@
+{
+  "source": "Assets/Main/Sprites/UIShipFortress/bg_ground.png",
+  "canvas": [
+    1672,
+    941
+  ],
+  "loopStrategy": "original + horizontal mirror + original buffer",
+  "layers": [
+    {
+      "id": "clouds",
+      "files": [
+        "bg_clouds_a.png",
+        "bg_clouds_b.png"
+      ]
+    },
+    {
+      "id": "far",
+      "files": [
+        "bg_far_a.png",
+        "bg_far_b.png"
+      ],
+      "fadeOut": [
+        350,
+        500
+      ]
+    },
+    {
+      "id": "midground",
+      "files": [
+        "bg_midground_a.png",
+        "bg_midground_b.png"
+      ],
+      "fadeIn": [
+        260,
+        390
+      ],
+      "fadeOut": [
+        690,
+        850
+      ]
+    },
+    {
+      "id": "ground",
+      "files": [
+        "bg_ground_contact_a.png",
+        "bg_ground_contact_b.png"
+      ],
+      "fadeIn": [
+        620,
+        780
+      ]
+    },
+    {
+      "id": "foreground",
+      "files": [
+        "bg_foreground_a.png",
+        "bg_foreground_b.png"
+      ]
+    }
+  ],
+  "note": "Deterministic engineering split; no new hand-painted art."
+}

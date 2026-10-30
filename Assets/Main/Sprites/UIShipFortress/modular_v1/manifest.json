@@ -1,0 +1,241 @@
+{
+  "version": 1,
+  "source": "Assets/Main/Sprites/UIShipFortress/fortress_empty.png",
+  "canvasHeight": 941,
+  "baseY": 295,
+  "bleed": 2,
+  "repeatColumnWidth": 100,
+  "modules": [
+    {
+      "name": "upper_mast",
+      "w": 732,
+      "h": 297,
+      "px": 0,
+      "py": 0,
+      "logical_w": 0,
+      "kind": "attachment",
+      "sprite": "upper_mast.png",
+      "sourceRect": [
+        0,
+        0,
+        732,
+        297
+      ]
+    },
+    {
+      "name": "upper_gantry",
+      "w": 944,
+      "h": 297,
+      "px": -2,
+      "py": 0,
+      "logical_w": 0,
+      "kind": "attachment",
+      "sprite": "upper_gantry.png",
+      "sourceRect": [
+        728,
+        0,
+        944,
+        297
+      ]
+    },
+    {
+      "name": "base_head",
+      "w": 302,
+      "h": 648,
+      "px": 0,
+      "py": -2,
+      "logical_w": 300,
+      "kind": "unique",
+      "sprite": "base_head.png",
+      "sourceRect": [
+        0,
+        293,
+        302,
+        648
+      ]
+    },
+    {
+      "name": "base_left_3x2",
+      "w": 284,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 280,
+      "kind": "unique",
+      "sprite": "base_left_3x2.png",
+      "sourceRect": [
+        298,
+        293,
+        284,
+        648
+      ]
+    },
+    {
+      "name": "base_hangar",
+      "w": 514,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 510,
+      "kind": "unique",
+      "sprite": "base_hangar.png",
+      "sourceRect": [
+        578,
+        293,
+        514,
+        648
+      ]
+    },
+    {
+      "name": "base_room_join",
+      "w": 14,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 10,
+      "kind": "connector",
+      "sprite": "base_room_join.png",
+      "sourceRect": [
+        1088,
+        293,
+        14,
+        648
+      ]
+    },
+    {
+      "name": "base_room_col_a",
+      "w": 104,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 100,
+      "kind": "repeat",
+      "sprite": "base_room_col_a.png",
+      "sourceRect": [
+        1098,
+        293,
+        104,
+        648
+      ]
+    },
+    {
+      "name": "base_room_col_b",
+      "w": 104,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 100,
+      "kind": "repeat",
+      "sprite": "base_room_col_b.png",
+      "sourceRect": [
+        1198,
+        293,
+        104,
+        648
+      ]
+    },
+    {
+      "name": "base_room_col_c",
+      "w": 104,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 100,
+      "kind": "repeat",
+      "sprite": "base_room_col_c.png",
+      "sourceRect": [
+        1298,
+        293,
+        104,
+        648
+      ]
+    },
+    {
+      "name": "base_room_col_d",
+      "w": 104,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 100,
+      "kind": "repeat",
+      "sprite": "base_room_col_d.png",
+      "sourceRect": [
+        1398,
+        293,
+        104,
+        648
+      ]
+    },
+    {
+      "name": "base_tail",
+      "w": 174,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 172,
+      "kind": "unique",
+      "sprite": "base_tail.png",
+      "sourceRect": [
+        1498,
+        293,
+        174,
+        648
+      ]
+    }
+  ],
+  "variantModules": [
+    {
+      "name": "base_room_col_e",
+      "w": 104,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 100,
+      "kind": "repeat_variant",
+      "derived_from": "base_room_col_b",
+      "sprite": "base_room_col_e.png"
+    },
+    {
+      "name": "base_room_col_f",
+      "w": 104,
+      "h": 648,
+      "px": -2,
+      "py": -2,
+      "logical_w": 100,
+      "kind": "repeat_variant",
+      "derived_from": "base_room_col_c",
+      "sprite": "base_room_col_f.png"
+    }
+  ],
+  "sampleOriginalColumns": [
+    "a",
+    "b",
+    "c",
+    "d"
+  ],
+  "sampleExtendedColumns": [
+    "a",
+    "b",
+    "c",
+    "d",
+    "b",
+    "c"
+  ],
+  "validation": {
+    "diffPixels": 0,
+    "maxDiff": 0
+  },
+  "extendedStarts": {
+    "base_head_0": 0,
+    "base_left_3x2_1": 300,
+    "base_hangar_2": 580,
+    "base_room_join_3": 1090,
+    "base_room_col_a_4": 1100,
+    "base_room_col_b_5": 1200,
+    "base_room_col_c_6": 1300,
+    "base_room_col_d_7": 1400,
+    "base_room_col_e_8": 1500,
+    "base_room_col_f_9": 1600,
+    "base_tail_10": 1700
+  }
+}
