@@ -29,7 +29,7 @@ local EntryPath = {
 
 --- 参考分辨率宽 750 的一半（与 UIPlaneBattleView.SCREEN_HALF_W 保持一致）
 local SCREEN_HALF_W = 375
-local SPAWN_TOP_Y   = 900
+local SPAWN_TOP_Y   = 1700 -- 750x1625 参考画幅上方，View 按实际画幅高度换算
 
 function StgWaveSpawner.New()
     local self = setmetatable({}, StgWaveSpawner)

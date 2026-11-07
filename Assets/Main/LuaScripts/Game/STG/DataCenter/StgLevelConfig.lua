@@ -69,6 +69,16 @@ local function ParseBasicScroll(j)
     }
 end
 
+local function ParsePlayerRules(j)
+    return {
+        -- nil 表示旧配置回退，0 表示明确不生成普通僚机。
+        initialWingman = type(j) == "table" and j.initialWingman ~= nil
+            and math.min(24, math.max(0, math.floor(Num(j, "initialWingman", 0)))) or nil,
+        heroArmorMultiplier = math.max(0.01, Num(j, "heroArmorMultiplier", 1)),
+        heroSkillCooldownMultiplier = math.max(0.01, Num(j, "heroSkillCooldownMultiplier", 1)),
+    }
+end
+
 local function ParseScatterRules(arr)
     local list = {}
     for _, r in ipairs(arr or {}) do
@@ -437,6 +447,7 @@ function StgLevelConfig.Load(levelId)
         seed           = Num(root, "seed", 0),
 
         basicScroll    = ParseBasicScroll(root.basicScroll),
+        playerRules    = ParsePlayerRules(root.playerRules),
         backgroundLayers = ParseBackgroundLayers(Arr(root, "backgroundLayers")),
         objectPool     = ParseObjectPool(root.objectPool),
 

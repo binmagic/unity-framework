@@ -10,6 +10,8 @@ TriggerEnum.Type = {
     RemoveWingman   = 20,  -- para = 数量
     AddGold         = 30,  -- para = 数量
     MultiplyWingman = 40,  -- para = 倍率
+    UpgradeWeapon   = 50,
+    RepairHull      = 60,
 }
 
 --- 效果表：effectId -> { type, para, text, icon }
@@ -21,6 +23,9 @@ TriggerEnum.EffectTable = {
     ["eff_plus1"]  = { type = TriggerEnum.Type.AddWingman,      para = 1,  text = "+1" },
     ["eff_plus2"]  = { type = TriggerEnum.Type.AddWingman,      para = 2,  text = "+2" },
     ["eff_plus5"]  = { type = TriggerEnum.Type.AddWingman,      para = 5,  text = "+5" },
+    ["eff_double"] = { type = TriggerEnum.Type.MultiplyWingman, para = 2, text = "×2" },
+    ["eff_weapon"] = { type = TriggerEnum.Type.UpgradeWeapon, para = 1, text = "武器升级" },
+    ["eff_repair"] = { type = TriggerEnum.Type.RepairHull, para = 1, text = "护盾 +1" },
     ["eff_minus1"] = { type = TriggerEnum.Type.RemoveWingman,   para = 1,  text = "-1" },
     ["eff_minus2"] = { type = TriggerEnum.Type.RemoveWingman,   para = 2,  text = "-2" },
 
@@ -57,6 +62,10 @@ function TriggerEnum.Execute(effectId, callbacks)
         callbacks.AddGold(p)
     elseif t == TriggerEnum.Type.MultiplyWingman and callbacks.MultiplyWingman then
         callbacks.MultiplyWingman(p)
+    elseif t == TriggerEnum.Type.UpgradeWeapon and callbacks.UpgradeWeapon then
+        callbacks.UpgradeWeapon(p)
+    elseif t == TriggerEnum.Type.RepairHull and callbacks.RepairHull then
+        callbacks.RepairHull(p)
     else
         Logger.LogError('#STG# 触发效果未处理 type=' .. tostring(t) .. ' effectId=' .. tostring(effectId))
         return false

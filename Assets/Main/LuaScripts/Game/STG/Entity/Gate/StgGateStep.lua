@@ -34,8 +34,6 @@ function StgGateStep:OnHit(damage)
     end
     self.accumulatedDamage = self.accumulatedDamage + damage
     self:RecalcEffect()
-    Logger.Log('#STG# gate_step 受击 dmg=' .. damage .. ' total=' .. self.accumulatedDamage
-        .. ' effect=' .. tostring(self.effectId))
 end
 
 --- UI 显示：当前累计伤害 / 下一档阈值

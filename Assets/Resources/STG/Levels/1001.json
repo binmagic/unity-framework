@@ -1,16 +1,46 @@
 {
   "version": "1.0",
   "levelId": "1001",
-  "levelName": "第1关",
-  "description": "STG格式样例，由原 PlaneSpawn_Config 1001 关转换",
+  "levelName": "第1关 · 星云突围",
+  "description": "太空数字门：射击升档、双路选择、武器/护盾补给，85秒首领入场。保留战机与英雄加成。",
   "seed": 0,
   "basicScroll": {
     "baseSpeed": 300,
-    "speedMultiplier": 1.0,
+    "speedMultiplier": 1,
     "rampUpTime": 0,
     "rampUpTargetSpeed": 300
   },
-  "backgroundLayers": [],
+  "playerRules": {
+    "initialWingman": 3,
+    "heroArmorMultiplier": 1.0,
+    "heroSkillCooldownMultiplier": 1.0
+  },
+  "backgroundLayers": [
+    {
+      "layerId": "space_nebula",
+      "layerName": "深空·远景星云",
+      "layerType": "parallax",
+      "orderInLayer": 0,
+      "speedCoefficient": 0.12,
+      "useTileLoop": true,
+      "tileSpritePaths": [
+        "Assets/Main/Sprites/STG/SpaceRaid/nebula_loop.png"
+      ],
+      "enableScatterSpawn": false
+    },
+    {
+      "layerId": "space_stars",
+      "layerName": "近景·独立视差星点",
+      "layerType": "parallax",
+      "orderInLayer": 1,
+      "speedCoefficient": 0.55,
+      "useTileLoop": true,
+      "tileSpritePaths": [
+        "Assets/Main/Sprites/STG/SpaceRaid/stars_loop.png"
+      ],
+      "enableScatterSpawn": false
+    }
+  ],
   "objectPool": {
     "backgroundLayerPoolSize": 20,
     "enemyPoolSize": 30,
@@ -29,9 +59,21 @@
       "templateName": "双机编队",
       "enemyType": "8001",
       "count": 2,
-      "formation": { "type": "row", "spacing": 200, "rowDelay": 0 },
-      "entryPath": { "type": "from_top_straight", "speed": 200, "amplitude": 0 },
-      "behavior": { "type": "straight_down", "fireInterval": 2.0, "bulletType": "" },
+      "formation": {
+        "type": "row",
+        "spacing": 200,
+        "rowDelay": 0
+      },
+      "entryPath": {
+        "type": "from_top_sine",
+        "speed": 200,
+        "amplitude": 90
+      },
+      "behavior": {
+        "type": "straight_down",
+        "fireInterval": 2,
+        "bulletType": ""
+      },
       "hp": 100,
       "score": 100,
       "dropTableId": ""
@@ -41,9 +83,21 @@
       "templateName": "三机编队",
       "enemyType": "8001",
       "count": 3,
-      "formation": { "type": "row", "spacing": 160, "rowDelay": 0 },
-      "entryPath": { "type": "from_top_straight", "speed": 200, "amplitude": 0 },
-      "behavior": { "type": "straight_down", "fireInterval": 2.0, "bulletType": "" },
+      "formation": {
+        "type": "row",
+        "spacing": 160,
+        "rowDelay": 0
+      },
+      "entryPath": {
+        "type": "from_top_sine",
+        "speed": 200,
+        "amplitude": 65
+      },
+      "behavior": {
+        "type": "straight_down",
+        "fireInterval": 2,
+        "bulletType": ""
+      },
       "hp": 100,
       "score": 100,
       "dropTableId": ""
@@ -53,11 +107,71 @@
       "templateName": "进阶双机",
       "enemyType": "8002",
       "count": 2,
-      "formation": { "type": "row", "spacing": 240, "rowDelay": 0 },
-      "entryPath": { "type": "from_top_straight", "speed": 200, "amplitude": 0 },
-      "behavior": { "type": "straight_down", "fireInterval": 1.5, "bulletType": "" },
+      "formation": {
+        "type": "row",
+        "spacing": 240,
+        "rowDelay": 0
+      },
+      "entryPath": {
+        "type": "from_top_sine",
+        "speed": 245,
+        "amplitude": 130
+      },
+      "behavior": {
+        "type": "straight_down",
+        "fireInterval": 1.5,
+        "bulletType": ""
+      },
       "hp": 150,
       "score": 150,
+      "dropTableId": ""
+    },
+    {
+      "templateId": "w_scout_column",
+      "templateName": "侧翼侦察纵队",
+      "enemyType": "8001",
+      "count": 3,
+      "formation": {
+        "type": "column",
+        "spacing": 0,
+        "rowDelay": 0.45
+      },
+      "entryPath": {
+        "type": "from_top_sine",
+        "speed": 220,
+        "amplitude": 45
+      },
+      "behavior": {
+        "type": "straight_down",
+        "fireInterval": 2.6,
+        "bulletType": ""
+      },
+      "hp": 75,
+      "score": 100,
+      "dropTableId": ""
+    },
+    {
+      "templateId": "w_scout_v",
+      "templateName": "三机V形突袭",
+      "enemyType": "8001",
+      "count": 3,
+      "formation": {
+        "type": "v_shape",
+        "spacing": 155,
+        "rowDelay": 0
+      },
+      "entryPath": {
+        "type": "from_top_sine",
+        "speed": 210,
+        "amplitude": 55
+      },
+      "behavior": {
+        "type": "straight_down",
+        "fireInterval": 2.4,
+        "bulletType": ""
+      },
+      "hp": 100,
+      "score": 100,
       "dropTableId": ""
     }
   ],
@@ -72,10 +186,42 @@
       "phases": [
         {
           "phaseId": 1,
-          "hpThreshold": 1.0,
+          "hpThreshold": 1,
           "movePattern": "horizontal_patrol",
           "skills": [
-            { "skillId": "spread_shot", "interval": 2.0, "bulletCount": 5, "spreadAngle": 60 }
+            {
+              "skillId": "spread_shot",
+              "interval": 2,
+              "bulletCount": 5,
+              "spreadAngle": 60,
+              "duration": 0,
+              "width": 0,
+              "rings": 0,
+              "waveTemplateId": "",
+              "count": 0,
+              "speed": 0,
+              "damageReduction": 0
+            }
+          ]
+        },
+        {
+          "phaseId": 2,
+          "hpThreshold": 0.5,
+          "movePattern": "figure_eight",
+          "skills": [
+            {
+              "skillId": "spread_shot",
+              "interval": 1.15,
+              "bulletCount": 7,
+              "spreadAngle": 92,
+              "duration": 0,
+              "width": 0,
+              "rings": 0,
+              "waveTemplateId": "",
+              "count": 0,
+              "speed": 0,
+              "damageReduction": 0
+            }
           ]
         }
       ],
@@ -86,14 +232,17 @@
   "trapConfigs": [
     {
       "trapId": "gate_plus2_left",
-      "trapName": "加2左门",
+      "trapName": "左路增援·射击升档",
       "type": "digital_gate",
       "prefabPath": "",
-      "position": { "x": -0.15, "y": 0 },
+      "position": {
+        "x": -0.43,
+        "y": 1250
+      },
       "params": {
         "gateType": "gate_counter",
-        "paraTable": "-5|0|eff_zero;1|5|eff_plus5;6|100|eff_plus2",
-        "initialValue": 3,
+        "paraTable": "-100|5|eff_plus1;5|10|eff_plus2;10|9999|eff_plus5",
+        "initialValue": 0,
         "effectTableRef": "20001"
       },
       "hp": 9999,
@@ -103,15 +252,80 @@
     },
     {
       "trapId": "gate_minus1_right",
-      "trapName": "减1右门",
+      "trapName": "右路红门·射击转正",
       "type": "digital_gate",
       "prefabPath": "",
-      "position": { "x": 0.15, "y": 0 },
+      "position": {
+        "x": 0.43,
+        "y": 1250
+      },
       "params": {
         "gateType": "gate_counter",
-        "paraTable": "-100|0|eff_minus1;1|100|eff_plus1",
-        "initialValue": 0,
+        "paraTable": "-100|0|eff_minus2;0|5|eff_plus1;5|10|eff_plus2;10|9999|eff_plus5",
+        "initialValue": -3,
         "effectTableRef": "20003"
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": true
+    },
+    {
+      "trapId": "gate_charge_center",
+      "trapName": "火力充能·伤害升档",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": {
+        "x": 0,
+        "y": 1250
+      },
+      "params": {
+        "gateType": "gate_step",
+        "paraTable": "0|eff_plus1;50|eff_plus2;120|eff_plus5;240|eff_double",
+        "initialValue": 0,
+        "effectTableRef": ""
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": true
+    },
+    {
+      "trapId": "gate_choice_double",
+      "trapName": "双路选择·加5或乘2",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": {
+        "x": 0,
+        "y": 1250
+      },
+      "params": {
+        "gateType": "gate_duet",
+        "paraTable": "-100|9999|eff_plus5",
+        "paraTableRight": "-100|9999|eff_double",
+        "initialValue": 0,
+        "effectTableRef": ""
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": true
+    },
+    {
+      "trapId": "gate_weapon_repair",
+      "trapName": "攻防选择·武器或护盾",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": {
+        "x": 0,
+        "y": 1250
+      },
+      "params": {
+        "gateType": "gate_duet",
+        "paraTable": "-100|9999|eff_weapon",
+        "paraTableRight": "-100|9999|eff_repair",
+        "initialValue": 0,
+        "effectTableRef": ""
       },
       "hp": 9999,
       "destroyable": false,
@@ -123,8 +337,11 @@
       "trapName": "油桶",
       "type": "destructible",
       "prefabPath": "",
-      "position": { "x": 0, "y": 0 },
-      "params": {},
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "params": null,
       "hp": 15,
       "destroyable": true,
       "dropTableId": ""
@@ -133,22 +350,154 @@
   "timeline": {
     "duration": 90,
     "events": [
-      { "time": 3,  "type": "spawn_enemy_wave", "templateId": "w_enemy_pair", "offsetX": 0 },
-      { "time": 10, "type": "drop_digital_gate", "gateType": "gate_counter", "count": 2, "interval": 0.1,
-        "offsetRange": { "xMin": -0.15, "xMax": -0.15, "yMin": 0, "yMax": 0 },
-        "dropAniDuration": 0.5, "position": { "x": 0, "y": 900 } },
-      { "time": 18, "type": "spawn_enemy_wave", "templateId": "w_enemy_trio", "offsetX": 0 },
-      { "time": 28, "type": "spawn_trap", "trapId": "barrel_hp15", "position": { "x": 0, "y": 900 } },
-      { "time": 40, "type": "drop_digital_gate", "gateType": "gate_counter", "count": 2, "interval": 0.1,
-        "offsetRange": { "xMin": -0.15, "xMax": 0.15, "yMin": 0, "yMax": 0 },
-        "dropAniDuration": 0.5, "position": { "x": 0, "y": 900 } },
-      { "time": 50, "type": "spawn_enemy_wave", "templateId": "w_enemy_advanced_pair", "offsetX": 0 },
-      { "time": 60, "type": "spawn_trap", "trapId": "barrel_hp15", "position": { "x": 0, "y": 900 } },
-      { "time": 75, "type": "drop_digital_gate", "gateType": "gate_counter", "count": 2, "interval": 0.1,
-        "offsetRange": { "xMin": -0.15, "xMax": 0.15, "yMin": 0, "yMax": 0 },
-        "dropAniDuration": 0.5, "position": { "x": 0, "y": 900 } },
-      { "time": 79, "type": "spawn_trap", "trapId": "gate_plus2_left" },
-      { "time": 85, "type": "spawn_boss", "bossId": "boss_9001" }
+      {
+        "time": 7,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_column",
+        "offsetX": -0.42
+      },
+      {
+        "time": 3,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_enemy_pair",
+        "offsetX": 0
+      },
+      {
+        "time": 10,
+        "type": "spawn_trap",
+        "trapId": "gate_plus2_left"
+      },
+      {
+        "time": 10,
+        "type": "spawn_trap",
+        "trapId": "gate_minus1_right"
+      },
+      {
+        "time": 13,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_enemy_pair",
+        "offsetX": 0.42
+      },
+      {
+        "time": 17,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_column",
+        "offsetX": -0.48
+      },
+      {
+        "time": 19,
+        "type": "spawn_trap",
+        "trapId": "gate_weapon_repair"
+      },
+      {
+        "time": 22,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_column",
+        "offsetX": 0.48
+      },
+      {
+        "time": 27,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_v",
+        "offsetX": 0
+      },
+      {
+        "time": 28,
+        "type": "spawn_trap",
+        "trapId": "barrel_hp15",
+        "position": {
+          "x": 0,
+          "y": 900
+        }
+      },
+      {
+        "time": 32,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_enemy_trio",
+        "offsetX": 0
+      },
+      {
+        "time": 36,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_v",
+        "offsetX": -0.34
+      },
+      {
+        "time": 40,
+        "type": "spawn_trap",
+        "trapId": "gate_charge_center"
+      },
+      {
+        "time": 46,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_column",
+        "offsetX": -0.48
+      },
+      {
+        "time": 49,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_enemy_pair",
+        "offsetX": 0.34
+      },
+      {
+        "time": 51,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_enemy_advanced_pair",
+        "offsetX": 0
+      },
+      {
+        "time": 53,
+        "type": "spawn_trap",
+        "trapId": "gate_weapon_repair"
+      },
+      {
+        "time": 56,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_column",
+        "offsetX": 0.48
+      },
+      {
+        "time": 58,
+        "type": "spawn_trap",
+        "trapId": "gate_plus2_left"
+      },
+      {
+        "time": 60,
+        "type": "spawn_trap",
+        "trapId": "barrel_hp15",
+        "position": {
+          "x": 0,
+          "y": 900
+        }
+      },
+      {
+        "time": 62,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_v",
+        "offsetX": 0
+      },
+      {
+        "time": 67,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_enemy_advanced_pair",
+        "offsetX": 0
+      },
+      {
+        "time": 72,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_scout_column",
+        "offsetX": -0.4
+      },
+      {
+        "time": 75,
+        "type": "spawn_trap",
+        "trapId": "gate_choice_double"
+      },
+      {
+        "time": 85,
+        "type": "spawn_boss",
+        "bossId": "boss_9001"
+      }
     ]
   }
 }

@@ -27,8 +27,11 @@ function StgBattleLogic.New()
     self.pendingLevelId = nil
     self.result = Const.BattleResult.None
     self.wingmanCount = 0
+    self.weaponLevel = 0
     self.gold = 0
     self.elapsed = 0
+    self.activeBossCount = 0
+    self.timelineFinished = false
     self.runner = nil
     self.waveSpawner = nil
     self.callbacks = {}
@@ -86,7 +89,10 @@ function StgBattleLogic:_BuildRunnerCallbacks()
     end
 
     -- 原样透传的事件
-    runnerCb.OnSpawnBoss        = cb.OnSpawnBoss
+    runnerCb.OnSpawnBoss = function(bossId)
+        self.activeBossCount = self.activeBossCount + 1
+        if cb.OnSpawnBoss then cb.OnSpawnBoss(bossId) end
+    end
     runnerCb.OnSpawnTrap        = cb.OnSpawnTrap
     runnerCb.OnSpawnAreaStart   = cb.OnSpawnAreaStart
     runnerCb.OnSpawnAreaStop    = cb.OnSpawnAreaStop
@@ -105,7 +111,8 @@ function StgBattleLogic:_BuildRunnerCallbacks()
         self:Lose()
     end
     runnerCb.OnTimelineFinished = function()
-        if self.result == Const.BattleResult.None then
+        self.timelineFinished = true
+        if self.result == Const.BattleResult.None and self.activeBossCount == 0 then
             self:Win()
         end
     end
@@ -148,6 +155,12 @@ function StgBattleLogic:MultiplyWingman(factor)
     end
 end
 
+function StgBattleLogic:UpgradeWeapon(count)
+    local before = self.weaponLevel
+    self.weaponLevel = math.max(0, math.min(2, before + math.floor(tonumber(count) or 0)))
+    if self.callbacks.OnWeaponChanged then self.callbacks.OnWeaponChanged(self.weaponLevel, before) end
+end
+
 function StgBattleLogic:AddGold(count)
     self.gold = self.gold + (tonumber(count) or 0)
     if self.callbacks.OnGoldChanged then
@@ -162,10 +175,22 @@ function StgBattleLogic:ExecuteEffect(effectId)
         RemoveWingman   = function(n) self:RemoveWingman(n) end,
         AddGold         = function(n) self:AddGold(n) end,
         MultiplyWingman = function(k) self:MultiplyWingman(k) end,
+        UpgradeWeapon  = function(n) self:UpgradeWeapon(n) end,
+        RepairHull     = function(n)
+            if self.callbacks.OnRepairHull then self.callbacks.OnRepairHull(n) end
+        end,
     })
 end
 
 --- ---------- 结算 ----------
+
+--- 时间轴耗尽只结束刷怪；仍有首领时等待真实击毁回调。
+function StgBattleLogic:OnBossDefeated()
+    self.activeBossCount = math.max(0, self.activeBossCount - 1)
+    if self.timelineFinished and self.activeBossCount == 0 then
+        self:Win()
+    end
+end
 
 function StgBattleLogic:Win()
     self:_Finish(Const.BattleResult.Win, self.callbacks.OnBattleWin)
@@ -194,6 +219,7 @@ end
 --- ---------- 查询 ----------
 
 function StgBattleLogic:GetWingmanCount() return self.wingmanCount end
+function StgBattleLogic:GetWeaponLevel() return self.weaponLevel end
 function StgBattleLogic:GetGold() return self.gold end
 function StgBattleLogic:GetConfig() return self.cfg end
 function StgBattleLogic:GetLevelId() return self.levelId end
@@ -219,6 +245,9 @@ function StgBattleLogic:Destroy()
     self.waveSpawner = nil
     self.callbacks = {}
     self.result = Const.BattleResult.None
+    self.activeBossCount = nil
+    self.timelineFinished = nil
+    self.weaponLevel = nil
 end
 
 return StgBattleLogic

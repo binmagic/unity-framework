@@ -45,8 +45,6 @@ function StgGateDuet:OnHit(damage, isLeft)
         self.rightValue = self.rightValue + 1
     end
     self:RecalcEffect()
-    Logger.Log('#STG# gate_duet 受击 side=' .. (isLeft and 'L' or 'R')
-        .. ' L=' .. self.leftValue .. ' R=' .. self.rightValue)
 end
 
 --- 穿门：按落点在左半/右半结算

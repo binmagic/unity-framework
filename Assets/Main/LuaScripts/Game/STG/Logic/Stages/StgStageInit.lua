@@ -24,7 +24,10 @@ function StgStageInit:OnEnter(levelId)
     owner.cfg = nil
     owner.result = Const.BattleResult.None
     owner.elapsed = 0
+    owner.activeBossCount = 0
+    owner.timelineFinished = false
     owner.wingmanCount = 0
+    owner.weaponLevel = 0
     owner.gold = 0
 
     -- 立刻进 Load（首期没有异步资源预载，Init 只做状态归零）

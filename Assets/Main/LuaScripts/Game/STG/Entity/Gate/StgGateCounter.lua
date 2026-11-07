@@ -35,7 +35,6 @@ function StgGateCounter:OnHit(damage)
     -- counter 门语义：每次受击 +1（对齐 barrel Gate2，不按伤害量）
     self.value = self.value + 1
     self:RecalcEffect()
-    Logger.Log('#STG# gate_counter 受击 value=' .. self.value .. ' effect=' .. tostring(self.effectId))
 end
 
 function StgGateCounter:GetDisplayText()

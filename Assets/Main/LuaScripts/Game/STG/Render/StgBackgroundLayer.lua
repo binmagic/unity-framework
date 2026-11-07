@@ -1,6 +1,6 @@
 ---
 --- [INPUT]: 依赖 Game.STG.Const 的资源路径约定，依赖全局 Mathf 的 GetRandomByWeight/RandomFloat，
----          依赖 CS.UnityEngine 的 GameObject/RectTransform/Image
+---          依赖 CS.UnityEngine 的 GameObject/RectTransform/Image，横向跟随父级画布宽度
 --- [OUTPUT]: 对外提供 StgBackgroundLayer.New / :Update / :Destroy
 --- [POS]: Game/STG/Render 的单层背景渲染器，被 StgBackgroundRenderer 批量持有；
 ---        与 Spawner/ 的区别是这里只管背景表现，不产出战斗实体
@@ -70,11 +70,11 @@ function StgBackgroundLayer.New(parentTransform, layerConfig, scrollSpeedProvide
     local root = GameObject("BgLayer_" .. tostring(self.cfg.layerId or "?"), RectTransform)
     root.transform:SetParent(parentTransform, false)
     local rootRt = root:GetComponent(RectTransform)
-    rootRt.anchorMin = Vector2(0.5, 0)
-    rootRt.anchorMax = Vector2(0.5, 0)
+    rootRt.anchorMin = Vector2(0, 0)
+    rootRt.anchorMax = Vector2(1, 0)
     rootRt.pivot     = Vector2(0.5, 0)
     rootRt.anchoredPosition = Vector2(0, 0)
-    rootRt.sizeDelta = Vector2(SCREEN_HALF_W * 2, SCREEN_HEIGHT)
+    rootRt.sizeDelta = Vector2(0, SCREEN_HEIGHT)
 
     self.rootGo = root
     self.rootTf = root.transform
@@ -202,8 +202,8 @@ function StgBackgroundLayer:_CreateTile(bottomY)
     go.transform:SetParent(self.rootTf, false)
 
     local rt = go:GetComponent(RectTransform)
-    rt.anchorMin = Vector2(0.5, 0)
-    rt.anchorMax = Vector2(0.5, 0)
+    rt.anchorMin = Vector2(0, 0)
+    rt.anchorMax = Vector2(1, 0)
     rt.pivot     = Vector2(0.5, 0.5)
 
     local img = go:AddComponent(Image)
@@ -212,7 +212,7 @@ function StgBackgroundLayer:_CreateTile(bottomY)
 
     local height = self:_ResolveTileHeight(img, path)
     -- 横向铺满屏宽（纵向保持原生高度，保证接带严密无缝）
-    rt.sizeDelta = Vector2(SCREEN_HALF_W * 2, height)
+    rt.sizeDelta = Vector2(0, height)
     rt.anchoredPosition = Vector2(0, bottomY + height * 0.5)
 
     local tile = { go = go, rt = rt, height = height, pathIndex = pathIndex }
@@ -260,7 +260,7 @@ function StgBackgroundLayer:_RecycleAndAppend()
                     img:LoadSprite(path)
                     tile.height = self:_ResolveTileHeight(img, path)
                 end
-                tile.rt.sizeDelta = Vector2(SCREEN_HALF_W * 2, tile.height)
+                tile.rt.sizeDelta = Vector2(0, tile.height)
                 tile.rt.anchoredPosition = Vector2(0, highestTopY + tile.height * 0.5)
             end
         end

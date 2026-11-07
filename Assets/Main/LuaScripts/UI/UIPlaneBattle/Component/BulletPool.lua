@@ -9,20 +9,20 @@ local GameObject    = CS.UnityEngine.GameObject
 local RectTransform = typeof(CS.UnityEngine.RectTransform)
 local Image         = typeof(CS.UnityEngine.UI.Image)
 local Vector2       = CS.UnityEngine.Vector2
-
---- 美术资源目录（从 D:\UnityProject\UiSource\雷霆战机 迁入，命名前缀 PlaneBattle_）
-local RES_DIR = "Assets/Main/Sprites/PlaneBattle/"
+local Color         = CS.UnityEngine.Color
 
 local BULLET_SIZE   = Vector2(11, 40)
 local BULLET_SPEED  = 900 -- 像素/秒
-local MAX_ACTIVE    = 60  -- 同屏子弹上限
-local SCREEN_TOP_Y  = 1000 -- 超出这个高度视为飞出屏幕（略大于参考分辨率半高）
+local MAX_ACTIVE    = 240 -- 三发编队的容量，同时为敌弹保留空间
+local PLAYER_SOFT_LIMIT = 192
+local SCREEN_SIDE_X = 440 -- 已完全离开横向战场的散射弹立即回池
 
 function BulletPool.New(parentTransform)
     local self = {
         parent  = parentTransform,
         freeList = {},   -- 空闲子弹节点池
         active   = {},   -- 当前飞行中的子弹 { go, rt, vx, vy, damage, faction }
+        topY = math.max(1625, parentTransform.rect.height) + 100,
     }
     setmetatable(self, { __index = BulletPool })
     return self
@@ -39,9 +39,21 @@ function BulletPool:_Acquire()
     go = GameObject("Bullet", RectTransform)
     go.transform:SetParent(self.parent, false)
     local rt = go:GetComponent(RectTransform)
+    rt.anchorMin = Vector2(0.5, 0)
+    rt.anchorMax = Vector2(0.5, 0)
     rt.sizeDelta = BULLET_SIZE
     local img = go:AddComponent(Image)
-    img:LoadSprite(RES_DIR .. "PlaneBattle_bullet.png")
+    img.raycastTarget = false
+    img:LoadSprite("Assets/Main/Sprites/STG/CombatFx/energy_bolt.png")
+    local coreGo = GameObject("BrightCore", RectTransform)
+    coreGo.transform:SetParent(go.transform, false)
+    local coreRt = coreGo:GetComponent(RectTransform)
+    coreRt.anchorMin, coreRt.anchorMax = Vector2(0, 0), Vector2(1, 1)
+    coreRt.offsetMin, coreRt.offsetMax = Vector2(3, 3), Vector2(-3, -3)
+    local core = coreGo:AddComponent(Image)
+    core.raycastTarget = false
+    core.color = Color(1, 1, 1, 0.85)
+    core:LoadSprite("Assets/Main/Sprites/STG/CombatFx/energy_bolt.png")
     return go
 end
 
@@ -50,21 +62,48 @@ end
 --- @param y number 起始点 anchoredPosition.y
 --- @param dirY number 飞行方向：1=向上(僚机打敌机) -1=向下(敌机打主机)
 --- @param damage number 伤害
-function BulletPool:Fire(x, y, dirY, damage)
+--- faction: "player" | "enemy"；由 View 按阵营分别处理命中。
+--- vx: 横向速度，用于散射弹道。
+function BulletPool:Fire(x, y, dirY, damage, faction, vx, weaponLevel, primary, sourceId, heroSkill)
     if #self.active >= MAX_ACTIVE then
-        return -- 同屏子弹已达上限，直接丢弃这次开火请求
+        return false -- 同屏子弹已达上限，直接丢弃这次开火请求
     end
+    if (faction or "player") == "player" and #self.active >= PLAYER_SOFT_LIMIT then return false end
 
     local go = self:_Acquire()
     local rt = go:GetComponent(RectTransform)
     rt.anchoredPosition = Vector2(x, y)
+    local img = go:GetComponent(Image)
+    faction = faction or "player"
+    local vy = (faction == "enemy" and 310 or BULLET_SPEED) * (dirY or 1)
+    vx = vx or 0
+    rt.localRotation = CS.UnityEngine.Quaternion.Euler(0, 0, math.atan(-vx, vy) * 180 / math.pi)
+    img.color = faction == "enemy" and Color(1, 0.3, 0.22, 0.95) or Color(0.45, 0.9, 1, 1)
+    rt.sizeDelta = BULLET_SIZE
+    if faction == "player" and (weaponLevel or 0) > 0 then
+        img.color = weaponLevel == 1 and Color(0.45, 0.65, 1, 1) or Color(1, 0.65, 0.25, 1)
+        rt.sizeDelta = Vector2(9, weaponLevel == 1 and 44 or 34)
+    end
+    if faction == "player" and primary then
+        -- 主炮更粗、更亮；池化复用时上面的默认值先恢复，避免污染敌弹/僚机弹。
+        rt.sizeDelta = Vector2(14, (weaponLevel or 0) >= 2 and 46 or 58)
+        img.color = (weaponLevel or 0) >= 2 and Color(1, 0.85, 0.4, 1) or Color(0.65, 0.95, 1, 1)
+    end
 
     table.insert(self.active, {
         go     = go,
         rt     = rt,
-        vy     = BULLET_SPEED * (dirY or 1),
+        vy     = vy,
+        vx     = vx,
         damage = damage or 1,
+        faction = faction,
+        primary = primary == true,
+        sourceId = sourceId,
+        heroSkill = heroSkill == true,
+        previousX = x,
+        previousY = y,
     })
+    return true
 end
 
 --- 每帧推进所有子弹，超出边界的回收
@@ -78,13 +117,15 @@ function BulletPool:Update(dt)
             table.remove(self.active, i)
         else
             local pos = b.rt.anchoredPosition
+            b.previousX, b.previousY = pos.x, pos.y
             local newY = pos.y + b.vy * dt
-            if newY > SCREEN_TOP_Y or newY < -SCREEN_TOP_Y then
+            local newX = pos.x + (b.vx or 0) * dt
+            if newY > self.topY or newY < -60 or math.abs(newX) > SCREEN_SIDE_X then
                 b.go:SetActive(false)
                 table.insert(self.freeList, b.go)
                 table.remove(self.active, i)
             else
-                b.rt.anchoredPosition = Vector2(pos.x, newY)
+                b.rt.anchoredPosition = Vector2(newX, newY)
                 i = i + 1
             end
         end
