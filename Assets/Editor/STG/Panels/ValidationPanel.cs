@@ -112,6 +112,16 @@ public class ValidationPanel : IStgPanel
         // 必填字段
         if (string.IsNullOrEmpty(m.levelId)) issues.Add(new Issue { Severity = Severity.Error, Message = "levelId 未填写" });
 
+        var playerRules = m.playerRules ?? new StgPlayerBattleRules();
+        if (!playerRules.useLegacyInitialWingman && playerRules.initialWingman < 0)
+            issues.Add(new Issue { Severity = Severity.Error, Message = $"战机规则 initialWingman={playerRules.initialWingman} 不能小于0" });
+        if (!playerRules.useLegacyInitialWingman && playerRules.initialWingman > 24)
+            issues.Add(new Issue { Severity = Severity.Warning, Message = "初始普通僚机超过逻辑上限24，运行时会截断（含指挥英雄增援）" });
+        if (float.IsNaN(playerRules.heroArmorMultiplier) || float.IsInfinity(playerRules.heroArmorMultiplier) || playerRules.heroArmorMultiplier <= 0f)
+            issues.Add(new Issue { Severity = Severity.Error, Message = $"英雄装甲倍率必须大于0，当前为 {playerRules.heroArmorMultiplier}" });
+        if (float.IsNaN(playerRules.heroSkillCooldownMultiplier) || float.IsInfinity(playerRules.heroSkillCooldownMultiplier) || playerRules.heroSkillCooldownMultiplier <= 0f)
+            issues.Add(new Issue { Severity = Severity.Error, Message = $"英雄技能冷却倍率必须大于0，当前为 {playerRules.heroSkillCooldownMultiplier}" });
+
         // 波次模板引用
         foreach (var t in m.enemyWaveTemplates)
         {

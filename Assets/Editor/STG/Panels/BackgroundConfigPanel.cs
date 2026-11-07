@@ -149,8 +149,47 @@ public class BackgroundConfigPanel : IStgPanel
             m_Context.MarkDirty();
         })
         { text = "新建随机散布层" };
+        var applyDesertPresetButton = new Button(() =>
+        {
+            if (layers.Count > 0 && !EditorUtility.DisplayDialog(
+                "应用荒漠空战预设",
+                "这会替换当前关卡的全部背景层配置。当前配置已保存的内容不会自动保留，确定继续吗？",
+                "替换",
+                "取消"))
+            {
+                return;
+            }
+
+            layers.Clear();
+            layers.AddRange(CreateDesertAirRaidPreset());
+            listView.Rebuild();
+            detailHost.Clear();
+            m_Context.MarkDirty();
+        })
+        { text = "应用荒漠空战预设" };
         toolbar.Add(addParallaxButton);
         toolbar.Add(addScatterButton);
+        toolbar.Add(applyDesertPresetButton);
+        toolbar.Add(new Button(() =>
+        {
+            if (layers.Count > 0 && !EditorUtility.DisplayDialog("应用太空数字门预设",
+                "替换背景层为深空星云和独立视差星点？波次、数字门、Boss 配置会保留。", "替换", "取消")) return;
+            layers.Clear();
+            layers.AddRange(CreateSpacePreset());
+            listView.Rebuild();
+            detailHost.Clear();
+            m_Context.MarkDirty();
+        }) { text = "应用太空数字门预设" });
+        toolbar.Add(new Button(() =>
+        {
+            if (layers.Count > 0 && !EditorUtility.DisplayDialog("应用海域突袭预设",
+                "替换当前关卡的背景层为海面、岛礁军舰、薄云三层？", "替换", "取消")) return;
+            layers.Clear();
+            layers.AddRange(CreateSeaRaidPreset());
+            listView.Rebuild();
+            detailHost.Clear();
+            m_Context.MarkDirty();
+        }) { text = "应用海域突袭预设" });
         box.Add(toolbar);
 
         split.Add(listView);
@@ -158,6 +197,82 @@ public class BackgroundConfigPanel : IStgPanel
         box.Add(split);
 
         return box;
+    }
+
+    // 与 Resources/STG/Levels/1001.json 保持同一套主题数据。
+    // 这里仅负责生成编辑器模型，运行时仍只消费导出的 backgroundLayers。
+    // 使用去掉地平线、上下接缝处理过的竖卷轴素材；地面和薄云独立滚动。
+    static List<StgBackgroundLayer> CreateDesertAirRaidPreset()
+    {
+        return new List<StgBackgroundLayer>
+        {
+            new StgBackgroundLayer
+            {
+                layerId = "desert_ground",
+                layerName = "荒漠地面·竖向无缝",
+                layerType = "parallax",
+                orderInLayer = 0,
+                speedCoefficient = 0.65f,
+                useTileLoop = true,
+                tileSpritePaths = new List<string> { "Assets/Main/Sprites/STG/DesertScroll/desert_ground_loop.png" }
+            },
+            new StgBackgroundLayer
+            {
+                layerId = "cloud_overlay",
+                layerName = "高空薄云·边缘视差",
+                layerType = "parallax",
+                orderInLayer = 1,
+                speedCoefficient = 0.9f,
+                useTileLoop = true,
+                tileSpritePaths = new List<string> { "Assets/Main/Sprites/STG/DesertScroll/cloud_overlay_loop.png" }
+            }
+        };
+    }
+
+    static List<StgBackgroundLayer> CreateSpacePreset()
+    {
+        const string root = "Assets/Main/Sprites/STG/SpaceRaid/";
+        return new List<StgBackgroundLayer>
+        {
+            new StgBackgroundLayer
+            {
+                layerId = "space_nebula", layerName = "深空·远景星云", orderInLayer = 0,
+                speedCoefficient = 0.12f, useTileLoop = true,
+                tileSpritePaths = new List<string> { root + "nebula_loop.png" }
+            },
+            new StgBackgroundLayer
+            {
+                layerId = "space_stars", layerName = "近景·独立视差星点", orderInLayer = 1,
+                speedCoefficient = 0.55f, useTileLoop = true,
+                tileSpritePaths = new List<string> { root + "stars_loop.png" }
+            }
+        };
+    }
+
+    static List<StgBackgroundLayer> CreateSeaRaidPreset()
+    {
+        const string root = "Assets/Main/Sprites/STG/SeaRaid/";
+        return new List<StgBackgroundLayer>
+        {
+            new StgBackgroundLayer
+            {
+                layerId = "ocean", layerName = "深蓝海面·俯视卷轴", orderInLayer = 0,
+                speedCoefficient = 0.48f, useTileLoop = true,
+                tileSpritePaths = new List<string> { root + "ocean_loop.png" }
+            },
+            new StgBackgroundLayer
+            {
+                layerId = "shore", layerName = "两侧岛礁与军舰·交替段", orderInLayer = 1,
+                speedCoefficient = 0.48f, useTileLoop = true,
+                tileSpritePaths = new List<string> { root + "shore_01.png", root + "shore_02.png" }
+            },
+            new StgBackgroundLayer
+            {
+                layerId = "cloud_overlay", layerName = "高空薄云·边缘视差", orderInLayer = 2,
+                speedCoefficient = 0.8f, useTileLoop = true,
+                tileSpritePaths = new List<string> { root + "haze_loop.png" }
+            }
+        };
     }
 
     static string LayerRowTitle(StgBackgroundLayer layer)

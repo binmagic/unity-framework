@@ -34,6 +34,7 @@ public static class StgLevelJsonIO
         root["seed"] = model.seed;
 
         root["basicScroll"] = BasicScrollToJson(model.basicScroll);
+        root["playerRules"] = PlayerBattleRulesToJson(model.playerRules);
         root["backgroundLayers"] = ListToJson(model.backgroundLayers, BackgroundLayerToJson);
         root["objectPool"] = ObjectPoolToJson(model.objectPool);
 
@@ -66,6 +67,16 @@ public static class StgLevelJsonIO
         j["speedMultiplier"] = s.speedMultiplier;
         j["rampUpTime"] = s.rampUpTime;
         j["rampUpTargetSpeed"] = s.rampUpTargetSpeed;
+        return j;
+    }
+
+    static JsonData PlayerBattleRulesToJson(StgPlayerBattleRules r)
+    {
+        r = r ?? new StgPlayerBattleRules();
+        var j = new JsonData();
+        if (!r.useLegacyInitialWingman) j["initialWingman"] = r.initialWingman;
+        j["heroArmorMultiplier"] = r.heroArmorMultiplier;
+        j["heroSkillCooldownMultiplier"] = r.heroSkillCooldownMultiplier;
         return j;
     }
 
@@ -439,6 +450,7 @@ public static class StgLevelJsonIO
         model.seed = GetInt(root, "seed", 0);
 
         if (root.ContainsKey("basicScroll")) model.basicScroll = BasicScrollFromJson(root["basicScroll"]);
+        if (root.ContainsKey("playerRules")) model.playerRules = PlayerBattleRulesFromJson(root["playerRules"]);
         if (root.ContainsKey("backgroundLayers")) model.backgroundLayers = FromArray(root["backgroundLayers"], BackgroundLayerFromJson);
         if (root.ContainsKey("objectPool")) model.objectPool = ObjectPoolFromJson(root["objectPool"]);
 
@@ -503,6 +515,16 @@ public static class StgLevelJsonIO
         s.rampUpTime = GetFloat(j, "rampUpTime", 0f);
         s.rampUpTargetSpeed = GetFloat(j, "rampUpTargetSpeed", 300f);
         return s;
+    }
+
+    static StgPlayerBattleRules PlayerBattleRulesFromJson(JsonData j)
+    {
+        var r = new StgPlayerBattleRules();
+        r.useLegacyInitialWingman = !j.ContainsKey("initialWingman");
+        r.initialWingman = GetInt(j, "initialWingman", 0);
+        r.heroArmorMultiplier = GetFloat(j, "heroArmorMultiplier", 1f);
+        r.heroSkillCooldownMultiplier = GetFloat(j, "heroSkillCooldownMultiplier", 1f);
+        return r;
     }
 
     static StgBackgroundLayer BackgroundLayerFromJson(JsonData j)

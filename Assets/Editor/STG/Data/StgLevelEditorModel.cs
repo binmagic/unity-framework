@@ -13,6 +13,8 @@ public class StgLevelEditorModel
     public int seed = 0;
 
     public StgBasicScroll basicScroll = new StgBasicScroll();
+    // 关卡对玩家战机的数值规则；不指定英雄，战前阵容仍由玩家选择。
+    public StgPlayerBattleRules playerRules = new StgPlayerBattleRules();
     public List<StgBackgroundLayer> backgroundLayers = new List<StgBackgroundLayer>();
     public StgObjectPoolConfig objectPool = new StgObjectPoolConfig();
 
@@ -25,6 +27,15 @@ public class StgLevelEditorModel
     public List<StgTrapConfig> trapConfigs = new List<StgTrapConfig>();
 
     public StgTimeline timeline = new StgTimeline();
+}
+
+public class StgPlayerBattleRules
+{
+    // 旧 JSON 缺少 initialWingman 时保留旧表回退，避免打开再保存改变关卡行为。
+    public bool useLegacyInitialWingman = true;
+    public int initialWingman = 0;
+    public float heroArmorMultiplier = 1.0f;
+    public float heroSkillCooldownMultiplier = 1.0f;
 }
 
 public class StgBasicScroll

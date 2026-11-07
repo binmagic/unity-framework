@@ -13,6 +13,10 @@ public class LevelInfoPanel : IStgPanel
     TextField m_DescriptionField;
     IntegerField m_SeedField;
     FloatField m_DurationField;
+    IntegerField m_InitialWingmanField;
+    Toggle m_UseLegacyInitialWingmanField;
+    FloatField m_HeroArmorMultiplierField;
+    FloatField m_HeroSkillCooldownMultiplierField;
 
     public LevelInfoPanel(StgLevelEditorContext context)
     {
@@ -82,6 +86,30 @@ public class LevelInfoPanel : IStgPanel
         hint.style.whiteSpace = WhiteSpace.Normal;
         Root.Add(hint);
 
+        var rulesBox = StgUiUtil.SectionBox("战机规则（不固定英雄，玩家仍可自由选择阵容）");
+        m_UseLegacyInitialWingmanField = new Toggle("沿用旧表初始僚机");
+        m_UseLegacyInitialWingmanField.RegisterValueChangedCallback(evt =>
+        {
+            m_Context.Model.playerRules.useLegacyInitialWingman = evt.newValue;
+            m_InitialWingmanField.SetEnabled(!evt.newValue);
+            m_Context.MarkDirty();
+        });
+        rulesBox.Add(m_UseLegacyInitialWingmanField);
+        m_InitialWingmanField = new IntegerField("初始普通僚机");
+        m_InitialWingmanField.RegisterValueChangedCallback(evt => { m_Context.Model.playerRules.initialWingman = evt.newValue; m_Context.MarkDirty(); });
+        rulesBox.Add(m_InitialWingmanField);
+        m_HeroArmorMultiplierField = new FloatField("英雄装甲倍率");
+        m_HeroArmorMultiplierField.RegisterValueChangedCallback(evt => { m_Context.Model.playerRules.heroArmorMultiplier = evt.newValue; m_Context.MarkDirty(); });
+        rulesBox.Add(m_HeroArmorMultiplierField);
+        m_HeroSkillCooldownMultiplierField = new FloatField("英雄技能冷却倍率");
+        m_HeroSkillCooldownMultiplierField.RegisterValueChangedCallback(evt => { m_Context.Model.playerRules.heroSkillCooldownMultiplier = evt.newValue; m_Context.MarkDirty(); });
+        rulesBox.Add(m_HeroSkillCooldownMultiplierField);
+        var rulesHint = new Label("普通僚机不占英雄槽位，指挥英雄的额外增援会叠加，逻辑数量最多24。装甲倍率按四舍五入取整且至少1；冷却倍率小于1时技能更快。仅作用于本局，不改变英雄养成。保存JSON后重新进入关卡生效。");
+        rulesHint.style.color = new Color(0.6f, 0.6f, 0.6f);
+        rulesHint.style.whiteSpace = WhiteSpace.Normal;
+        rulesBox.Add(rulesHint);
+        Root.Add(rulesBox);
+
         RefreshFromModel();
     }
 
@@ -93,6 +121,12 @@ public class LevelInfoPanel : IStgPanel
         m_DescriptionField.SetValueWithoutNotify(m.description);
         m_SeedField.SetValueWithoutNotify(m.seed);
         m_DurationField.SetValueWithoutNotify(m.timeline.duration);
+        var rules = m.playerRules ?? (m.playerRules = new StgPlayerBattleRules());
+        m_UseLegacyInitialWingmanField.SetValueWithoutNotify(rules.useLegacyInitialWingman);
+        m_InitialWingmanField.SetValueWithoutNotify(rules.initialWingman);
+        m_InitialWingmanField.SetEnabled(!rules.useLegacyInitialWingman);
+        m_HeroArmorMultiplierField.SetValueWithoutNotify(rules.heroArmorMultiplier);
+        m_HeroSkillCooldownMultiplierField.SetValueWithoutNotify(rules.heroSkillCooldownMultiplier);
     }
 
     public void Rebuild()
