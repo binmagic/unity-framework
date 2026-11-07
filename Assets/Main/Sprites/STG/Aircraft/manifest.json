@@ -1,0 +1,11 @@
+{
+  "source": "Existing UiSource/\u96f7\u9706\u6218\u673a + PlaneBattle atlases",
+  "method": "Crop single frames; assemble boss hull and two pods; exclude projectile cells",
+  "assets": [
+    "player.png",
+    "wingman.png",
+    "enemy_scout.png",
+    "enemy_interceptor.png",
+    "boss.png"
+  ]
+}

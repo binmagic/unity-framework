@@ -1,0 +1,12 @@
+{
+  "source": "Assets/Main/Sprites/UIShipFortress/bg_ground.png",
+  "method": "Horizon-free terrain crops, feathered overlaps, periodic vertical seam",
+  "size": [
+    750,
+    2048
+  ],
+  "assets": [
+    "desert_ground_loop.png",
+    "cloud_overlay_loop.png"
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "source": "UiSource/雷霆战机/map (existing local source art)",
+  "size": [
+    750,
+    2048
+  ],
+  "layers": [
+    "ocean_loop.png",
+    "shore_01.png",
+    "shore_02.png",
+    "haze_loop.png"
+  ],
+  "pieces": [
+    "island.png",
+    "reef.png",
+    "carrier.png"
+  ],
+  "layouts": [
+    [
+      [
+        "island",
+        -48,
+        180,
+        false
+      ],
+      [
+        "reef",
+        653,
+        620,
+        true
+      ],
+      [
+        "carrier",
+        584,
+        960,
+        false
+      ],
+      [
+        "island",
+        632,
+        1570,
+        true
+      ],
+      [
+        "reef",
+        -45,
+        1770,
+        false
+      ]
+    ],
+    [
+      [
+        "reef",
+        -25,
+        250,
+        false
+      ],
+      [
+        "island",
+        625,
+        470,
+        true
+      ],
+      [
+        "carrier",
+        -150,
+        1060,
+        true
+      ],
+      [
+        "island",
+        -60,
+        1550,
+        false
+      ]
+    ]
+  ],
+  "note": "Ocean and shoreline share scroll speed; clouds are a separate layer."
+}

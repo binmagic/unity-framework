@@ -1,0 +1,23 @@
+{
+  "sourceRoot": "D:\\unitytest\\ShipImg\\SL48 1118p 28.46MB 飞机大战",
+  "layers": [
+    "nebula_loop.png",
+    "stars_loop.png"
+  ],
+  "atlas": "全民飞机大战/image/img_plane_main.png",
+  "crops": {
+    "player_blue.png": [
+      137,
+      0,
+      264,
+      105
+    ],
+    "wingman_orange.png": [
+      273,
+      0,
+      390,
+      112
+    ]
+  },
+  "method": "Reuse original local art. Crop single frames; feather vertical nebula seam; stars independent."
+}

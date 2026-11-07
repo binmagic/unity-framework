@@ -1,0 +1,10 @@
+{
+  "source": "UiSource/雷霆战机/effect",
+  "method": "single frame extraction; energy_bolt is a neutral alpha mask of PlaneBattle_bullet.png",
+  "assets": [
+    "explosion.png",
+    "impact.png",
+    "shield_hit.png",
+    "energy_bolt.png"
+  ]
+}
