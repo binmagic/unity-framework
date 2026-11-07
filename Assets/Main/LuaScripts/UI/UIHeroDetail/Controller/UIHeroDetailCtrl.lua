@@ -3,6 +3,7 @@
 --- 组装详情页展示数据：称号/战力/技能格式/军衔预览/立绘路径/拥有态
 ---@class UIHeroDetailCtrl : UIBaseCtrl
 local UIHeroDetailCtrl = BaseClass("UIHeroDetailCtrl", UIBaseCtrl)
+local HeroAircraftCatalog = require "DataCenter.Hero.HeroAircraftCatalog"
 
 local RARITY_NAME = {
     [1] = "普通",
@@ -93,9 +94,12 @@ function UIHeroDetailCtrl:GetDetailData(heroId)
         skillLevel      = skillLevel,
         skillMaxLevel   = skillMax,
         skillLevelText  = skillLevel .. "/" .. skillMax .. "级",
+        -- hero_portrait 是竖版全身立绘，适合详情舞台；avatar 是列表小头像。
         portrait        = cfg.portrait,
+        stagePortrait   = string.format("Assets/Main/Sprites/Hero/Hero_portrait_%s.png", tostring(cfg.id)),
         card            = cfg.card,
         avatar          = cfg.avatar,
+        aircraft        = HeroAircraftCatalog.Get(cfg.id),
         rankDurability  = tonumber(cfg.rank_durability) or 0,
         rankFirepower   = tonumber(cfg.rank_firepower) or 0,
         rankArmor       = tonumber(cfg.rank_armor) or 0,
@@ -124,6 +128,21 @@ function UIHeroDetailCtrl:SetDeployed(heroId)
     return mgr:SetDeployedHero(heroId)
 end
 
+--- 保持进入详情时的筛选顺序；其他入口未传顺序时使用完整图鉴。
+function UIHeroDetailCtrl:GetBrowseHeroIds(heroId, requestedIds)
+    local mgr = DataCenter.HeroDataManager
+    local result, seen, containsCurrent = {}, {}, false
+    for _, id in ipairs(requestedIds or {}) do
+        if not seen[id] and mgr:GetHeroConfig(id) ~= nil then
+            table.insert(result, id)
+            seen[id] = true
+            if id == heroId then containsCurrent = true end
+        end
+    end
+    if containsCurrent then return result end
+    return mgr:GetAllHeroIds()
+end
+
 function UIHeroDetailCtrl:TryUpgrade(heroId)
     local mgr = DataCenter.HeroDataManager
     if mgr == nil then return false, "HeroDataManager 未初始化" end
@@ -146,7 +165,7 @@ function UIHeroDetailCtrl:GetSkillRankBonusList(heroId)
         return {}
     end
 
-    local star = tonumber(cfg.star) or 0
+    local star = tonumber(mgr:GetHeroStar(heroId)) or 0
     local owned = mgr:IsHeroOwned(heroId)
     local result = {}
     local index = 0

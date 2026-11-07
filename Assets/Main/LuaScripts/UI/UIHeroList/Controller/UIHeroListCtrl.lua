@@ -103,7 +103,7 @@ end
 function UIHeroListCtrl:_BuildCardList(mgr, faction)
     local deployedId = mgr:GetDeployedHeroId()
     local heroIds = mgr:GetHeroIdsByFaction(faction)
-    if heroIds == nil or #heroIds == 0 then
+    if heroIds == nil then
         heroIds = mgr:GetAllHeroIds()
     end
     local result = {}
@@ -151,6 +151,9 @@ function UIHeroListCtrl:_BuildCardList(mgr, faction)
     end
 
     table.sort(result, function(a, b)
+        if a.isDeployed ~= b.isDeployed then
+            return a.isDeployed
+        end
         if a.owned ~= b.owned then
             return a.owned
         end
@@ -163,8 +166,10 @@ function UIHeroListCtrl:_BuildCardList(mgr, faction)
     return result
 end
 
-function UIHeroListCtrl:OpenHeroDetail(heroId)
-    UIManager:GetInstance():OpenWindow(UIWindowNames.UIHeroDetail, { anim = true }, heroId)
+function UIHeroListCtrl:OpenHeroDetail(heroId, cards)
+    local heroIds = {}
+    for _, card in ipairs(cards or {}) do table.insert(heroIds, card.id) end
+    UIManager:GetInstance():OpenWindow(UIWindowNames.UIHeroDetail, { anim = true }, heroId, heroIds)
 end
 
 return UIHeroListCtrl

@@ -20,8 +20,9 @@ local function ColorOf(rgba)
 end
 
 local COLOR_WHITE     = CS.UnityEngine.Color(1, 1, 1, 1)
-local COLOR_POWER     = CS.UnityEngine.Color(0.95, 0.78, 0.25, 1)
-local COLOR_TAB_IDLE  = CS.UnityEngine.Color(0.08, 0.14, 0.24, 1)
+local COLOR_POWER     = CS.UnityEngine.Color(1.00, 0.72, 0.08, 1)
+local COLOR_TAB_IDLE  = CS.UnityEngine.Color(0.12, 0.25, 0.48, 1)
+local COLOR_TAB_TEXT_IDLE = CS.UnityEngine.Color(0.72, 0.82, 0.95, 1)
 local COLOR_TAB_SEL   = CS.UnityEngine.Color(0.22, 0.40, 0.62, 1)
 local COLOR_LOCKED    = CS.UnityEngine.Color(0.55, 0.55, 0.6, 1)
 local COLOR_STAR_ON   = CS.UnityEngine.Color(1, 0.85, 0.3, 1)
@@ -30,14 +31,14 @@ local COLOR_GROW_CUR  = CS.UnityEngine.Color(0.95, 0.55, 0.25, 1)
 local COLOR_GROW_TGT  = CS.UnityEngine.Color(0.35, 0.90, 0.45, 1)
 local COLOR_TAG_BG    = CS.UnityEngine.Color(0.95, 0.72, 0.20, 1)
 local COLOR_DMG_BG    = CS.UnityEngine.Color(0.72, 0.40, 0.90, 1)
-local COLOR_PANEL_BG  = CS.UnityEngine.Color(0.10, 0.16, 0.28, 0.94)
-local COLOR_PORTRAIT  = CS.UnityEngine.Color(0.14, 0.28, 0.48, 1)
-local COLOR_LEVEL_BAR = CS.UnityEngine.Color(0.36, 0.52, 0.72, 1)
-local COLOR_STATS_BG  = CS.UnityEngine.Color(0.55, 0.64, 0.76, 0.95)
-local COLOR_STAT_LBL  = CS.UnityEngine.Color(0.20, 0.28, 0.40, 1)
-local COLOR_STAT_VAL  = CS.UnityEngine.Color(0.08, 0.12, 0.20, 1)
-local COLOR_SUB       = CS.UnityEngine.Color(0.65, 0.75, 0.88, 1)
-local COLOR_SHIP_PLATE= CS.UnityEngine.Color(0.25, 0.40, 0.62, 1)
+local COLOR_PANEL_BG  = CS.UnityEngine.Color(0.60, 0.72, 0.86, 0.96)
+local COLOR_PORTRAIT  = CS.UnityEngine.Color(0.20, 0.66, 0.90, 1)
+local COLOR_LEVEL_BAR = CS.UnityEngine.Color(0.49, 0.63, 0.82, 1)
+local COLOR_STATS_BG  = CS.UnityEngine.Color(0.62, 0.73, 0.87, 0.96)
+local COLOR_STAT_LBL  = CS.UnityEngine.Color(0.16, 0.29, 0.47, 1)
+local COLOR_STAT_VAL  = CS.UnityEngine.Color(0.96, 0.98, 1.00, 1)
+local COLOR_SUB       = CS.UnityEngine.Color(0.20, 0.36, 0.56, 1)
+local COLOR_SHIP_PLATE= CS.UnityEngine.Color(0.25, 0.49, 0.74, 1)
 local COLOR_BTN_GREEN = CS.UnityEngine.Color(0.22, 0.68, 0.35, 1)
 local COLOR_BTN_BLUE  = CS.UnityEngine.Color(0.25, 0.45, 0.72, 1)
 local COLOR_RANK_TIP  = CS.UnityEngine.Color(0.90, 0.25, 0.25, 1)
@@ -64,10 +65,10 @@ local SKILL_ICONS = {
 }
 -- 稀有度主题：传说橙金 / 卓越及以下蓝
 local THEME = {
-    [1] = { portrait = {0.12,0.22,0.32,1}, panel = {0.10,0.16,0.28,0.94}, accent = {0.45,0.75,0.50,1} },
-    [2] = { portrait = {0.12,0.24,0.40,1}, panel = {0.10,0.16,0.28,0.94}, accent = {0.30,0.55,0.85,1} },
-    [3] = { portrait = {0.14,0.28,0.48,1}, panel = {0.10,0.16,0.28,0.94}, accent = {0.45,0.40,0.85,1} },
-    [4] = { portrait = {0.42,0.24,0.08,1}, panel = {0.28,0.16,0.06,0.94}, accent = {0.95,0.70,0.20,1} },
+    [1] = { portrait = {0.18,0.57,0.78,1}, panel = {0.59,0.71,0.85,0.96}, shell = {0.58,0.72,0.88,1}, accent = {0.35,0.75,0.50,1} },
+    [2] = { portrait = {0.16,0.63,0.88,1}, panel = {0.60,0.73,0.88,0.96}, shell = {0.60,0.75,0.91,1}, accent = {0.30,0.55,0.85,1} },
+    [3] = { portrait = {0.17,0.60,0.86,1}, panel = {0.62,0.73,0.88,0.96}, shell = {0.58,0.72,0.89,1}, accent = {0.45,0.40,0.85,1} },
+    [4] = { portrait = {0.94,0.60,0.07,1}, panel = {0.86,0.72,0.47,0.96}, shell = {0.90,0.66,0.25,1}, accent = {1.00,0.78,0.16,1} },
 }
 
 local TABS = {
@@ -77,10 +78,10 @@ local TABS = {
 }
 
 local SKILL_SLOT_LOCAL_POS = {
-    [1] = CS.UnityEngine.Vector3(-210, 250, 0),
-    [2] = CS.UnityEngine.Vector3(210, 250, 0),
-    [3] = CS.UnityEngine.Vector3(-230, 80, 0),
-    [4] = CS.UnityEngine.Vector3(230, 80, 0),
+    [1] = CS.UnityEngine.Vector3(-265, 140, 0),
+    [2] = CS.UnityEngine.Vector3(265, 140, 0),
+    [3] = CS.UnityEngine.Vector3(-265, -60, 0),
+    [4] = CS.UnityEngine.Vector3(265, -60, 0),
 }
 
 local GameObject    = CS.UnityEngine.GameObject
@@ -88,6 +89,29 @@ local RectTransform = typeof(CS.UnityEngine.RectTransform)
 local UnityImage    = typeof(CS.UnityEngine.UI.Image)
 local Vector2       = CS.UnityEngine.Vector2
 local TMPAlign      = CS.TMPro.TextAlignmentOptions
+
+-- 详情 prefab 最初按横屏测试尺寸搭建；手机竖屏下，技能/军衔页的行节点只有 100 宽，
+-- 长文案会逐字换行。统一把这些信息行重排为参考图中的横向阅读卡片。
+local function SetTopRect(tf, x, y, w, h)
+    if tf == nil then return end
+    local rt = tf:GetComponent(RectTransform)
+    if rt == nil then return end
+    rt.anchorMin = Vector2(0.5, 1)
+    rt.anchorMax = Vector2(0.5, 1)
+    rt.pivot = Vector2(0.5, 0.5)
+    rt.anchoredPosition = Vector2(x, y)
+    rt.sizeDelta = Vector2(w, h)
+end
+
+local function SetTextRect(tf, x, y, w, h, align)
+    SetTopRect(tf, x, y, w, h)
+    if tf == nil then return end
+    local tmp = tf:GetComponent(typeof(CS.NewTMPText))
+    if tmp ~= nil then
+        tmp.enableWordWrapping = true
+        if align ~= nil then tmp.alignment = align end
+    end
+end
 
 --- 运行时补一个 Image 子节点（不新建 TMP，避开 NewTMPText 坑）
 local function EnsureImageChild(parent, name, w, h, ax, ay)
@@ -113,6 +137,53 @@ local function EnsureImageChild(parent, name, w, h, ax, ay)
         rt.anchoredPosition = Vector2(ax or 0, ay or 0)
     end
     return go
+end
+
+-- 英雄详情页使用运行时纯色精灵搭建科技舞台，避免把海图整张图片当成人物背景。
+-- 这些 1x1 精灵只服务于当前 Canvas，不会修改项目原有美术资源。
+local function EnsureColorLayer(parent, name, x, y, w, h, color, sibling)
+    if parent == nil then return nil end
+    local go = parent:Find(name)
+    if go == nil then
+        go = GameObject(name, RectTransform).transform
+        go:SetParent(parent, false)
+        go.gameObject:AddComponent(UnityImage)
+    end
+    local rt = go:GetComponent(RectTransform)
+    if rt ~= nil then
+        rt.anchorMin = Vector2(0.5, 1)
+        rt.anchorMax = Vector2(0.5, 1)
+        rt.pivot = Vector2(0.5, 1)
+        rt.anchoredPosition = Vector2(x, y)
+        rt.sizeDelta = Vector2(w, h)
+    end
+    local img = go:GetComponent(UnityImage)
+    if img ~= nil then
+        img.sprite = nil
+        img.color = color
+        img.raycastTarget = false
+    end
+    if sibling ~= nil then go:SetSiblingIndex(sibling) end
+    return go
+end
+
+local function StyleText(tf, size, color)
+    if tf == nil then return end
+    local tmp = tf:GetComponent(typeof(CS.NewTMPText))
+    if tmp == nil then return end
+    tmp.enableAutoSizing = false
+    tmp.fontSize = size
+    tmp.outlineWidth = 0
+    tmp.color = color or COLOR_STAT_LBL
+end
+
+-- 手动坐标布局必须关闭旧 prefab 的 LayoutGroup，否则下一帧会重新覆盖这些坐标。
+local function DisableAutoLayout(tf)
+    if tf == nil then return end
+    local group = tf:GetComponent(typeof(CS.UnityEngine.UI.LayoutGroup))
+    if group ~= nil then group.enabled = false end
+    local fitter = tf:GetComponent(typeof(CS.UnityEngine.UI.ContentSizeFitter))
+    if fitter ~= nil then fitter.enabled = false end
 end
 
 --- 百分比描绿（截图：20.00%）
@@ -279,7 +350,7 @@ function UIHeroDetailView:OnCreate()
         self.promoteCosts[i] = cost
     end
 
-    -- 出战按钮：截图详情页没有出战钮，但本项目需要；放在升级钮右侧，弱化视觉
+    -- 参考图的详情页没有单独的出战按钮；出战状态仍由列表卡的“出战中”标识呈现。
     self.btnDeploy     = SafeAddComponent(self, UIButton,            "Panel/BtnDeploy")
     self.txtBtnDeploy  = SafeAddComponent(self, UITextMeshProUGUIEx, "Panel/BtnDeploy/TxtLabel")
     if self.btnDeploy then
@@ -308,6 +379,103 @@ function UIHeroDetailView:OnCreate()
     self:_EnsureCostIcons()
     self:_EnsureRankRowStars()
     self:_ApplyStaticStyle()
+    self:_EnsureHeroStage()
+end
+
+--- 参考图的主视觉是一整页人物舞台，不是人物叠在一张海图卡片上。
+--- 独立创建背景和立绘节点，旧 PortraitBg 只保留在 prefab 中作兼容回退。
+function UIHeroDetailView:_EnsureHeroStage()
+    local panel = self.transform:Find("Panel")
+    if panel == nil then return end
+    -- 旧版运行时曾创建一个矩形 Glow 层，它会压暗人物下半身；新舞台改为整页渐变后清除它。
+    local legacyGlow = panel:Find("HeroStageGlow")
+    if legacyGlow ~= nil then CS.UnityEngine.Object.Destroy(legacyGlow.gameObject) end
+    self.heroStageBackdrop = EnsureColorLayer(panel, "HeroStageBackdrop", 0, -800, 920, 1625, COLOR_WHITE, 0)
+    local bgRt = self.heroStageBackdrop:GetComponent(RectTransform)
+    bgRt.anchorMin = Vector2(0, 0)
+    bgRt.anchorMax = Vector2(1, 1)
+    bgRt.offsetMin = Vector2(0, 0)
+    bgRt.offsetMax = Vector2(0, 0)
+    local viewport = panel:Find("HeroStageViewport")
+    if viewport == nil then
+        viewport = GameObject("HeroStageViewport", RectTransform).transform
+        viewport:SetParent(panel, false)
+        viewport.gameObject:AddComponent(typeof(CS.UnityEngine.UI.RectMask2D))
+    end
+    self.heroStageViewport = viewport
+    viewport:SetSiblingIndex(1)
+
+    local stagePortrait = viewport:Find("HeroStagePortrait") or panel:Find("HeroStagePortrait")
+    if stagePortrait == nil then
+        local go = GameObject("HeroStagePortrait", RectTransform)
+        go.transform:SetParent(panel, false)
+        go:AddComponent(UnityImage)
+        stagePortrait = go.transform
+    end
+    stagePortrait:SetParent(viewport, false)
+    local rt = stagePortrait:GetComponent(RectTransform)
+    if rt ~= nil then
+        rt.anchorMin = Vector2(0.5, 1)
+        rt.anchorMax = Vector2(0.5, 1)
+        rt.pivot = Vector2(0.5, 0.5)
+        rt.anchoredPosition = Vector2(0, -342)
+        rt.sizeDelta = Vector2(500, 650)
+    end
+    local img = stagePortrait:GetComponent(UnityImage)
+    if img ~= nil then
+        img.preserveAspect = true
+        img.raycastTarget = false
+        img.color = COLOR_WHITE
+    end
+    if self.heroStagePortrait == nil then
+        self.heroStagePortrait = self:AddComponent(UIImage, stagePortrait.gameObject)
+    end
+
+    local portraitBg = self.transform:Find("Panel/PortraitBg")
+    if portraitBg ~= nil then portraitBg.gameObject:SetActive(false) end
+end
+
+function UIHeroDetailView:_RefreshHeroStage(data)
+    if data == nil then return end
+    self:_EnsureHeroStage()
+    local rarity = tonumber(data.rarity) or 3
+    local bgImg = self.heroStageBackdrop ~= nil and self.heroStageBackdrop:GetComponent(UnityImage) or nil
+    if bgImg ~= nil then
+        local gold = rarity >= 4
+        if self._stageGold ~= gold or self._stageTexture == nil then
+            if self._stageSprite ~= nil then CS.UnityEngine.Object.Destroy(self._stageSprite) end
+            if self._stageTexture ~= nil then CS.UnityEngine.Object.Destroy(self._stageTexture) end
+            local tex = CS.UnityEngine.Texture2D(64, 128)
+            tex.wrapMode = CS.UnityEngine.TextureWrapMode.Clamp
+            for y = 0, 127 do
+                local t = y / 127
+                local top = gold and ColorOf({0.46,0.28,0.08,1}) or ColorOf({0.16,0.27,0.51,1})
+                local mid = gold and ColorOf({0.90,0.66,0.24,1}) or ColorOf({0.12,0.67,0.87,1})
+                local bottom = gold and ColorOf({0.87,0.79,0.62,1}) or ColorOf({0.71,0.78,0.88,1})
+                local c = t < 0.40 and bottom or CS.UnityEngine.Color.Lerp(mid, top, (t - 0.40) / 0.60)
+                if t >= 0.34 and t < 0.46 then c = CS.UnityEngine.Color.Lerp(bottom, mid, (t - 0.34) / 0.12) end
+                for x = 0, 63 do
+                    local shade = 1 - math.abs(x / 63 - 0.5) * 0.10
+                    tex:SetPixel(x, y, CS.UnityEngine.Color(c.r * shade, c.g * shade, c.b * shade, 1))
+                end
+            end
+            tex:Apply()
+            self._stageTexture = tex
+            self._stageSprite = CS.UnityEngine.Sprite.Create(tex, CS.UnityEngine.Rect(0,0,64,128), Vector2(0.5,0.5), 100)
+            self._stageGold = gold
+        end
+        bgImg.sprite = self._stageSprite
+        bgImg.color = COLOR_WHITE
+    end
+    if self.heroStagePortrait ~= nil then
+        local stagePath = data.stagePortrait or data.portrait
+        if stagePath ~= nil and stagePath ~= "" then
+            self.heroStagePortrait:LoadSprite(stagePath)
+            self.heroStagePortrait:SetColor(COLOR_WHITE)
+        else
+            self.heroStagePortrait:SetColor(ColorOf(data.rarityColor))
+        end
+    end
 end
 
 --- 舰船条：船下星级行 + 右侧小船格（对齐属性页截图）
@@ -398,9 +566,7 @@ function UIHeroDetailView:_EnsureRankRowStars()
 end
 
 function UIHeroDetailView:_NavHero(dir)
-    local mgr = DataCenter.HeroDataManager
-    if mgr == nil then return end
-    local ids = mgr:GetAllHeroIds()
+    local ids = self.browseHeroIds
     if ids == nil or #ids == 0 then return end
     local cur = 1
     for i, id in ipairs(ids) do
@@ -411,7 +577,9 @@ function UIHeroDetailView:_NavHero(dir)
     if nextIndex > #ids then nextIndex = 1 end
     self.heroId = ids[nextIndex]
     self:_Refresh()
-    self:_SelectTab(self.curTabIndex or 1)
+    local tab = self.curTabIndex or 1
+    if tab == 3 and not self._owned then tab = 1 end
+    self:_SelectTab(tab)
 end
 
 function UIHeroDetailView:_BindSkillSlots()
@@ -448,7 +616,11 @@ function UIHeroDetailView:_ApplyRarityTheme(data)
     local portBg = self.transform:Find("Panel/PortraitBg")
     if portBg ~= nil then
         local img = portBg:GetComponent(typeof(CS.UnityEngine.UI.Image))
-        if img ~= nil then img.color = ColorOf(theme.portrait) end
+        if img ~= nil then
+            -- 参考中传说英雄使用整页金色背景，不再混入普通英雄的蓝色海面图。
+            img.enabled = (tonumber(data.rarity) or 0) < 4
+            img.color = ColorOf(theme.portrait)
+        end
     end
     local panels = {
         "Panel/Panel_Skill/SkillDetail",
@@ -563,24 +735,19 @@ function UIHeroDetailView:_ApplyStaticStyle()
     end
     if self.imgSkillTagBox ~= nil then self.imgSkillTagBox:SetColor(COLOR_TAG_BG) end
     if self.imgDmgTypeBox ~= nil then self.imgDmgTypeBox:SetColor(COLOR_DMG_BG) end
-
-    -- 底栏页签：选中浅蓝、未选深色
-    if self.tabImages ~= nil then
-        for i, img in ipairs(self.tabImages) do
-            if img ~= nil then
-                img:SetColor((self.curTabIndex == i) and COLOR_TAB_SEL or COLOR_TAB_IDLE)
-            end
-        end
-    end
 end
 
 function UIHeroDetailView:OnEnable()
+    -- 画布相机与层级统一由 UIBaseView/UIManager 管理，避免覆盖根 Overlay 的渲染模式。
     base.OnEnable(self)
     self:ApplyUserData()
 end
 
 function UIHeroDetailView:OnDestroy()
+    if self._stageSprite ~= nil then CS.UnityEngine.Object.Destroy(self._stageSprite) end
+    if self._stageTexture ~= nil then CS.UnityEngine.Object.Destroy(self._stageTexture) end
     self.heroId = nil
+    self.browseHeroIds = nil
     self.rankRows = nil
     self.growRows = nil
     self.stars = nil
@@ -593,7 +760,9 @@ function UIHeroDetailView:OnDestroy()
 end
 
 function UIHeroDetailView:ApplyUserData()
-    self.heroId = self:GetUserData()
+    local heroId, heroIds = self:GetUserData()
+    self.heroId = heroId
+    self.browseHeroIds = self.ctrl:GetBrowseHeroIds(heroId, heroIds)
     self:_Refresh()
     self:_SelectTab(1)
 end
@@ -607,6 +776,7 @@ function UIHeroDetailView:_Refresh()
     self._data = data
     self._owned = data.owned
     self:_ApplyRarityTheme(data)
+    self:_RefreshHeroStage(data)
 
     -- 顶部
     if self.txtRarity ~= nil then
@@ -621,7 +791,7 @@ function UIHeroDetailView:_Refresh()
     if self.txtHeroTitle ~= nil then self.txtHeroTitle:SetText(data.title) end
     -- 舰船位：有战舰立绘则 LoadSprite，不再色板
     if self.imgShip ~= nil then
-        local shipPath = SPR_SHIP
+        local shipPath = data.aircraft.sprite
         if shipPath ~= nil and shipPath ~= "" then
             self.imgShip:LoadSprite(shipPath)
             self.imgShip:SetColor(COLOR_WHITE)
@@ -630,6 +800,8 @@ function UIHeroDetailView:_Refresh()
         end
     end
     self:_RefreshShipStars(data)
+    local icon=self.transform:Find("Panel/ShipInfoBar/ImgShipItem/ImgShipItemIcon")
+    if icon ~= nil then icon.gameObject:SetActive(false) end
     if self.imgPortrait ~= nil then
         if data.portrait ~= nil and data.portrait ~= "" then
             self.imgPortrait:LoadSprite(data.portrait)
@@ -799,7 +971,7 @@ function UIHeroDetailView:_RefreshRankTab(data)
             local path = (i <= star) and SPR_STAR_ON or SPR_STAR_OFF
             if starNode.LoadSprite ~= nil then
                 starNode:LoadSprite(path)
-                starNode:SetColor(COLOR_WHITE)
+                starNode:SetColor((i <= star) and COLOR_STAR_ON or CS.UnityEngine.Color(0.58, 0.62, 0.70, 1))
             end
         end
     end
@@ -885,6 +1057,7 @@ end
 
 function UIHeroDetailView:_RefreshDeployButton(data)
     if self.btnDeploy == nil then return end
+    self.btnDeploy.gameObject:SetActive(false)
     -- 未拥有不能出战
     self.btnDeploy:SetInteractable(data.owned and not data.isDeployed)
     if self.txtBtnDeploy ~= nil then
@@ -904,6 +1077,7 @@ function UIHeroDetailView:_OnClickDeploy()
         return
     end
     self:_RefreshDeployButton({ owned = true, isDeployed = true })
+    UIUtil.ShowTips("已上阵 " .. tostring(self._data and self._data.name or "英雄"))
 end
 
 --- ---------------------------------------------------------------
@@ -951,11 +1125,11 @@ function UIHeroDetailView:_SelectTab(index)
             self.tabBtns[i].gameObject:SetActive(not hideRankTab)
         end
         if self.tabTexts[i] ~= nil then
-            self.tabTexts[i]:SetColor(visible and COLOR_WHITE or COLOR_TAB_IDLE)
+            self.tabTexts[i]:SetColor(visible and COLOR_WHITE or COLOR_TAB_TEXT_IDLE)
         end
         if self.tabImages[i] ~= nil then
             if visible then
-                self.tabImages[i]:SetColor(COLOR_TAB_SEL)
+                self.tabImages[i]:SetColor(ColorOf((self._theme and self._theme.accent) or {0.45, 0.65, 0.90, 1}))
             else
                 self.tabImages[i]:SetColor(COLOR_TAB_IDLE)
             end
@@ -964,9 +1138,295 @@ function UIHeroDetailView:_SelectTab(index)
 
     -- 技能Tab：技能槽上浮到立绘两侧（对齐截图环绕布局）
     self:_LayoutSkillSlots(isSkillTab)
+    self:_LayoutDetailPanels(isSkillTab, isRankTab)
+    self:_LayoutBottomBar(index, data)
 
     -- 顶部：属性页=稀有度+舰船条；技能/军衔页=居中名号（对齐截图）
     self:_LayoutTopChrome(index, data)
+    self:_LayoutReferencePage(index)
+end
+
+--- 按 914x1625 的逻辑画布统一排版，避免内容面板各自再叠加一次 -760 的偏移。
+function UIHeroDetailView:_LayoutReferencePage(index)
+    local p = self.transform:Find("Panel")
+    if p == nil then return end
+    local attr = index == 1
+    for _, name in ipairs({"Panel_Attribute", "Panel_Skill", "Panel_Rank"}) do
+        local tf = p:Find(name)
+        local rt = tf:GetComponent(RectTransform)
+        rt.anchorMin = Vector2(0,0) rt.anchorMax = Vector2(1,1)
+        rt.offsetMin = Vector2(0,0) rt.offsetMax = Vector2(0,0)
+        local img = tf:GetComponent(UnityImage)
+        if img ~= nil then img.enabled = false end
+    end
+    -- 技能/军衔页的内容区需要完整露出人物、战力和信息卡，舞台不再盖到说明卡边缘。
+    SetTopRect(self.heroStageViewport, 0, attr and -535 or -390, 900, attr and 920 or 690)
+    local portrait = self.heroStageViewport:Find("HeroStagePortrait")
+    -- 立绘尺寸必须小于舞台裁切区；否则手机刘海区会截掉头部，形成“只剩半个人”的错误画面。
+    SetTopRect(portrait, -15, attr and -485 or -325, attr and 460 or 330, attr and 860 or 590)
+    SetTopRect(p:Find("TxtPower"), 0, attr and -1025 or -735, 380, 54)
+    SetTopRect(p:Find("ImgPowerCoin"), -110, attr and -1025 or -735, 42, 42)
+    SetTopRect(p:Find("BtnInfo"), 145, attr and -1025 or -735, 44, 44)
+    StyleText(p:Find("TxtPower"), 42, COLOR_POWER)
+    SetTopRect(p:Find("BtnNavLeft"), -400, attr and -530 or -430, 56, 64)
+    SetTopRect(p:Find("BtnNavRight"), 400, attr and -530 or -430, 56, 64)
+    local nav = p:Find("BtnNavLeft") if nav ~= nil then nav.gameObject:SetActive(false) end
+    SetTopRect(p:Find("Panel_Attribute/LevelBar"), 0, -1120, 730, 58)
+    SetTopRect(p:Find("Panel_Attribute/StatsRow"), 0, -1210, 730, 125)
+    SetTopRect(p:Find("Panel_Attribute/BtnUpgrade"), 35, -1405, 360, 104)
+    SetTopRect(p:Find("Panel_Attribute/BtnBook"), -355, -1405, 82, 90)
+    SetTextRect(p:Find("Panel_Attribute/TxtPreviewHint"), 0, -1325, 700, 40, TMPAlign.Center)
+    SetTextRect(p:Find("Panel_Attribute/LevelBar/TxtLevel"), 0, -29, 700, 50, TMPAlign.Center)
+    StyleText(p:Find("Panel_Attribute/LevelBar/TxtLevel"), 34, COLOR_WHITE)
+    for i, key in ipairs({"Firepower","Durability","Armor","Troop"}) do
+        local st = p:Find("Panel_Attribute/StatsRow/Stat" .. key)
+        SetTopRect(st, -270 + (i-1)*180, -60, 175, 110)
+        SetTextRect(st:Find("TxtName"), 0, -18, 175, 40, TMPAlign.Center)
+        SetTextRect(st:Find("TxtValue"), 0, -65, 175, 42, TMPAlign.Center)
+        StyleText(st:Find("TxtName"), 25, COLOR_STAT_LBL)
+        StyleText(st:Find("TxtValue"), 34, COLOR_WHITE)
+        local icon=st:Find("ImgIcon") if icon ~= nil then icon.gameObject:SetActive(false) end
+    end
+    SetTextRect(p:Find("Panel_Attribute/BtnUpgrade/TxtLabel"), 0, -30, 320, 44, TMPAlign.Center)
+    SetTextRect(p:Find("Panel_Attribute/BtnUpgrade/TxtCost"), 0, -75, 300, 36, TMPAlign.Center)
+    if self.costIcons.upgrade ~= nil then self.costIcons.upgrade:SetActive(false) end
+    StyleText(self._tfHeroName, attr and 27 or 38, COLOR_WHITE)
+    StyleText(self._tfHeroTitle, attr and 22 or 30, COLOR_WHITE)
+    -- 属性页左上：专属战机小卡 + 稀有度 + 英雄名字，对应战前编队中的同一机型。
+    local bar=p:Find("ShipInfoBar")
+    if attr and bar ~= nil then
+        DisableAutoLayout(bar)
+        SetTopRect(bar,-138,-108,540,130)
+        local bg=bar:GetComponent(UnityImage)
+        if bg ~= nil then bg.enabled=false end
+        local plane=bar:Find("ImgShip")
+        local frame=EnsureImageChild(bar,"AircraftFrame",100,116,-214,0)
+        local frameImg=frame:GetComponent(UnityImage)
+        frameImg.color=ColorOf({.18,.39,.64,1})
+        frameImg:LoadSprite("Assets/Main/Sprites/HeroUI/HeroUI_tab_round.png")
+        frameImg.raycastTarget=false
+        frame.transform:SetAsFirstSibling()
+        SetTopRect(plane,-214,-58,90,100)
+        local img=plane:GetComponent(UnityImage)
+        if img ~= nil then img.preserveAspect=true img.raycastTarget=false end
+        local rarity=p:Find("TxtRarity")
+        SetTopRect(rarity,-170,-68,175,58)
+        StyleText(rarity,42,COLOR_WHITE)
+        SetTopRect(self._tfHeroName,170,-25,270,42)
+        SetTopRect(self._tfHeroTitle,170,-66,270,38)
+        if self.shipStarRow ~= nil then self.shipStarRow.gameObject:SetActive(false) end
+        if self.shipRightCell ~= nil then self.shipRightCell:SetActive(false) end
+    end
+end
+
+
+--- 参考图的底栏只负责导航：左侧独立返回，右侧等宽页签。
+--- 本项目的出战操作保留，但移动到属性页的升级按钮右侧，只在属性页显示。
+function UIHeroDetailView:_LayoutBottomBar(index, data)
+    local tabBar = self.transform:Find("Panel/TabBar")
+    if tabBar ~= nil then
+        local layout = tabBar:GetComponent(typeof(CS.UnityEngine.UI.HorizontalLayoutGroup))
+        if layout ~= nil then layout.enabled = false end
+        local image = tabBar:GetComponent(UnityImage)
+        if image ~= nil then image.enabled = false end
+        local rt = tabBar:GetComponent(RectTransform)
+        if rt ~= nil then
+            -- 旧 prefab 的 TabBar 是 stretch + 负 sizeDelta，竖屏会被裁到屏幕外。
+            -- 固定为右侧导航区域，与左侧独立返回键形成参考图的底栏结构。
+            rt.anchorMin = Vector2(0.5, 0)
+            rt.anchorMax = Vector2(0.5, 0)
+            rt.pivot = Vector2(0.5, 0.5)
+            rt.anchoredPosition = Vector2(66, 65)
+            rt.sizeDelta = Vector2(750, 130)
+        end
+    end
+    local visibleTabs = (data ~= nil and not data.owned) and 2 or 3
+    for i, btn in ipairs(self.tabBtns or {}) do
+        if btn ~= nil and btn.gameObject.activeSelf then
+            local rt = btn.gameObject:GetComponent(RectTransform)
+            if rt ~= nil then
+                -- 固定中心坐标，不受旧 TabBar 的 stretch/负 sizeDelta 影响。
+                -- TabBar 的局部原点在左侧，使用 0/1/2 的格位而非以中点为 0。
+                local x = (visibleTabs == 2) and ((i == 1) and -186 or 186) or ((i - 2) * 248)
+                rt.anchorMin = Vector2(0.5, 0.5)
+                rt.anchorMax = Vector2(0.5, 0.5)
+                rt.pivot = Vector2(0.5, 0.5)
+                rt.anchoredPosition = Vector2(x, 0)
+                rt.sizeDelta = Vector2((visibleTabs == 2) and 366 or 242, 122)
+            end
+            local bgTf = btn.transform:Find("TabBg")
+            if bgTf == nil then
+                local bgGo = GameObject("TabBg", RectTransform)
+                bgGo.transform:SetParent(btn.transform, false)
+                bgGo:AddComponent(UnityImage)
+                bgTf = bgGo.transform
+                bgTf:SetAsFirstSibling()
+            end
+            local bgRt = bgTf:GetComponent(RectTransform)
+            if bgRt ~= nil then
+                bgRt.anchorMin = Vector2(0, 0)
+                bgRt.anchorMax = Vector2(1, 1)
+                bgRt.offsetMin = Vector2(0, 0)
+                bgRt.offsetMax = Vector2(0, 0)
+            end
+            local bgImg = bgTf:GetComponent(UnityImage)
+            if bgImg ~= nil then
+                bgImg.sprite = nil
+                -- 选中页签不再使用接近内容卡的浅蓝色，改成深蓝主块 + 亮青强调线。
+                -- 这样属性、技能、军衔的当前状态在任何页都一眼可分辨。
+                bgImg.color = (i == index) and ColorOf({0.05,0.19,0.43,1}) or ColorOf({0.22,0.39,0.65,1})
+            end
+            local lineTf = btn.transform:Find("TabActiveLine")
+            if lineTf == nil then
+                local lineGo = GameObject("TabActiveLine", RectTransform)
+                lineGo.transform:SetParent(btn.transform, false)
+                lineGo:AddComponent(UnityImage)
+                lineTf = lineGo.transform
+                lineTf:SetSiblingIndex(1)
+            end
+            local lineRt = lineTf:GetComponent(RectTransform)
+            if lineRt ~= nil then
+                lineRt.anchorMin = Vector2(0, 1)
+                lineRt.anchorMax = Vector2(1, 1)
+                lineRt.pivot = Vector2(0.5, 1)
+                lineRt.anchoredPosition = Vector2(0, -5)
+                lineRt.sizeDelta = Vector2(-18, 9)
+            end
+            lineTf.gameObject:SetActive(i == index)
+            local lineImg = lineTf:GetComponent(UnityImage)
+            if lineImg ~= nil then lineImg.sprite = nil lineImg.color = ColorOf({0.28,0.90,1.00,1}) end
+            local label = self.tabTexts and self.tabTexts[i] or nil
+            if label ~= nil then
+                local labelRt = label.transform:GetComponent(RectTransform)
+                if labelRt ~= nil then
+                    -- 标签节点原本锚在顶部；底栏按钮重排后必须以按钮中心为锚点。
+                    labelRt.anchorMin = Vector2(0.5, 0.5)
+                    labelRt.anchorMax = Vector2(0.5, 0.5)
+                    labelRt.pivot = Vector2(0.5, 0.5)
+                    labelRt.anchoredPosition = Vector2(0, 0)
+                    labelRt.sizeDelta = Vector2(225, 100)
+                end
+                StyleText(label.transform, 38, COLOR_WHITE)
+                local tmp = label.transform:GetComponent(typeof(CS.NewTMPText))
+                if tmp ~= nil then
+                    tmp.alignment = TMPAlign.Center
+                    tmp.enableWordWrapping = false
+                end
+            end
+        end
+    end
+    if self.btnBack ~= nil then
+        local rt = self.btnBack.gameObject:GetComponent(RectTransform)
+        if rt ~= nil then
+            rt.anchorMin = Vector2(0, 0)
+            rt.anchorMax = Vector2(0, 0)
+            rt.pivot = Vector2(0.5, 0.5)
+            rt.anchoredPosition = Vector2(65, 65)
+            rt.sizeDelta = Vector2(100, 100)
+        end
+    end
+    if self.btnDeploy ~= nil then self.btnDeploy.gameObject:SetActive(false) end
+    if self.btnUpgrade ~= nil then
+        local rt = self.btnUpgrade.gameObject:GetComponent(RectTransform)
+        if rt ~= nil then
+            rt.anchoredPosition = Vector2(40, -270)
+            rt.sizeDelta = Vector2(360, 88)
+        end
+    end
+end
+
+--- 手机竖屏的内容卡排版：技能说明、军衔加成和成长行均保留一行扫读宽度。
+function UIHeroDetailView:_LayoutDetailPanels(isSkillTab, isRankTab)
+    if self.transform == nil then return end
+    if isSkillTab then
+        local detail = self.transform:Find("Panel/Panel_Skill/SkillDetail")
+        local bonusList = self.transform:Find("Panel/Panel_Skill/SkillDetail/RankBonusList")
+        local detailImg = detail ~= nil and detail:GetComponent(UnityImage) or nil
+        if detailImg ~= nil then detailImg.sprite = nil detailImg.color = ColorOf({0.64,0.74,0.86,0.98}) end
+        -- 与战力行留出视觉呼吸区，避免卡片标题压到战力数字。
+        SetTopRect(detail, 0, -1075, 730, 500)
+        SetTopRect(bonusList, 0, -365, 680, 245)
+        DisableAutoLayout(bonusList)
+        SetTextRect(self.transform:Find("Panel/Panel_Skill/SkillDetail/TxtSkillName"), -112, -35, 450, 48, TMPAlign.Left)
+        SetTextRect(self.transform:Find("Panel/Panel_Skill/SkillDetail/TxtSkillCooldown"), 235, -35, 235, 48, TMPAlign.Right)
+        local tagRow = self.transform:Find("Panel/Panel_Skill/SkillDetail/TagRow")
+        SetTopRect(tagRow, -88, -90, 430, 36)
+        SetTopRect(self.transform:Find("Panel/Panel_Skill/SkillDetail/TagRow/TxtSkillTagBox"), -112, 0, 104, 32)
+        SetTopRect(self.transform:Find("Panel/Panel_Skill/SkillDetail/TagRow/TxtSkillDmgTypeBox"), 4, 0, 116, 32)
+        SetTextRect(self.transform:Find("Panel/Panel_Skill/SkillDetail/TxtSkillDesc"), 0, -167, 670, 88, TMPAlign.Left)
+        for i, cell in ipairs(self.rankRows or {}) do
+            if cell.row ~= nil then
+                SetTopRect(cell.row, 0, -22 - (i - 1) * 47, 670, 42)
+                DisableAutoLayout(cell.row)
+                local rowImg = cell.row:GetComponent(UnityImage)
+                if rowImg ~= nil then rowImg.sprite = nil rowImg.color = ColorOf({0.80,0.88,0.96,0.42}) end
+            end
+            SetTextRect(cell.txtBonus and cell.txtBonus.transform, 28, -21, 610, 42, TMPAlign.Left)
+            StyleText(cell.txtBonus and cell.txtBonus.transform, 25, COLOR_STAT_LBL)
+            if self.rankRowStars and self.rankRowStars[i] ~= nil then
+                SetTopRect(self.rankRowStars[i], -320, -21, 32, 32)
+            end
+        end
+        SetTopRect(self.transform:Find("Panel/Panel_Skill/BtnGoPromote"), 0, -1410, 320, 100)
+        for _,node in ipairs({"TxtSkillName","TxtSkillCooldown","TxtSkillDesc"}) do
+            StyleText(detail:Find(node), node == "TxtSkillName" and 33 or 27, COLOR_STAT_LBL)
+        end
+        local descTmp = self.transform:Find("Panel/Panel_Skill/SkillDetail/TxtSkillDesc"):GetComponent(typeof(CS.NewTMPText))
+        if descTmp ~= nil then descTmp.enableWordWrapping = true descTmp.maxVisibleLines = 2 end
+    end
+
+    if isRankTab then
+        local starRow = self.transform:Find("Panel/Panel_Rank/StarRow")
+        DisableAutoLayout(starRow)
+        SetTopRect(starRow, 0, -795, 600, 70)
+        for i, starNode in ipairs(self.stars or {}) do
+            if starNode ~= nil then
+                local slot = starNode.transform.parent
+                SetTopRect(slot, -144 + (i - 1) * 72, -35, 42, 42)
+                if starNode.transform ~= slot then SetTopRect(starNode.transform, 0, -21, 42, 42) end
+            end
+        end
+        local growList = self.transform:Find("Panel/Panel_Rank/GrowList")
+        DisableAutoLayout(growList)
+        local growImg = growList ~= nil and growList:GetComponent(UnityImage) or nil
+        if growImg ~= nil then growImg.sprite = nil growImg.color = ColorOf({0.64,0.74,0.86,0.98}) end
+        SetTopRect(growList, 0, -995, 730, 290)
+        for index, key in ipairs({ "Durability", "Firepower", "Armor" }) do
+            local row = self.transform:Find("Panel/Panel_Rank/GrowList/GrowRow" .. key)
+            DisableAutoLayout(row)
+            SetTopRect(row, 0, -55 - (index - 1) * 85, 650, 64)
+            local rowImg = row ~= nil and row:GetComponent(UnityImage) or nil
+            if rowImg ~= nil then rowImg.sprite = nil rowImg.color = ColorOf({0.80,0.88,0.96,0.42}) end
+            SetTextRect(row:Find("TxtName"), -200, -32, 180, 48, TMPAlign.Left)
+            SetTextRect(row:Find("TxtCur"), -42, -32, 72, 48, TMPAlign.Right)
+            SetTextRect(row:Find("TxtArrow"), 38, -32, 58, 48, TMPAlign.Center)
+            SetTextRect(row:Find("TxtTarget"), 150, -32, 170, 48, TMPAlign.Left)
+            StyleText(row:Find("TxtName"), 30, COLOR_STAT_LBL)
+            StyleText(row:Find("TxtCur"), 32, ColorOf({0.70,0.28,0.06,1}))
+            StyleText(row:Find("TxtArrow"), 32, ColorOf({0.06,0.40,0.26,1}))
+            StyleText(row:Find("TxtTarget"), 32, ColorOf({0.06,0.40,0.26,1}))
+        end
+        local rankSkills = self.transform:Find("Panel/Panel_Rank/RankSkillSlots")
+        DisableAutoLayout(rankSkills)
+        SetTopRect(rankSkills, 0, -1240, 700, 110)
+        for i, slot in ipairs(self.rankSkillSlots or {}) do
+            SetTopRect(slot.root, (i - 2) * 220, -55, 110, 110)
+        end
+        SetTopRect(self.transform:Find("Panel/Panel_Rank/PromoteRow"), 0, -1375, 730, 100)
+        local promoteRow = self.transform:Find("Panel/Panel_Rank/PromoteRow")
+        DisableAutoLayout(promoteRow)
+        if promoteRow ~= nil then
+            for i = 1, 2 do
+                local btn = promoteRow:Find("BtnPromote_" .. i)
+                if btn ~= nil then
+                    SetTopRect(btn, i == 1 and -185 or 185, -50, 330, 95)
+                    local lab = btn:Find("TxtLabel")
+                    SetTextRect(lab, 0, -28, 290, 42, TMPAlign.Center)
+                    StyleText(lab, 27, COLOR_WHITE)
+                end
+            end
+        end
+    end
 end
 
 --- 属性页：左稀有度 + 右舰船条（船/星级/小格 + 名称称号）
@@ -1094,6 +1554,7 @@ function UIHeroDetailView:_LayoutSkillSlots(inSkillTab)
         return
     end
     row.gameObject:SetActive(true)
+    DisableAutoLayout(row)
 
     local panel = self.transform:Find("Panel")
     if panel ~= nil and row.parent ~= panel then
