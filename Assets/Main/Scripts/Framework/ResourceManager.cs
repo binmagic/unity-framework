@@ -848,13 +848,18 @@ public class ResourceManager
     {
         foreach (var i in toInstanceList)
         {
-            i.Destroy(); 
+            // Lua UI teardown may already have cancelled a queued request.
+            if (i.state != InstanceRequest.State.Destroy)
+                i.Destroy();
         }
+        toInstanceList.Clear();
 
         foreach (var i in instancingList)
         {
-            i.Destroy();
+            if (i.state != InstanceRequest.State.Destroy)
+                i.Destroy();
         }
+        instancingList.Clear();
     }
 
     public ObjectPool GetObjectPool(string prefabPath)
@@ -1058,6 +1063,7 @@ public class InstanceRequest
 #if !FINAL_RELEASE
                 Log.Error("#ResourceManager# request is already in destroy!!! {0}", PrefabPath);
 #endif
+            return;
         }
 
         pool?.RemoveInstanceRecord(this);
@@ -1154,6 +1160,11 @@ public class InstanceRequest
     public static void PrintAllRequests()
     {
 #if !FINAL_RELEASE
+        if (all_request.Count == 0)
+        {
+            Debug.Log("remain Requests: 0");
+            return;
+        }
         Debug.LogErrorFormat("remain Requests: {0}", all_request.Count);
         foreach (var r in all_request)
         {

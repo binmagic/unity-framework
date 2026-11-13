@@ -108,7 +108,8 @@ namespace UnityGameFramework.Runtime
         public void Shutdown()
         {
             m_EventHandlers.Clear();
-            GameEntry.Lua?.Call("CSharpCallLuaInterface.ClearEventRef");
+            // GameEntry calls Lua.ExitGame first; Lua owns and clears its event
+            // references there. Its EventManager is already gone at this point.
         }
 
         /// <summary>

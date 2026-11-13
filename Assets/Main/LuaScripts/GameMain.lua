@@ -38,6 +38,7 @@ local function Exit()
     TimerManager:GetInstance():Dispose()
     TimeUpManager:GetInstance():Dispose()
     UpdateManager:GetInstance():Dispose()
+    EventManager:GetInstance():ClearCSRef()
     EventManager:GetInstance():Delete()
 
     -- 销毁加载状态机和 LuaEntry
