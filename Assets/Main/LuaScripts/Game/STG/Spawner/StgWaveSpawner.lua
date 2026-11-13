@@ -213,6 +213,7 @@ function StgWaveSpawner:BuildRequest(template, pos, index)
         entryPathType = template.entryPath.type or EntryPath.FromTopStraight,
         amplitude     = tonumber(template.entryPath.amplitude) or 0,
         behaviorType  = template.behavior.type or "straight_down",
+        behavior      = template.behavior,
         fireInterval  = tonumber(template.behavior.fireInterval) or 2,
         bulletType    = template.behavior.bulletType or "",
         dropTableId   = template.dropTableId or "",

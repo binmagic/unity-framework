@@ -28,7 +28,11 @@ function StgStageInit:OnEnter(levelId)
     owner.timelineFinished = false
     owner.wingmanCount = 0
     owner.weaponLevel = 0
+    owner.weaponMode = "spread"
+    owner.routeChoice = "balanced"
     owner.gold = 0
+    owner.timedBuffs = {}
+    owner.pendingGateChoices = nil
 
     -- 立刻进 Load（首期没有异步资源预载，Init 只做状态归零）
     owner.fsm:Switch(Const.BattleStage.Load)

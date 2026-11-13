@@ -1,0 +1,38 @@
+{
+  "frames": [
+    {
+      "Y": 0,
+      "W": 49,
+      "X": 0,
+      "H": 58,
+      "Source": "a1-2.png",
+      "Name": "enemy_swarm"
+    },
+    {
+      "Y": 0,
+      "W": 197,
+      "X": 0,
+      "H": 134,
+      "Source": "a4-1.png",
+      "Name": "enemy_armored"
+    },
+    {
+      "Y": 169,
+      "W": 91,
+      "X": 0,
+      "H": 74,
+      "Source": "a3-3.png",
+      "Name": "enemy_charger"
+    }
+  ],
+  "method": "single-frame crop; existing local audio clips copied unchanged",
+  "audio": {
+    "enemy_light_down": "enemy1_down.mp3",
+    "enemy_charge": "enemy4_out.mp3",
+    "enemy_lock": "enemy2_out.mp3",
+    "enemy_charge_down": "enemy3_down.mp3",
+    "enemy_heavy_down": "enemy2_down.mp3"
+  },
+  "source": "D:/UnityProject/UiSource/雷霆战机/enemy",
+  "audioSource": "D:/unitytest/ShipImg/SL48 1118p 28.46MB 飞机大战/飞机大战/music"
+}

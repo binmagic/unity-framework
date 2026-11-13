@@ -23,11 +23,13 @@ local COLLIDE_RADIUS = 40
 
 --- @param hp number 初始血量
 --- @param triggerMeta table|nil 血量打空后触发的掉落效果
-function BucketComponent.New(parentTransform, x, y, hp, triggerMeta)
+function BucketComponent.New(parentTransform, x, y, hp, triggerMeta, bucketId)
     local self = setmetatable({}, BucketComponent)
     self.triggerMeta = triggerMeta
+    self.bucketId = bucketId or ""
     self.hp = tonumber(hp) or 1
     self.maxHp = self.hp
+    self.accumulatedDamage = 0
     self.isDead = false
     self.collideRadius = COLLIDE_RADIUS
 
@@ -94,6 +96,7 @@ function BucketComponent:TakeDamage(damage)
         return false
     end
     self.hp = self.hp - (damage or 0)
+    self.accumulatedDamage = math.min(self.maxHp, self.accumulatedDamage + math.max(0, damage or 0))
     if self.hp <= 0 then
         self.hp = 0
         self.isDead = true

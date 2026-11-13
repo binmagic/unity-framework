@@ -239,6 +239,12 @@ local function ParseWaveTemplates(arr)
                 type         = Str(t.behavior, "type", "straight_down"),
                 fireInterval = Num(t.behavior, "fireInterval", 2),
                 bulletType   = Str(t.behavior, "bulletType", ""),
+                role = Str(t.behavior, "role", "standard"),
+                shotCount = Num(t.behavior, "shotCount", 1),
+                spreadAngle = Num(t.behavior, "spreadAngle", 0),
+                warningDuration = Num(t.behavior, "warningDuration", .75),
+                chargeTriggerRatio = Num(t.behavior, "chargeTriggerRatio", .58),
+                chargeSpeedMultiplier = Num(t.behavior, "chargeSpeedMultiplier", 2.4),
             },
             hp          = Num(t, "hp", 100),
             score       = Num(t, "score", 100),
@@ -334,7 +340,21 @@ local function ParseTrapConfigs(arr)
         if trap.type == Const.TrapType.DigitalGate then
             trap.gateType   = Str(params, "gateType", Const.GateType.Step)
             trap.initialValue = Num(params, "initialValue", 0)
+            trap.hitCooldown = Num(params, "hitCooldown", 0.05)
+            trap.initialLeftRatio = Num(params, "initialLeftRatio", 0.5)
+            trap.minSideRatio = Num(params, "minSideRatio", 0.2)
+            trap.ratioChangePerHit = Num(params, "ratioChangePerHit", 0.02)
             trap.effectTableRef = Str(params, "effectTableRef", "")
+            trap.unlockMode = Str(params, "unlockMode", "none")
+            trap.unlockTargetId = Str(params, "unlockTargetId", "")
+            trap.unlockRequired = math.max(0, Num(params, "unlockRequired", 0))
+            trap.heroChargeSlot = math.max(0, math.min(5, math.floor(Num(params, "heroChargeSlot", 0))))
+            trap.heroChargePercent = math.max(0, math.min(100, Num(params, "heroChargePercent", 0)))
+            trap.choiceMode = Str(params, "choiceMode", "none")
+            trap.choicePool = Str(params, "choicePool", "")
+            trap.moveMode = Str(params, "moveMode", "none")
+            trap.moveAmplitude = math.max(0, Num(params, "moveAmplitude", 0))
+            trap.moveFrequency = math.max(0, Num(params, "moveFrequency", 0.8))
             trap.isReusableGateTemplate = Bool(t, "isReusableGateTemplate", false)
 
             if trap.gateType == Const.GateType.Step then
@@ -385,6 +405,7 @@ local function ParseTimeline(j)
             fadeDuration = Num(e, "fadeDuration", 0),
             cutsceneId   = Str(e, "cutsceneId", ""),
             gateType     = Str(e, "gateType", ""),
+            routeChoice  = Str(e, "routeChoice", ""),
             dropIntervalSec = Num(e, "interval", 0.1),
             dropAniDuration = Num(e, "dropAniDuration", 0.5),
         }
@@ -466,6 +487,7 @@ function StgLevelConfig.Load(levelId)
         gateTemplates  = gateTemplates,  -- isReusableGateTemplate=true 的门，供 drop_digital_gate 引用
 
         timeline       = ParseTimeline(root.timeline),
+        bossCounterplay = Bool(root, "bossCounterplay", false),
     }
 
     cache[levelId] = cfg

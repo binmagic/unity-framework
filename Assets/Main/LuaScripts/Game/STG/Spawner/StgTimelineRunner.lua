@@ -90,6 +90,11 @@ end
 function StgTimelineRunner:_Dispatch(ev)
     local t = ev.type
     local cb = self.callbacks
+    if ev.routeChoice ~= nil and ev.routeChoice ~= ""
+        and cb.ShouldDispatchEvent ~= nil and not cb.ShouldDispatchEvent(ev.routeChoice, ev) then
+        Logger.Log('#STG# 跳过路线事件 route=' .. tostring(ev.routeChoice) .. ' type=' .. tostring(t))
+        return
+    end
 
     if t == Const.TimelineEventType.SpawnEnemyWave then
         if cb.OnSpawnEnemyWave then cb.OnSpawnEnemyWave(ev.templateId, ev.offsetX) end

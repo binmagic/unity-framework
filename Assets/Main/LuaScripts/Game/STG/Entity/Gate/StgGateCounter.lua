@@ -32,9 +32,11 @@ function StgGateCounter:RecalcEffect()
 end
 
 function StgGateCounter:OnHit(damage)
+    if not self:TryAcceptHit(damage) then return false end
     -- counter 门语义：每次受击 +1（对齐 barrel Gate2，不按伤害量）
     self.value = self.value + 1
     self:RecalcEffect()
+    return true
 end
 
 function StgGateCounter:GetDisplayText()

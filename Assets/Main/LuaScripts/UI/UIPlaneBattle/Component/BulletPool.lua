@@ -25,6 +25,18 @@ function BulletPool.New(parentTransform)
         topY = math.max(1625, parentTransform.rect.height) + 100,
     }
     setmetatable(self, { __index = BulletPool })
+    local function layer(name)
+        local go = GameObject(name, RectTransform)
+        go.transform:SetParent(parentTransform, false)
+        local rt = go:GetComponent(RectTransform)
+        rt.anchorMin, rt.anchorMax = Vector2(0, 0), Vector2(1, 1)
+        rt.offsetMin, rt.offsetMax = Vector2(0, 0), Vector2(0, 0)
+        return go.transform
+    end
+    self.playerLayer = layer("PlayerBullets")
+    local background = parentTransform:Find("BackgroundRoot")
+    if background ~= nil then self.playerLayer:SetSiblingIndex(background:GetSiblingIndex()+1) end
+    self.enemyLayer = layer("EnemyBullets")
     return self
 end
 
@@ -54,6 +66,16 @@ function BulletPool:_Acquire()
     core.raycastTarget = false
     core.color = Color(1, 1, 1, 0.85)
     core:LoadSprite("Assets/Main/Sprites/STG/CombatFx/energy_bolt.png")
+    local haloGo = GameObject("EnemyHalo", RectTransform)
+    haloGo.transform:SetParent(go.transform, false)
+    haloGo.transform:SetAsFirstSibling()
+    local haloRt = haloGo:GetComponent(RectTransform)
+    haloRt.anchorMin, haloRt.anchorMax = Vector2(0, 0), Vector2(1, 1)
+    haloRt.offsetMin, haloRt.offsetMax = Vector2(-6, -4), Vector2(6, 4)
+    local halo = haloGo:AddComponent(Image)
+    halo.color, halo.raycastTarget = Color(1, 0.14, 0.2, 0.7), false
+    halo:LoadSprite("Assets/Main/Sprites/STG/CombatFx/shield_hit.png")
+    haloGo:SetActive(false)
     return go
 end
 
@@ -64,13 +86,15 @@ end
 --- @param damage number 伤害
 --- faction: "player" | "enemy"；由 View 按阵营分别处理命中。
 --- vx: 横向速度，用于散射弹道。
-function BulletPool:Fire(x, y, dirY, damage, faction, vx, weaponLevel, primary, sourceId, heroSkill)
+function BulletPool:Fire(x, y, dirY, damage, faction, vx, weaponLevel, primary, sourceId, heroSkill, weaponMode)
     if #self.active >= MAX_ACTIVE then
         return false -- 同屏子弹已达上限，直接丢弃这次开火请求
     end
     if (faction or "player") == "player" and #self.active >= PLAYER_SOFT_LIMIT then return false end
 
     local go = self:_Acquire()
+    local bulletLayer = faction == "enemy" and self.enemyLayer or self.playerLayer
+    go.transform:SetParent(bulletLayer, false)
     local rt = go:GetComponent(RectTransform)
     rt.anchoredPosition = Vector2(x, y)
     local img = go:GetComponent(Image)
@@ -90,6 +114,32 @@ function BulletPool:Fire(x, y, dirY, damage, faction, vx, weaponLevel, primary, 
         img.color = (weaponLevel or 0) >= 2 and Color(1, 0.85, 0.4, 1) or Color(0.65, 0.95, 1, 1)
     end
 
+    local core = go.transform:Find("BrightCore"):GetComponent(Image)
+    local haloGo = go.transform:Find("EnemyHalo").gameObject
+    haloGo:SetActive(faction == "enemy")
+    if faction == "enemy" then
+        rt.sizeDelta, img.color = Vector2(16, 26), Color(1, 0.18, 0.28, 1)
+        core.color = Color(1, 0.85, 0.7, 1)
+        -- 敌弹优先画在友军火力上面，保留可躲避的红色轮廓。
+        self.enemyLayer:SetAsLastSibling()
+    else
+        if not primary and not heroSkill then
+            local hero = sourceId ~= nil
+            rt.sizeDelta = hero and Vector2(9, 32) or Vector2(6, 24)
+            img.color = hero and Color(0.45, 0.85, 1, 0.9) or Color(0.35, 0.7, 1, 0.68)
+            core.color = Color(0.7, 0.92, 1, hero and 0.55 or 0.2)
+        else
+            core.color = Color(1, 1, 1, 0.85)
+        end
+    end
+
+    weaponMode = faction == "player" and not heroSkill and weaponMode or "spread"
+    if weaponMode == "pierce" then
+        img.color = Color(0.7, 0.4, 1, 1)
+        rt.sizeDelta = Vector2(primary and 15 or 8, primary and 76 or 42)
+    elseif weaponMode == "homing" then
+        img.color = Color(0.3, 1, 0.6, 1)
+    end
     table.insert(self.active, {
         go     = go,
         rt     = rt,
@@ -102,6 +152,9 @@ function BulletPool:Fire(x, y, dirY, damage, faction, vx, weaponLevel, primary, 
         heroSkill = heroSkill == true,
         previousX = x,
         previousY = y,
+        weaponMode = weaponMode,
+        remainingHits = weaponMode == "pierce" and 3 or 1,
+        hitTargets = weaponMode == "pierce" and {} or nil,
     })
     return true
 end
@@ -109,7 +162,7 @@ end
 --- 每帧推进所有子弹，超出边界的回收
 --- @param dt number Time.deltaTime
 --- @param onOutOfBounds function(bullet) 可选：子弹飞出屏幕时的回调（首期不需要额外处理）
-function BulletPool:Update(dt)
+function BulletPool:Update(dt, enemies)
     local i = 1
     while i <= #self.active do
         local b = self.active[i]
@@ -118,6 +171,22 @@ function BulletPool:Update(dt)
         else
             local pos = b.rt.anchoredPosition
             b.previousX, b.previousY = pos.x, pos.y
+            if b.weaponMode == "homing" then
+                local target, nearest = nil, math.huge
+                for _, enemy in ipairs(enemies or {}) do
+                    if not enemy.isDead then
+                        local ex, ey = enemy:GetLocalPos()
+                        local dx, dy = ex - pos.x, ey - pos.y
+                        local distance = dx * dx + dy * dy
+                        if dy > 0 and distance < nearest then target, nearest = dx, distance end
+                    end
+                end
+                if target ~= nil then
+                    local desired = math.max(-480, math.min(480, target * 4))
+                    b.vx = b.vx + (desired - b.vx) * math.min(1, dt * 7)
+                    b.rt.localRotation = CS.UnityEngine.Quaternion.Euler(0, 0, math.atan(-b.vx, b.vy) * 180 / math.pi)
+                end
+            end
             local newY = pos.y + b.vy * dt
             local newX = pos.x + (b.vx or 0) * dt
             if newY > self.topY or newY < -60 or math.abs(newX) > SCREEN_SIDE_X then

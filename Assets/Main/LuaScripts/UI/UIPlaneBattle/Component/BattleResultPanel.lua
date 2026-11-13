@@ -1,5 +1,6 @@
 --- 编队真实战报：英雄输出按来源统计，独立装甲承伤与临时护盾吸收分开显示。
 local BattleResultPanel = BaseClass("BattleResultPanel")
+local GateBattleReport = require "UI.UIPlaneBattle.Logic.GateBattleReport"
 local GameObject = CS.UnityEngine.GameObject
 local RectTransform = typeof(CS.UnityEngine.RectTransform)
 local Image = typeof(CS.UnityEngine.UI.Image)
@@ -22,6 +23,10 @@ function BattleResultPanel:__init(parent, requestFont, onBack, onNext)
     self.title=self:Text(self.go.transform,"Title","胜 利",0,-80,600,75,50,1)
     self.title.color=Color(1,.84,.35,1)
     self.subtitle=self:Text(self.go.transform,"Subtitle","",0,-144,680,40,22,1)
+    self.routeSummary=self:Text(self.go.transform,"RouteSummary","",0,-175,700,20,17,1)
+    self.routeSummary.enableWordWrapping=false
+    self.routeSummary.enableAutoSizing,self.routeSummary.fontSizeMin,self.routeSummary.fontSizeMax=true,14,17
+    self.routeSummary.color=Color(.6,.95,.9,1)
     self.summary=self:Text(self.go.transform,"Summary","",0,-214,700,56,17,1)
     self.summary.color=Color(.55,.88,1,1)
     -- 评级独占姓名下方一行，与立绘区域（顶部 -245）完全分离。
@@ -41,9 +46,10 @@ function BattleResultPanel:__init(parent, requestFont, onBack, onNext)
     local body,br=self:Node(self.go.transform,"Report",0,0,700,550)
     br.anchorMin,br.anchorMax=Vector2(.5,.42),Vector2(.5,.42)
     br.anchoredPosition=Vector2(0,0)
-    local _,outbg=self:Action(body.transform,"Output","输 出",-170,230,330,60,function() self:SetMode("output") end)
-    local _,inbg=self:Action(body.transform,"Taken","承 伤",170,230,330,60,function() self:SetMode("taken") end)
-    self.outbg,self.inbg=outbg,inbg
+    local _,outbg=self:Action(body.transform,"Output","输 出",-232,230,218,60,function() self:SetMode("output") end)
+    local _,inbg=self:Action(body.transform,"Taken","承 伤",0,230,218,60,function() self:SetMode("taken") end)
+    local _,supplybg=self:Action(body.transform,"Supplies","补 给",232,230,218,60,function() self:SetMode("supplies") end)
+    self.outbg,self.inbg,self.supplybg=outbg,inbg,supplybg
     self.rows={}
     for i=1,6 do
         local row=self:Node(body.transform,"Row_"..i,0,160-(i-1)*67,680,59)
@@ -59,9 +65,9 @@ function BattleResultPanel:__init(parent, requestFont, onBack, onNext)
         fr.anchorMin,fr.anchorMax,fr.pivot=Vector2(0,.5),Vector2(0,.5),Vector2(0,.5)
         fr.anchoredPosition=Vector2(0,0)
         self:Image(fill,Color(1,.75,.15,1))
-        self.rows[i]={go=row,avatar=avatar,img=ai,name=name,value=value,fill=fr}
+        self.rows[i]={go=row,track=track,avatar=avatar,img=ai,name=name,value=value,fill=fr}
     end
-    self.note=self:Text(body.transform,"Note","",0,-260,680,60,17)
+    self.note=self:Text(body.transform,"Note","",0,-260,680,76,17)
     self.note.enableWordWrapping=true
     self:Action(self.go.transform,"Back","返回编队",-170,90,300,76,function() self.onBack() end,0)
     self.next=self:Action(self.go.transform,"Next","下一关",170,90,300,76,function() self.onNext() end,0)
@@ -126,6 +132,9 @@ function BattleResultPanel:Show(isWin,team,stats,time,levelName,hasNext)
         math.floor(totalDamage),math.floor(totalTaken),math.floor(totalAbsorbed),
         isWin and "通关奖励 +"..reward.." 金币" or "未获得通关奖励")
     self.summary.color=isWin and Color(.55,.95,1,1) or Color(1,.62,.48,1)
+    local routeSummary=GateBattleReport.RouteSummary(stats.supplies)
+    self.routeSummary.text=routeSummary or ""
+    self.routeSummary.gameObject:SetActive(routeSummary~=nil)
     local rating="B"
     if isWin then
         rating=(totalTaken<=3 and time<=100 and "S") or (totalTaken<=8 and "A") or "B"
@@ -140,8 +149,23 @@ function BattleResultPanel:SetMode(mode)
     self.mode=mode
     self.outbg.color=mode=="output" and Color(.15,.46,.65,1) or Color(.045,.12,.22,1)
     self.inbg.color=mode=="taken" and Color(.15,.46,.65,1) or Color(.045,.12,.22,1)
+    self.supplybg.color=mode=="supplies" and Color(.15,.46,.65,1) or Color(.045,.12,.22,1)
     local entries={}
-    if mode=="output" then
+    if mode=="supplies" then
+        local s=self.stats.supplies or {}
+        entries={
+            {name="获得普通僚机",value=s.reinforcements or 0,suffix=" 架"},
+            {name="数字门损失僚机",value=s.lost or 0,suffix=" 架"},
+            {name="武器提升",value=s.weapon or 0,suffix=" 级"},
+            {name="全队实际装甲修复",value=s.repair or 0,suffix=" 点"},
+            {name="速射有效增加时长",value=s.haste or 0,suffix=" 秒"},
+            {name="冻结有效增加时长",value=s.freeze or 0,suffix=" 秒"},
+        }
+        local choices=s.choices or {}
+        self.note.text=#choices>0 and ("战术补给："..table.concat(choices," → ").."\n统计实际收益；初始编队、满级和满装甲无收益不计入。")
+            or "本局未领取战术三选一。统计实际收益，不包含初始编队。"
+        if (s.gold or 0)>0 then self.note.text=self.note.text.."\n门奖励金币 +"..math.floor(s.gold) end
+    elseif mode=="output" then
         for _,hero in ipairs(self.team.members) do
             table.insert(entries,{name=hero.name,avatar=hero.avatar,value=self.stats.damage[hero.id] or 0})
         end
@@ -163,9 +187,10 @@ function BattleResultPanel:SetMode(mode)
         local e=entries[i]
         row.go:SetActive(e~=nil)
         if e then
+            row.track:SetActive(mode~="supplies")
             row.name.text=tostring(i).."  "..e.name
-            row.value.text=math.abs(e.value-math.floor(e.value))<.01 and tostring(math.floor(e.value)) or string.format("%.1f",e.value)
-            row.fill.sizeDelta=Vector2(570*e.value/maximum,10)
+            row.value.text=(math.abs(e.value-math.floor(e.value))<.01 and tostring(math.floor(e.value)) or string.format("%.1f",e.value))..(e.suffix or "")
+            row.fill.sizeDelta=Vector2(mode=="supplies" and 0 or 570*e.value/maximum,10)
             row.avatar:SetActive(e.avatar~=nil and e.avatar~="")
             if e.avatar and e.avatar~="" then row.img:LoadSprite(e.avatar) end
         end
@@ -178,7 +203,8 @@ function BattleResultPanel:__delete()
     if self.go~=nil and not IsNull(self.go) then self.go:Destroy() end
     self.go,self.rt,self.requestFont,self.onBack,self.onNext=nil,nil,nil,nil,nil
     self.title,self.subtitle,self.summary,self.rating,self.portrait,self.mvp,self.outbg,self.inbg=nil,nil,nil,nil,nil,nil,nil,nil
-    self.rows,self.note,self.next,self.team,self.stats,self.mode=nil,nil,nil,nil,nil,nil
+    self.routeSummary=nil
+    self.rows,self.note,self.next,self.team,self.stats,self.mode,self.supplybg=nil,nil,nil,nil,nil,nil,nil
 end
 
 return BattleResultPanel

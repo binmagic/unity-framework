@@ -1,0 +1,67 @@
+{
+  "version": "1.0",
+  "levelId": "1002",
+  "levelName": "第2关 · 机制试验关",
+  "description": "验证射击升级门、组合路线门与分支敌群、穿透与追踪流派、移动双门，以及 Boss 对玩家选择的反制。",
+  "seed": 2002,
+  "bossCounterplay": true,
+  "basicScroll": {"baseSpeed": 320, "speedMultiplier": 1, "rampUpTime": 0, "rampUpTargetSpeed": 320},
+  "playerRules": {"initialWingman": 4, "heroArmorMultiplier": 1.5, "heroSkillCooldownMultiplier": 1},
+  "backgroundLayers": [
+    {"layerId":"space_nebula","layerName":"深空·远景星云","layerType":"parallax","orderInLayer":0,"speedCoefficient":0.12,"useTileLoop":true,"tileSpritePaths":["Assets/Main/Sprites/STG/SpaceRaid/nebula_loop.png"],"enableScatterSpawn":false},
+    {"layerId":"space_stars","layerName":"近景·独立视差星点","layerType":"parallax","orderInLayer":1,"speedCoefficient":0.55,"useTileLoop":true,"tileSpritePaths":["Assets/Main/Sprites/STG/SpaceRaid/stars_loop.png"],"enableScatterSpawn":false}
+  ],
+  "objectPool": {"backgroundLayerPoolSize":20,"enemyPoolSize":30,"bossPoolSize":2,"bulletPoolSize":100,"itemPoolSize":50,"trapPoolSize":15,"preloadOnStart":true},
+  "itemConfigs": [], "globalDropTables": [], "spawnAreaConfigs": [],
+  "enemyWaveTemplates": [
+    {"templateId":"w2_swarm","templateName":"轻型集群","enemyType":"8001","count":4,"formation":{"type":"row","spacing":130,"rowDelay":0},"entryPath":{"type":"from_top_straight","speed":210,"amplitude":0},"behavior":{"type":"straight_down","fireInterval":3.2,"bulletType":"","role":"swarm","shotCount":1,"spreadAngle":0},"hp":55,"score":60,"dropTableId":""},
+    {"templateId":"w2_pair","templateName":"双机压迫","enemyType":"8001","count":2,"formation":{"type":"row","spacing":210,"rowDelay":0},"entryPath":{"type":"from_top_sine","speed":220,"amplitude":80},"behavior":{"type":"straight_down","fireInterval":2.1,"bulletType":""},"hp":130,"score":100,"dropTableId":""},
+    {"templateId":"w2_armored","templateName":"重装弹幕","enemyType":"8002","count":2,"formation":{"type":"row","spacing":240,"rowDelay":0},"entryPath":{"type":"from_top_sine","speed":175,"amplitude":110},"behavior":{"type":"straight_down","fireInterval":1.6,"bulletType":"","role":"armored","shotCount":3,"spreadAngle":36,"warningDuration":0.8},"hp":360,"score":220,"dropTableId":""},
+    {"templateId":"w2_column","templateName":"纵列目标","enemyType":"8001","count":4,"formation":{"type":"column","spacing":0,"rowDelay":0.32},"entryPath":{"type":"from_top_straight","speed":195,"amplitude":0},"behavior":{"type":"straight_down","fireInterval":2.4,"bulletType":""},"hp":90,"score":80,"dropTableId":""},
+    {"templateId":"w2_charger","templateName":"冲锋双机","enemyType":"8002","count":2,"formation":{"type":"row","spacing":390,"rowDelay":0},"entryPath":{"type":"from_top_straight","speed":205,"amplitude":0},"behavior":{"type":"straight_down","fireInterval":0,"bulletType":"","role":"charger","warningDuration":1.1,"chargeTriggerRatio":0.72,"chargeSpeedMultiplier":2.0},"hp":260,"score":140,"dropTableId":""},
+    {"templateId":"w2_route_dense","templateName":"翻倍路线·密集集群","enemyType":"8001","count":7,"formation":{"type":"row","spacing":105,"rowDelay":0},"entryPath":{"type":"from_top_sine","speed":205,"amplitude":70},"behavior":{"type":"straight_down","fireInterval":2.8,"bulletType":"","role":"swarm","shotCount":1,"spreadAngle":0},"hp":72,"score":70,"dropTableId":""},
+    {"templateId":"w2_route_column","templateName":"穿透路线·重装纵列","enemyType":"8002","count":4,"formation":{"type":"column","spacing":0,"rowDelay":0.5},"entryPath":{"type":"from_top_straight","speed":170,"amplitude":0},"behavior":{"type":"straight_down","fireInterval":1.8,"bulletType":"","role":"armored","shotCount":3,"spreadAngle":38,"warningDuration":0.8},"hp":280,"score":210,"dropTableId":""},
+    {"templateId":"w2_route_sine","templateName":"追踪路线·高速机动","enemyType":"8001","count":4,"formation":{"type":"v_shape","spacing":165,"rowDelay":0},"entryPath":{"type":"from_top_sine","speed":235,"amplitude":170},"behavior":{"type":"straight_down","fireInterval":2.6,"bulletType":""},"hp":105,"score":110,"dropTableId":""}
+  ],
+  "bossConfigs": [
+    {"bossId":"boss_9001","bossName":"试验场首领","prefabPath":"","entryAnimation":"fly_in_from_top","totalHp":3600,"score":5200,
+     "phases":[
+       {"phaseId":1,"hpThreshold":1,"movePattern":"horizontal_patrol","skills":[{"skillId":"spread_shot","interval":1.9,"bulletCount":5,"spreadAngle":58,"duration":0,"width":0,"rings":0,"waveTemplateId":"","count":0,"speed":0,"damageReduction":0}]},
+       {"phaseId":2,"hpThreshold":0.5,"movePattern":"figure_eight","skills":[{"skillId":"spread_shot","interval":1.05,"bulletCount":7,"spreadAngle":96,"duration":0,"width":0,"rings":0,"waveTemplateId":"","count":0,"speed":0,"damageReduction":0}]}
+     ],
+     "dropOnDeath":[],"onDefeatEvent":""}
+  ],
+  "trapConfigs": [
+    {"trapId":"gate2_step","trapName":"射击升级门·火力充能","type":"digital_gate","prefabPath":"","position":{"x":0,"y":1250},"params":{"gateType":"gate_step","paraTable":"0|eff_plus1;40|eff_plus2;100|eff_double","initialValue":0,"hitCooldown":0.04,"effectTableRef":""},"hp":9999,"destroyable":false,"dropTableId":"","isReusableGateTemplate":true},
+    {"trapId":"gate2_duet","trapName":"组合路线门·翻倍集群或穿透重装","type":"digital_gate","prefabPath":"","position":{"x":0,"y":1250},"params":{"gateType":"gate_duet","paraTable":"-100|9999|eff_route_mass","paraTableRight":"-100|9999|eff_route_pierce","initialValue":0,"initialLeftRatio":0.5,"minSideRatio":0.2,"ratioChangePerHit":0.025,"hitCooldown":0.04,"effectTableRef":""},"hp":9999,"destroyable":false,"dropTableId":"","isReusableGateTemplate":true},
+    {"trapId":"gate2_homing","trapName":"追踪流派门","type":"digital_gate","prefabPath":"","position":{"x":0,"y":1250},"params":{"gateType":"gate_counter","paraTable":"-100|9999|eff_homing","initialValue":0,"hitCooldown":0.04},"hp":9999,"destroyable":false,"dropTableId":"","isReusableGateTemplate":true},
+    {"trapId":"gate2_move","trapName":"移动双门·穿透或追踪","type":"digital_gate","prefabPath":"","position":{"x":0,"y":1250},"params":{"gateType":"gate_duet","paraTable":"-100|9999|eff_pierce","paraTableRight":"-100|9999|eff_homing","initialValue":0,"initialLeftRatio":0.5,"minSideRatio":0.2,"ratioChangePerHit":0.03,"moveMode":"horizontal_sine","moveAmplitude":150,"moveFrequency":0.8,"hitCooldown":0.04},"hp":9999,"destroyable":false,"dropTableId":"","isReusableGateTemplate":true},
+    {"trapId":"gate2_choice","trapName":"战术补给·三选一","type":"digital_gate","prefabPath":"","position":{"x":0,"y":1250},"params":{"gateType":"gate_counter","paraTable":"","choiceMode":"three","choicePool":"eff_weapon,eff_pierce,eff_homing"},"hp":9999,"destroyable":false,"dropTableId":"","isReusableGateTemplate":false}
+  ],
+  "timeline": {
+    "duration": 88,
+    "events": [
+      {"time":0,"type":"show_banner","text":"机制试验关：射击门会升档，先用火力换奖励","duration":2.8},
+      {"time":3,"type":"spawn_enemy_wave","templateId":"w2_swarm","offsetX":0},
+      {"time":8,"type":"spawn_trap","trapId":"gate2_step"},
+      {"time":16,"type":"spawn_enemy_wave","templateId":"w2_pair","offsetX":0},
+      {"time":23,"type":"show_banner","text":"双路策略：左侧编队翻倍，右侧解锁穿透弹","duration":2.5},
+      {"time":25,"type":"spawn_trap","trapId":"gate2_duet"},
+      {"time":33,"type":"spawn_enemy_wave","templateId":"w2_armored","offsetX":-0.28},
+      {"time":45,"type":"show_banner","text":"编队路线：密集集群接近，展开火力覆盖","duration":2.8,"routeChoice":"mass"},
+      {"time":45,"type":"show_banner","text":"穿透路线：重装纵列接近，对准纵轴连续穿透","duration":2.8,"routeChoice":"pierce"},
+      {"time":45,"type":"show_banner","text":"追踪路线：高速机动敌群接近，保持火力","duration":2.8,"routeChoice":"homing"},
+      {"time":45,"type":"show_banner","text":"均衡航线：普通纵列接近，保持火力","duration":2.8,"routeChoice":"balanced"},
+      {"time":48,"type":"spawn_enemy_wave","templateId":"w2_route_dense","offsetX":0,"routeChoice":"mass"},
+      {"time":48,"type":"spawn_enemy_wave","templateId":"w2_route_column","offsetX":0.3,"routeChoice":"pierce"},
+      {"time":48,"type":"spawn_enemy_wave","templateId":"w2_route_sine","offsetX":0.3,"routeChoice":"homing"},
+      {"time":48,"type":"spawn_enemy_wave","templateId":"w2_column","offsetX":0,"routeChoice":"balanced"},
+      {"time":55,"type":"show_banner","text":"移动双门：根据实时位置切换穿透或追踪","duration":2.5},
+      {"time":57,"type":"spawn_trap","trapId":"gate2_move"},
+      {"time":66,"type":"spawn_enemy_wave","templateId":"w2_charger","offsetX":0},
+      {"time":73,"type":"spawn_trap","trapId":"gate2_choice"},
+      {"time":80,"type":"show_banner","text":"首领二阶段会反制你的流派与编队规模","duration":2.8},
+      {"time":83,"type":"spawn_boss","bossId":"boss_9001"}
+    ]
+  }
+}

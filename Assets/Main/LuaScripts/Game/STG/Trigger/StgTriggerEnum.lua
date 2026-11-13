@@ -12,6 +12,10 @@ TriggerEnum.Type = {
     MultiplyWingman = 40,  -- para = 倍率
     UpgradeWeapon   = 50,
     RepairHull      = 60,
+    TimedHaste      = 70,
+    FreezeEnemy     = 80,
+    SetWeaponMode   = 90,
+    SetRouteChoice  = 100,
 }
 
 --- 效果表：effectId -> { type, para, text, icon }
@@ -28,6 +32,12 @@ TriggerEnum.EffectTable = {
     ["eff_repair"] = { type = TriggerEnum.Type.RepairHull, para = 1, text = "护盾 +1" },
     ["eff_minus1"] = { type = TriggerEnum.Type.RemoveWingman,   para = 1,  text = "-1" },
     ["eff_minus2"] = { type = TriggerEnum.Type.RemoveWingman,   para = 2,  text = "-2" },
+    ["eff_haste"]  = { type = TriggerEnum.Type.TimedHaste,      para = 5,  text = "速射 +60%", icon = "haste" },
+    ["eff_freeze"] = { type = TriggerEnum.Type.FreezeEnemy,      para = 3,  text = "冻结敌机", icon = "freeze" },
+    ["eff_pierce"] = { type = TriggerEnum.Type.SetWeaponMode, para = "pierce", text = "穿透弹" },
+    ["eff_homing"] = { type = TriggerEnum.Type.SetWeaponMode, para = "homing", text = "追踪弹" },
+    ["eff_route_mass"] = { type = TriggerEnum.Type.SetRouteChoice, para = "mass", text = "编队翻倍路线" },
+    ["eff_route_pierce"] = { type = TriggerEnum.Type.SetRouteChoice, para = "pierce", text = "穿透路线" },
 
     -- 旧 PlaneTrigger_Config 兼容（20001~20005），数值对齐原表
     ["20001"] = { type = TriggerEnum.Type.AddWingman, para = 2, text = "+2" },
@@ -66,6 +76,14 @@ function TriggerEnum.Execute(effectId, callbacks)
         callbacks.UpgradeWeapon(p)
     elseif t == TriggerEnum.Type.RepairHull and callbacks.RepairHull then
         callbacks.RepairHull(p)
+    elseif t == TriggerEnum.Type.TimedHaste and callbacks.TimedHaste then
+        callbacks.TimedHaste(p)
+    elseif t == TriggerEnum.Type.FreezeEnemy and callbacks.FreezeEnemy then
+        callbacks.FreezeEnemy(p)
+    elseif t == TriggerEnum.Type.SetWeaponMode and callbacks.SetWeaponMode then
+        callbacks.SetWeaponMode(p)
+    elseif t == TriggerEnum.Type.SetRouteChoice and callbacks.SetRouteChoice then
+        callbacks.SetRouteChoice(p)
     else
         Logger.LogError('#STG# 触发效果未处理 type=' .. tostring(t) .. ' effectId=' .. tostring(effectId))
         return false

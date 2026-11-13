@@ -17,8 +17,12 @@ local TriggerEventManager  = require "UI.UIPlaneBattle.Logic.TriggerEventManager
 local BulletPool           = require "UI.UIPlaneBattle.Component.BulletPool"
 local SecondaryWeapon      = require "UI.UIPlaneBattle.Component.SecondaryWeapon"
 local PlaneUnit            = require "UI.UIPlaneBattle.Component.PlaneUnit"
+local EnemyRolePresentation = require "UI.UIPlaneBattle.Logic.EnemyRolePresentation"
 local FlightVisual         = require "UI.UIPlaneBattle.Component.FlightVisual"
 local GateFeedback         = require "UI.UIPlaneBattle.Component.GateFeedback"
+local GateChoicePanel      = require "UI.UIPlaneBattle.Component.GateChoicePanel"
+local GateRewardPreview    = require "UI.UIPlaneBattle.Logic.GateRewardPreview"
+local GateBattleReport     = require "UI.UIPlaneBattle.Logic.GateBattleReport"
 local GateComponent        = require "UI.UIPlaneBattle.Component.GateComponent"
 local BucketComponent      = require "UI.UIPlaneBattle.Component.BucketComponent"
 -- STG 运行时：时间轴/波次/门/结算由 StgBattleLogic 驱动，View 只做表现
@@ -34,6 +38,7 @@ local Text           = typeof(CS.UnityEngine.UI.Text)
 local TMPText        = typeof(CS.TMPro.TextMeshProUGUI)
 local TMPAlign       = CS.TMPro.TextAlignmentOptions
 local Vector2        = CS.UnityEngine.Vector2
+local Vector3        = CS.UnityEngine.Vector3
 local Color          = CS.UnityEngine.Color
 local UIEventTrigger = typeof(CS.UIEventTrigger)
 local Resource       = CS.GameEntry.Resource
@@ -107,6 +112,8 @@ local WEAPON_NAMES = { [0] = "单发", "双发", "扇形散射" }
 local BUCKET_COLLIDE_EXTRA  = 25 -- 子弹与油桶/敌机的命中判定半径（子弹半径+目标半径的简化值）
 local PLAYER_HULL_MAX       = 3
 local FX_DIR                = "Assets/Main/Sprites/STG/CombatFx/"
+local GATE_SOUNDS = { hit = "STGGate/hit", upgrade = "STGGate/upgrade", positive = "STGGate/positive",
+    gain = "STGGate/gain", loss = "STGGate/loss" }
 local FX_LIFETIME           = 0.42
 local MAX_COMBAT_FX         = 36
 local MAX_FREE_COMBAT_FX    = 24
@@ -118,6 +125,7 @@ function UIPlaneBattleView:OnCreate()
 
     self.wingmanCount = 0
     self.wingmen = {}      -- PlaneUnit[]（kind=wingman）
+    self.retiringWingmen = {} -- 已从编队移除、正在播放离场表现的僚机
     self.enemies = {}      -- PlaneUnit[]（kind=enemy/boss）
     self.gates = {}        -- GateComponent[]
     self.buckets = {}      -- BucketComponent[]
@@ -143,17 +151,26 @@ function UIPlaneBattleView:OnCreate()
     self.logic = nil       -- StgBattleLogic 实例（STG 路径）
     self.stgGates = {}     -- StgGate 实例列表（STG 路径的门）
     self.heroEscorts = {}
+    self.isChoicePaused = false
+    self.gateChoicePanel = nil
 
     self:_CreateBattleContentRoot()
     self.bgRenderer = StgBackgroundRenderer.New(self.backgroundRootTf)
     self:_CreatePlayerPlane()
     self.bulletPool = BulletPool.New(self.battleContentTf)
     self.secondaryWeapon = SecondaryWeapon.New(self.battleContentTf)
-    self.secondaryHitCallback = BindCallback(self, self._OnSecondaryHit)
+    -- BindCallback discards return values; this callback must stop the missile
+    -- loop when a kill resets secondary weapons for the boss defeat sequence.
+    self.secondaryHitCallback = function(...) return self:_OnSecondaryHit(...) end
     self.lastHudEnemyCount = -1
 
     self:_CreateHud()
     self.gateFeedback = GateFeedback.New(self.hudContentTf, function(t) self:_RequestHudFont(t) end)
+    self.gateChoicePanel = GateChoicePanel.New(self.transform, function(t) self:_RequestHudFont(t) end, function(effectId)
+        return self:_ApplyGateChoice(effectId)
+    end, function()
+        return self:_SkipGateChoice()
+    end)
     self:_CreateGuide()
     self:_CreateBackButton()
     self:_BuildLevelSelectPanel()
@@ -176,6 +193,10 @@ function UIPlaneBattleView:OnDestroy()
     if self.gateFeedback ~= nil then
         self.gateFeedback:Destroy()
         self.gateFeedback = nil
+    end
+    if self.gateChoicePanel ~= nil then
+        self.gateChoicePanel:Destroy()
+        self.gateChoicePanel = nil
     end
     if self.logic ~= nil then
         self.logic:Destroy()
@@ -244,6 +265,9 @@ function UIPlaneBattleView:OnDestroy()
     self.hudHullText = nil
     self.hudProgressRt = nil
     self.hudTimeText = nil
+    self.hudTimedBuffText = nil
+    self.hudTimedBuffKey = nil
+    self.hudRouteText,self.hasRouteChoices = nil,nil
     self.battleDuration = nil
     self.battleLevelName = nil
     self.lastHudSecond = nil
@@ -308,6 +332,33 @@ function UIPlaneBattleView:_OnGoldChanged(totalGold)
     if self.isInLevelSelect and self.formationPanel ~= nil then self.formationPanel:Refresh() end
 end
 
+function UIPlaneBattleView:_RefreshRouteHud(route)
+    if self.hudRouteText == nil or IsNull(self.hudRouteText) then return end
+    route = route or (self.logic and self.logic:GetRouteChoice()) or "balanced"
+    self.hudRouteText.text = route=="balanced" and "路线：待选择"
+        or ("路线："..GateBattleReport.RouteName(route).." · 已锁定")
+    self.hudRouteText.color = route=="pierce" and Color(.78,.65,1,1) or Color(.5,1,.86,1)
+    self.hudRouteText.gameObject:SetActive(self.hasRouteChoices==true)
+end
+
+function UIPlaneBattleView:_RefreshTimedBuffHud(buffId, remaining)
+    if self.hudTimedBuffText == nil or IsNull(self.hudTimedBuffText) then return end
+    local haste = self.logic ~= nil and self.logic:GetBuffRemaining("haste") or 0
+    local freeze = self.logic ~= nil and self.logic:GetBuffRemaining("freeze") or 0
+    local parts = {}
+    if haste > 0 then table.insert(parts, string.format("速射 +60%%  %d秒", math.ceil(haste))) end
+    if freeze > 0 then table.insert(parts, string.format("敌机冻结  %d秒", math.ceil(freeze))) end
+    local text = table.concat(parts, "   ·   ")
+    local colorKey = freeze > 0 and "freeze" or "haste"
+    local active = #parts > 0
+    local key = text .. "|" .. colorKey .. "|" .. tostring(active)
+    if self.hudTimedBuffKey == key then return end
+    self.hudTimedBuffKey = key
+    self.hudTimedBuffText.text = text
+    self.hudTimedBuffText.color = freeze > 0 and Color(0.75, 0.82, 1, 1) or Color(0.55, 0.92, 1, 1)
+    self.hudTimedBuffText.gameObject:SetActive(active)
+end
+
 function UIPlaneBattleView:_LockBattleHero()
     local mgr = DataCenter.HeroDataManager
     local playerRules = nil
@@ -325,7 +376,7 @@ function UIPlaneBattleView:_LockBattleHero()
         self.playerFlightVisual:SetAircraft(self.battleHero.aircraft.sprite)
     end
     self.playerHullMax = self.battleTeam.hullMax
-    self.battleStats = { damage = {}, taken = {}, absorbed = {} }
+    self.battleStats = { damage = {}, taken = {}, absorbed = {}, supplies = GateBattleReport.New() }
     self:_CreateHeroAircraft()
     self.heroCombat = HeroCombatController.New(self, function(t) self:_RequestHudFont(t) end)
     -- 武器摘要显示在技能栏背板之上；两者都不拦截战场拖动。
@@ -384,6 +435,8 @@ function UIPlaneBattleView:ApplyUserData()
         self.bossWarningGo:SetActive(false)
     end
     self.spawnCursor = 1
+    self.isChoicePaused = false
+    if self.gateChoicePanel ~= nil then self.gateChoicePanel:Hide() end
 
     if levelId == nil then
         self:_ShowLevelSelect()
@@ -484,8 +537,14 @@ function UIPlaneBattleView:_BuildStgCallbacks()
     return {
         -- 关卡数据就绪：设置初始僚机（英雄加成仍走 HeroDataManager）
         OnLevelLoaded = function(cfg)
+            view.gateTargetProgress = { enemy_count = { [""] = 0 }, bucket_damage = {} }
             view.battleLevelName = cfg.levelName
             view.battleDuration = tonumber(cfg.timeline and cfg.timeline.duration) or 0
+            view.hasRouteChoices = false
+            for _, event in ipairs(cfg.timeline and cfg.timeline.events or {}) do
+                if event.routeChoice and event.routeChoice~="" then view.hasRouteChoices=true; break end
+            end
+            view:_RefreshRouteHud("balanced")
             view.lastHudSecond = -1
             view:_RefreshHudLevelName()
             view:_RefreshHudProgress()
@@ -534,6 +593,22 @@ function UIPlaneBattleView:_BuildStgCallbacks()
             view:_OnStgSpawnTrap(trapId, x, y)
         end,
 
+        -- 时间轴教学横幅：复用战斗提示层，持续时间由关卡编辑器配置。
+        OnShowBanner = function(text, duration)
+            if view.gateFeedback ~= nil and text ~= nil and text ~= "" then
+                view.gateFeedback:ShowMessage("作战提示", text, Color(0.45, 0.9, 1, 1), duration)
+            end
+        end,
+
+        OnEffectStarted = function()
+            return GateBattleReport.Snapshot(view:_GetGateRewardState())
+        end,
+        OnEffectExecuted = function(id, before, source)
+            if view.battleStats then
+                GateBattleReport.Record(view.battleStats.supplies, id, before,
+                    GateBattleReport.Snapshot(view:_GetGateRewardState()), source, view.battleTime)
+            end
+        end,
         -- 数值变化：逻辑侧是权威，View 同步表现
         OnWingmanCountChanged = function(count)
             view:_SetWingmanCount(count)
@@ -545,17 +620,46 @@ function UIPlaneBattleView:_BuildStgCallbacks()
                 local unlock = level > before and (level == 1 and " · 追踪导弹解锁" or " · 脉冲激光解锁") or ""
                 view.gateFeedback:ShowMessage(title, WEAPON_NAMES[before] .. " → " .. WEAPON_NAMES[level] .. unlock)
                 view:_PlayGatePulse(Color(0.5, 0.75, 1, 0.8))
+                if level > before then view:_PlayWeaponUpgradeFx(level) end
             end
         end,
         OnRepairHull = function(amount)
-            local before = view.playerHull
+            local before, affected = 0, 0
+            for _, member in ipairs(view.heroCombat and view.heroCombat.state.members or {}) do
+                before = before + (member.dead and 0 or member.hp)
+                if not member.dead and member.hp < member.maxHp then affected = affected + 1 end
+            end
             if view.heroCombat then view.heroCombat:Repair(math.max(0, math.floor(amount))) end
             view:_RefreshHudHull()
             if view.isResolvingGate then
-                local title = view.playerHull > before and "全队装甲修复" or "全队装甲补给"
-                view.gateFeedback:ShowMessage(title, string.format("主机装甲 %d → %d / %d · 不复活阵亡机", before, view.playerHull, view.playerHullMax or PLAYER_HULL_MAX), Color(0.4, 1, 0.65, 1))
+                local after = 0
+                for _, member in ipairs(view.heroCombat and view.heroCombat.state.members or {}) do
+                    after = after + (member.dead and 0 or member.hp)
+                end
+                local title = after > before and "全队装甲修复" or "装甲完好 · 无需修复"
+                view.gateFeedback:ShowMessage(title, string.format("%d 架修复 · 总装甲 %d → %d · 不复活阵亡机", after > before and affected or 0, before, after), Color(0.4, 1, 0.65, 1))
                 view:_PlayGatePulse(Color(0.3, 1, 0.65, 0.8))
             end
+        end,
+        OnWeaponModeChanged = function(mode, before)
+            local names = { spread = "标准弹", pierce = "穿透弹", homing = "追踪弹" }
+            view.gateFeedback.weaponMode = mode
+            view.gateFeedback:SetCount(view.displayLogicalCount or 0, view:_GetBattleWeaponLevel())
+            if mode ~= before then
+                view.gateFeedback:ShowMessage("武器流派已切换", names[before] .. " → " .. names[mode])
+                view:_PlayWeaponUpgradeFx(view:_GetBattleWeaponLevel())
+            end
+        end,
+        OnRouteChoiceChanged = function(route, before)
+            view:_RefreshRouteHud(route)
+            view.gateFeedback:ShowMessage("路线构筑已锁定", GateBattleReport.RouteName(before) .. " → " .. GateBattleReport.RouteName(route))
+            view:_PlayGatePulse(route == "mass" and Color(0.4, 1, 0.8, 0.85) or Color(0.72, 0.45, 1, 0.85))
+        end,
+        OnTimedBuffChanged = function(buffId, remaining)
+            view:_RefreshTimedBuffHud(buffId, remaining)
+        end,
+        OnHeroSkillCharge = function(slot, percent)
+            return view.heroCombat ~= nil and view.heroCombat:ChargeSlot(slot, percent) or false
         end,
         OnGoldChanged = function(battleGold)
             -- logic.gold 是当局累计，存档是历史累计，这里加增量
@@ -602,11 +706,13 @@ function UIPlaneBattleView:_OnStgSpawnRequests(requests)
             enemy.speed = r.speed
         end
         enemy.spawnX = x
+        enemy.stgTemplateId = r.templateId
         -- JSON entryPath.amplitude 控制横向掠过幅度；直线波次保持 0。
         enemy.swayAmplitude = r.entryPathType == "from_top_sine" and (tonumber(r.amplitude) or 0) or 0
         enemy.swayFrequency = 2
         enemy.swayPhase = 0
         enemy.fireInterval = tonumber(r.fireInterval) or 0
+        enemy:ConfigureBehavior(r.behavior, canvasTop)
         table.insert(self.enemies, enemy)
     end
 end
@@ -623,11 +729,19 @@ function UIPlaneBattleView:_OnStgSpawnBoss(bossId)
     boss.hp = bossConfig and bossConfig.totalHp or boss.hp
     boss.maxHp = boss.hp
     boss.stationY = 1050
-    boss.speed = 140
+    boss.speed = 300
+    boss.entryActive = true
+    boss.entryImpactPlayed = false
+    boss.entryBaseScale = 0.72
+    boss.rt.localScale = Vector3(0.72, 0.72, 1)
     boss.bossConfig = bossConfig
     boss.phaseId = nil
     boss.rageShield = 0
     boss.rageShieldMax = 0
+    if cfg and cfg.bossCounterplay then
+        boss.counterMode = self.logic:GetWeaponMode()
+        boss.counterLargeFormation = self.logic:GetWingmanCount() >= 12
+    end
     self:_RefreshBossPhase(boss, true)
     self.boss = boss
     self:_ShowBossWarning(bossConfig and bossConfig.bossName or "首领来袭")
@@ -673,19 +787,14 @@ function UIPlaneBattleView:_OnStgDropDigitalGate(ev)
 
     for i = 1, count do
         local t = trapConfig
-        -- 复制一份，避免多个门共享 hasTriggered
-        local inst = {
-            trapId = t.trapId .. "_" .. i,
-            type = t.type,
-            gateType = t.gateType,
-            paraEntries = t.paraEntries,
-            paraEntriesRight = t.paraEntriesRight,
-            initialValue = t.initialValue or 0,
-            effectTableRef = t.effectTableRef,
-            positionX = (count == 1) and (xMin + xMax) * 0.5
-                or (xMin + (xMax - xMin) * (i - 1) / math.max(1, count - 1)),
-            positionY = ev.positionY or SPAWN_TOP_Y,
-        }
+        -- 复制模板的全部字段，避免新增的冷却、双门比例、资源路径等参数
+        -- 在掉落门上丢失；只覆盖每个实例必须独立的 id/位置。
+        local inst = {}
+        for k, v in pairs(t) do inst[k] = v end
+        inst.trapId = tostring(t.trapId or "drop_gate") .. "_" .. i
+        inst.positionX = (count == 1) and (xMin + xMax) * 0.5
+            or (xMin + (xMax - xMin) * (i - 1) / math.max(1, count - 1))
+        inst.positionY = ev.positionY or SPAWN_TOP_Y
         self:_CreateStgGateVisual(inst)
     end
 end
@@ -703,7 +812,9 @@ function UIPlaneBattleView:_OnStgSpawnTrap(trapId, x, y)
     end
 
     -- 事件 position 覆盖配置 position
-    if x ~= nil and x ~= 0 then trapConfig = self:_CloneTrapWithPos(trapConfig, x, y) end
+    if x ~= nil and y ~= nil and (x ~= 0 or y ~= 0) then
+        trapConfig = self:_CloneTrapWithPos(trapConfig, x, y)
+    end
 
     if trapConfig.type == "digital_gate" then
         self:_CreateStgGateVisual(trapConfig)
@@ -711,7 +822,7 @@ function UIPlaneBattleView:_OnStgSpawnTrap(trapId, x, y)
         -- 油桶：复用旧 BucketComponent（para 传 hp）
         local px = (tonumber(trapConfig.positionX) or 0) * SCREEN_HALF_W
         local py = tonumber(trapConfig.positionY) or SPAWN_TOP_Y
-        local bucket = BucketComponent.New(self.battleContentTf, px, py, trapConfig.hp or 15, nil)
+        local bucket = BucketComponent.New(self.battleContentTf, px, py, trapConfig.hp or 15, nil, trapConfig.trapId)
         table.insert(self.buckets, bucket)
     else
         Logger.Log('#PlaneBattle# 未处理的 trap type=' .. tostring(trapConfig.type))
@@ -743,7 +854,29 @@ function UIPlaneBattleView:_CreateStgGateVisual(trapConfig)
 
     local visual = GateComponent.New(self.battleContentTf, px, py, displayText, nil, kind)
     visual.stgGate = gate  -- 挂上逻辑实例，Update 里结算用
+    local progress = self.gateTargetProgress and self.gateTargetProgress[gate.unlockMode]
+    if progress then gate:TryUnlock(progress[gate.unlockTargetId] or 0) end
+    if gate:IsHeroChargeGate() then
+        local slot = trapConfig.heroChargeSlot or 0
+        visual.chargeTargetName = slot == 0 and "全队英雄" or ("位置" .. slot .. " · 空位")
+        for _, hero in ipairs(self.battleTeam and self.battleTeam.members or {}) do
+            if hero.slot == slot then
+                visual.chargeTargetName = hero.name
+                visual.chargeIconPath = hero.avatar
+                break
+            end
+        end
+    end
     visual:ConfigureStg(_RequestChineseFont)
+    visual.onHitFeedback = function(component, index, event)
+        self:_PlayGateSound(event)
+        local card = component.cards[index]
+        local gx, gy = component:GetLocalPos()
+        local c = card.accent
+        self:_SpawnCombatFx(event == "hit" and "impact.png" or "shield_hit.png",
+            gx + card.rt.anchoredPosition.x, gy, event == "hit" and 48 or 145,
+            Color(c.r, c.g, c.b, 0.85), event == "hit" and 0.12 or 0.32)
+    end
 
     table.insert(self.gates, visual)
     table.insert(self.stgGates, gate)
@@ -859,7 +992,7 @@ end
 --- ---------------------------------------------------------------
 
 function UIPlaneBattleView:_OnDragPlayerPlane(data)
-    if self.isBattleOver or self.isInLevelSelect or self.playerPlaneRt == nil then
+    if self.isBattleOver or self.isInLevelSelect or self.isChoicePaused or self.playerPlaneRt == nil then
         return
     end
 
@@ -909,14 +1042,28 @@ function UIPlaneBattleView:_SetWingmanCount(count)
     if diff > 0 then
         for _ = 1, diff do
             local wingman = PlaneUnit.New(self.battleContentTf, "wingman")
-            if showUpgrade then wingman.flightVisual:PlayJoin() end
+            wingman.fireCd = (#self.wingmen % 3) * WINGMAN_FIRE_INTERVAL / 3
+            wingman.flightVisual:SetSupportStyle()
+            if showUpgrade then
+                local index = #self.wingmen + 1
+                local side = (index % 2 == 0) and -1 or 1
+                local batch = math.floor((index - 1) / 2)
+                wingman.flightVisual:PlayJoin(batch * 0.07, side)
+            end
             table.insert(self.wingmen, wingman)
         end
     elseif diff < 0 then
         for _ = 1, -diff do
             local wingman = table.remove(self.wingmen)
             if wingman ~= nil then
-                wingman:Destroy()
+                local x, y = wingman:GetLocalPos()
+                if self.isResolvingGate and wingman.flightVisual ~= nil then
+                    wingman.flightVisual:PlayLeave((#self.retiringWingmen % 3) * 0.055, ((#self.retiringWingmen % 2) == 0) and -1 or 1)
+                    table.insert(self.retiringWingmen, wingman)
+                    self:_SpawnCombatFx("explosion.png", x, y, 64, Color(1, 0.48, 0.25, 0.9), 0.32)
+                else
+                    wingman:Destroy()
+                end
             end
         end
     end
@@ -930,10 +1077,11 @@ end
 function UIPlaneBattleView:_RefreshWingmanFormation()
     local offsets = FormationLayout.GetOffsets(#self.wingmen)
     local px, py = self:GetPlayerPlanePos()
+    local shift = FormationLayout.GetHorizontalShift(offsets, px, SCREEN_HALF_W - 28)
     for i, wingman in ipairs(self.wingmen) do
         local off = offsets[i]
         if off ~= nil then
-            wingman:SetLocalPos(px + off.x, py + off.y + (#(self.heroEscorts or {}) > 0 and 165 or 0))
+            wingman:SetLocalPos(px + off.x + shift, py + off.y + (#(self.heroEscorts or {}) > 0 and 165 or 0))
         end
     end
     for _, unit in ipairs(self.heroEscorts or {}) do
@@ -949,6 +1097,7 @@ function UIPlaneBattleView:_CreateHeroAircraft()
         if hero.slot ~= 1 then
             local unit = PlaneUnit.New(self.battleContentTf, "wingman", nil, hero.aircraft.sprite)
             unit.hero, unit.formationOffset = hero, offsets[hero.slot]
+            unit.fireCd = (#self.heroEscorts % 3) * WINGMAN_FIRE_INTERVAL / 3
             unit.collideRadius = 24
             table.insert(self.heroEscorts, unit)
         end
@@ -970,6 +1119,11 @@ function UIPlaneBattleView:Update()
         return
     end
 
+    -- 三选一奖励卡打开时只保留 UI 输入，战场、时间轴、子弹和临时增益全部暂停。
+    if self.isChoicePaused then
+        return
+    end
+
     local dt = CS.UnityEngine.Time.deltaTime
     self.battleTime = self.battleTime + dt
     self.heroCombat:Tick(dt)
@@ -987,12 +1141,14 @@ function UIPlaneBattleView:Update()
     self:_UpdateWingmanFire(dt)
     self:_UpdateBossPhase()
     self:_UpdateEnemies(dt)
+    self:_UpdateBossCinematic(dt)
     self:_UpdateCombatFx(dt)
     self:_UpdateBossWarning(dt)
     self:_UpdateGates(dt)
     if self.isBattleOver then return end
+    if self.isChoicePaused then return end
     self:_UpdateBuckets(dt)
-    self.bulletPool:Update(dt)
+    self.bulletPool:Update(dt, self.enemies)
     self:_CheckBulletCollisions()
     if self.bossDefeat ~= nil then return end
     local px, py = self:GetPlayerPlanePos()
@@ -1016,20 +1172,35 @@ function UIPlaneBattleView:Update()
 end
 
 function UIPlaneBattleView:_UpdateFlightVisuals(dt)
+    local haste = math.max(self.logic and self.logic:GetBuffRemaining("haste") or 0,
+        self.heroCombat and self.heroCombat.state.hasteRemaining or 0)
     local x = self:GetPlayerPlanePos()
     if self.playerFlightVisual ~= nil then
+        self.playerFlightVisual:SetHaste(haste)
         self.playerFlightVisual:SetWeaponLevel(self:_GetBattleWeaponLevel())
         self.playerFlightVisual:Update(dt, x, self.battleTime)
     end
     for i, wingman in ipairs(self.wingmen) do
         if wingman.flightVisual ~= nil then
+            wingman.flightVisual:SetHaste(haste)
             wingman.flightVisual.phase = i * 0.7
+            local wx = wingman:GetLocalPos()
+            wingman.flightVisual:Update(dt, wx, self.battleTime)
+        end
+    end
+    for i = #self.retiringWingmen, 1, -1 do
+        local wingman = self.retiringWingmen[i]
+        if wingman == nil or wingman.flightVisual == nil or wingman.flightVisual:IsLeaveDone() then
+            if wingman ~= nil then wingman:Destroy() end
+            table.remove(self.retiringWingmen, i)
+        else
             local wx = wingman:GetLocalPos()
             wingman.flightVisual:Update(dt, wx, self.battleTime)
         end
     end
     for _, unit in ipairs(self.heroEscorts or {}) do
         if not unit.isDead then
+            unit.flightVisual:SetHaste(haste)
             local x = unit:GetLocalPos()
             unit.flightVisual:SetWeaponLevel(self:_GetBattleWeaponLevel())
             unit.flightVisual:Update(dt,x,self.battleTime)
@@ -1077,16 +1248,56 @@ function UIPlaneBattleView:_RefreshBossPhase(boss, isInitial)
     boss.pendingShot = nil
     self:_HideBossAim()
 
+    if selected.phaseId >= 2 and boss.counterMode then
+        if boss.counterMode == "homing" then boss.swayFrequency = boss.swayFrequency * 1.3 end
+        if boss.counterLargeFormation then boss.shotCount = math.min(15, boss.shotCount + 2) end
+    end
+
     if not isInitial then
+        boss.phaseTransition = { age = 0, duration = 0.72, from = boss.phaseId - 1, to = boss.phaseId }
         if selected.phaseId >= 2 and (boss.rageShield or 0) <= 0 then
             boss.rageShieldMax = math.max(180, math.floor((boss.maxHp or 1000) * 0.12))
+            if boss.counterMode == "pierce" then boss.rageShieldMax = math.floor(boss.rageShieldMax * 1.6) end
             boss.rageShield = boss.rageShieldMax
-            self:_ShowBossPhaseNotice((cfg.bossName or "首领") .. "·狂暴阶段 · 护盾启动")
+            local counter = boss.counterMode == "pierce" and " · 穿透反制：强化护盾"
+                or (boss.counterMode == "homing" and " · 追踪反制：高速横移" or "")
+            if boss.counterLargeFormation then counter = counter .. " · 编队反制：弹幕加密" end
+            self:_ShowBossPhaseNotice((cfg.bossName or "首领") .. "·狂暴阶段 · 护盾启动" .. counter)
             local x, y = boss:GetLocalPos()
             self:_SpawnCombatFx("shield_hit.png", x, y, 300, Color(0.32, 0.72, 1, 0.95), 0.75)
         else
             self:_ShowBossPhaseNotice((cfg.bossName or "首领") .. "·狂暴阶段")
         end
+    end
+end
+
+function UIPlaneBattleView:_UpdateBossCinematic(dt)
+    local boss = self.boss
+    if boss == nil or boss.isDead or boss.rt == nil or IsNull(boss.rt) then return end
+    if boss.entryActive then
+        local _, y = boss:GetLocalPos()
+        local progress = math.max(0, math.min(1, 1 - math.max(0, y - boss.stationY) / 600))
+        local scale = 0.72 + 0.28 * progress
+        boss.rt.localScale = Vector3(scale, scale, 1)
+        if boss.stationEntered then
+            boss.entryActive = false
+            boss.rt.localScale = Vector3.one
+            if not boss.entryImpactPlayed then
+                boss.entryImpactPlayed = true
+                local x, y = boss:GetLocalPos()
+                self:_SpawnCombatFx("shield_hit.png", x, y, 360, Color(0.25, 0.75, 1, 0.9), 0.72)
+                self:_SpawnCombatFx("impact.png", x, y - 42, 190, Color(0.65, 0.9, 1, 0.9), 0.4)
+                self:_PlayGateSound("upgrade")
+            end
+        end
+    end
+    local transition = boss.phaseTransition
+    if transition ~= nil then
+        transition.age = transition.age + dt
+        local p = math.min(1, transition.age / transition.duration)
+        local bump = math.sin(p * math.pi) * 0.22
+        boss.rt.localScale = Vector3(1 + bump, 1 + bump, 1)
+        if p >= 1 then boss.phaseTransition = nil; boss.rt.localScale = Vector3.one end
     end
 end
 
@@ -1098,6 +1309,9 @@ function UIPlaneBattleView:_UpdateWingmanFire(dt)
     if dt <= 0 then return end
     local level = self:_GetBattleWeaponLevel()
     local fireRate = self.heroCombat and self.heroCombat.state:GetFireRate() or 1
+    if self.logic ~= nil then
+        fireRate = math.max(fireRate, self.logic:GetFireRateMultiplier())
+    end
     self.primaryFireTimer = (self.primaryFireTimer or 0) + dt * fireRate
     self.primaryFireTimer = math.min(self.primaryFireTimer, PRIMARY_FIRE_INTERVAL * 3)
     while self.primaryFireTimer >= PRIMARY_FIRE_INTERVAL do
@@ -1106,24 +1320,24 @@ function UIPlaneBattleView:_UpdateWingmanFire(dt)
         self:_FirePlayerVolley(x, y + 46, PRIMARY_BULLET_DAMAGE, level, self.playerFlightVisual, true, self.battleHero.id)
     end
 
-    self.wingmanFireTimer = self.wingmanFireTimer + dt * fireRate
-    self.wingmanFireTimer = math.min(self.wingmanFireTimer, WINGMAN_FIRE_INTERVAL * 3)
-    while self.wingmanFireTimer >= WINGMAN_FIRE_INTERVAL do
-        self.wingmanFireTimer = self.wingmanFireTimer - WINGMAN_FIRE_INTERVAL
-        for _, unit in ipairs(self.heroEscorts or {}) do
-            if not unit.isDead then
-                local x,y = unit:GetLocalPos()
-                self:_FirePlayerVolley(x,y+30,WINGMAN_BULLET_DAMAGE,level,unit.flightVisual,false,unit.hero.id)
-            end
+    -- 每架机保持原频率与伤害，分三相开火，避免所有炮口同帧闪亮。
+    local function fireUnit(unit, damage, sourceId, phase)
+        unit.fireCd = math.min((unit.fireCd or phase or 0) + dt * fireRate, WINGMAN_FIRE_INTERVAL * 3)
+        while unit.fireCd >= WINGMAN_FIRE_INTERVAL do
+            unit.fireCd = unit.fireCd - WINGMAN_FIRE_INTERVAL
+            local x, y = unit:GetLocalPos()
+            self:_FirePlayerVolley(x,y+30,damage,level,unit.flightVisual,false,sourceId)
         end
-        if #self.wingmen > 0 then
-            local logicalCount = self.logic and self.logic:GetWingmanCount() or #self.wingmen
-            local multiplier = math.max(1, math.min(24, logicalCount) / #self.wingmen)
-            for _, wingman in ipairs(self.wingmen) do
-                local x, y = wingman:GetLocalPos()
-                self:_FirePlayerVolley(x,y+30,WINGMAN_BULLET_DAMAGE * multiplier,level,wingman.flightVisual,false)
-            end
+    end
+    for i, unit in ipairs(self.heroEscorts or {}) do
+        if not unit.isDead then
+            fireUnit(unit,WINGMAN_BULLET_DAMAGE,unit.hero.id,((i-1)%3)*WINGMAN_FIRE_INTERVAL/3)
         end
+    end
+    local logicalCount = self.logic and self.logic:GetWingmanCount() or #self.wingmen
+    local multiplier = #self.wingmen > 0 and math.max(1, math.min(24, logicalCount) / #self.wingmen) or 1
+    for _, wingman in ipairs(self.wingmen) do
+        fireUnit(wingman,WINGMAN_BULLET_DAMAGE * multiplier)
     end
 end
 
@@ -1135,11 +1349,16 @@ end
 --- 主炮与僚机共享升级弹道；主炮不乘编队数量，伤害仍走现有命中/数字门路径。
 function UIPlaneBattleView:_FirePlayerVolley(x, y, damage, level, visual, primary, sourceId)
     local fired = false
+    local mode = self.logic and self.logic:GetWeaponMode() or "spread"
     local function fire(offset, velocity, ratio)
-        local accepted = self.bulletPool:Fire(x + offset, y, 1, damage * ratio, "player", velocity, level, primary, sourceId)
+        local accepted = self.bulletPool:Fire(x + offset, y, 1, damage * ratio, "player", velocity, level, primary, sourceId, false, mode)
         fired = accepted or fired
     end
-    if level == 1 then
+    if mode == "pierce" then
+        fire(0, 0, 1 + level * 0.25)
+    elseif mode == "homing" then
+        fire(0, 0, 0.9 + level * 0.22)
+    elseif level == 1 then
         fire(-7, 0, 0.65)
         fire(7, 0, 0.65)
     elseif level >= 2 then
@@ -1170,14 +1389,30 @@ end
 --- ---------------------------------------------------------------
 
 function UIPlaneBattleView:_UpdateEnemies(dt)
+    local freeze = self.logic and self.logic:GetBuffRemaining("freeze") or 0
     local i = 1
     while i <= #self.enemies do
         local enemy = self.enemies[i]
         -- 首领蓄力时锁定位置，预警线和随后发射的弹道保持一致。
-        if enemy.pendingShot == nil then
-            enemy:Update(dt)
+        local frozen = freeze > 0
+        if not frozen then
+            if enemy.pendingShot == nil then
+                enemy:Update(dt)
+            end
+            self:_UpdateEnemyFire(enemy, dt)
         end
-        self:_UpdateEnemyFire(enemy, dt)
+        enemy:UpdateRoleVisual(frozen and 0 or dt)
+        if not frozen and enemy.enemyRole == "charger" and enemy.roleState then
+            local phase=enemy.roleState.phase
+            if phase=="warning" and not enemy.chargeWarningHeard then
+                enemy.chargeWarningHeard=true
+                self:_PlayEnemySound("lock")
+            elseif phase=="charge" and not enemy.chargeLaunchHeard then
+                enemy.chargeLaunchHeard=true
+                self:_PlayEnemySound("charge")
+            end
+        end
+        enemy:UpdateFreezeVisual(freeze, self.battleTime)
         local _, y = enemy:GetLocalPos()
         if y < BOTTOM_RECYCLE_Y then
             enemy:Destroy()
@@ -1191,25 +1426,30 @@ end
 --- 敌方射击使用波次 JSON 的 behavior.fireInterval。
 --- 敌弹使用独立阵营，由护盾命中检测消费。
 function UIPlaneBattleView:_UpdateEnemyFire(enemy, dt)
-    if dt <= 0 or enemy == nil or enemy.isDead or (enemy.fireInterval or 0) <= 0 then
+    if dt <= 0 or enemy == nil or enemy.isDead or enemy.entryActive or enemy.phaseTransition ~= nil or (enemy.fireInterval or 0) <= 0 then
         return
     end
     local pending = enemy.pendingShot
     if pending ~= nil then
         pending.remaining = math.max(0, pending.remaining - dt)
-        for _, line in ipairs(self.bossAimLines) do
-            line.img.color = Color(1, 0.23, 0.12, 0.18 + 0.25 * (1 - pending.remaining / pending.duration))
+        if enemy.kind == "boss" then
+            for _, line in ipairs(self.bossAimLines) do
+                line.img.color = Color(1, 0.23, 0.12, 0.18 + 0.25 * (1 - pending.remaining / pending.duration))
+            end
+        else
+            enemy:ShowAttackWarning(pending.count, pending.spread, pending.y, 1 - pending.remaining / pending.duration, false)
         end
         if pending.remaining <= 0 then
             self:_FireEnemyVolley(pending.x, pending.y, pending.count, pending.spread)
             enemy.pendingShot = nil
+            if enemy.roleVisual then enemy.roleVisual:PlayFire() end
             enemy.fireTimer = 0
-            self:_HideBossAim()
+            if enemy.kind == "boss" then self:_HideBossAim() else enemy:HideAttackWarning() end
         end
         return
     end
     local x, y = enemy:GetLocalPos()
-    if y < 360 or y > 1400 then
+    if y < 360 or y > math.min(1400, (enemy.canvasHeight or 1500) - 100) then
         return
     end
     if enemy.kind == "boss" and not enemy.stationEntered then
@@ -1218,11 +1458,16 @@ function UIPlaneBattleView:_UpdateEnemyFire(enemy, dt)
     enemy.fireTimer = (enemy.fireTimer or 0) + dt
     local count = math.max(1, math.min(15, enemy.shotCount or 1))
     local spread = math.max(0, math.min(140, enemy.spreadAngle or 0))
-    local warning = math.min(BOSS_SHOT_WARNING, enemy.fireInterval * 0.5)
-    if enemy.kind == "boss" and enemy.fireTimer >= enemy.fireInterval - warning then
+    local warning = enemy.kind == "boss" and math.min(BOSS_SHOT_WARNING, enemy.fireInterval * .5)
+        or (enemy.warningDuration or .75)
+    if (enemy.kind == "boss" or enemy.enemyRole == "armored") and enemy.fireTimer >= math.max(0, enemy.fireInterval - warning) then
         enemy.pendingShot = { x = x, y = y - 28, count = count, spread = spread,
             remaining = warning, duration = warning }
-        self:_ShowBossAim(enemy.pendingShot)
+        if enemy.kind == "boss" then self:_ShowBossAim(enemy.pendingShot)
+        else
+            enemy:ShowAttackWarning(count, spread, y - 28, 0, false)
+            self:_PlayEnemySound("lock")
+        end
         return
     end
     if enemy.fireTimer < enemy.fireInterval then
@@ -1293,40 +1538,208 @@ function UIPlaneBattleView:_PlayGatePulse(color)
     self:_SpawnCombatFx("shield_hit.png", px, py + 25, 160, color, 0.35)
 end
 
+function UIPlaneBattleView:_PlayWeaponUpgradeFx(level)
+    local px, py = self:GetPlayerPlanePos()
+    self:_SpawnCombatFx("shield_hit.png", px, py + 28, 230, Color(0.35, 0.95, 1, 0.95), 0.58)
+    self:_SpawnCombatFx("impact.png", px, py + 34, 125, Color(1, 0.82, 0.28, 0.95), 0.34)
+    for _, unit in ipairs(self.wingmen or {}) do
+        local x, y = unit:GetLocalPos()
+        self:_SpawnCombatFx("shield_hit.png", x, y, 74, Color(0.4, 0.95, 1, 0.78), 0.3)
+    end
+    if self.secondaryWeapon ~= nil then self.secondaryWeapon:Reset() end
+    self:_PlayGateSound("upgrade")
+end
+
+--- 所有门共用节流，散射/多机命中不会同帧叠加音效；仍走全局 Effect 音量/静音设置。
+function UIPlaneBattleView:_PlayGateSound(event)
+    local path = GATE_SOUNDS[event]
+    if path == nil then return end
+    self.gateSoundTimes = self.gateSoundTimes or {}
+    local group = event == "hit" and "hit" or ((event == "gain" or event == "loss") and "pass" or "tier")
+    local now = CS.UnityEngine.Time.realtimeSinceStartup
+    local interval = group == "hit" and 0.12 or 0.25
+    if now - (self.gateSoundTimes[group] or -math.huge) < interval then return end
+    self.gateSoundTimes[group] = now
+    CS.GameEntry.Sound:PlayEffect(path, false, group == "hit" and 0.24 or 0.55)
+end
+
+-- Combat cues use the existing Effect group, respect its mute/volume, and never loop.
+function UIPlaneBattleView:_PlayEnemySound(event)
+    local paths={light=SoundAssets.STG_EnemyLightDown,heavy=SoundAssets.STG_EnemyHeavyDown,
+        charge_down=SoundAssets.STG_EnemyChargeDown,lock=SoundAssets.STG_EnemyLock,charge=SoundAssets.STG_EnemyCharge}
+    local path=paths[event]
+    if not path then return end
+    local group=(event=="lock" or event=="charge") and "warning" or "death"
+    local now=CS.UnityEngine.Time.realtimeSinceStartup
+    self.enemySoundTimes=self.enemySoundTimes or {}
+    if now-(self.enemySoundTimes[group] or -math.huge)<(group=="warning" and .28 or .12) then return end
+    self.enemySoundTimes[group]=now
+    local id=CS.GameEntry.Sound:PlayEffect(path,false,group=="warning" and .32 or .42)
+    self.enemySoundIds=self.enemySoundIds or {}
+    table.insert(self.enemySoundIds,id)
+    if #self.enemySoundIds>16 then CS.GameEntry.Sound:StopSound(table.remove(self.enemySoundIds,1)) end
+end
+
 --- 返回主机即将经过的数字门选择预览；只做表现，不提前执行门效果。
 function UIPlaneBattleView:_GetGatePreview(gate)
-    if gate == nil or gate.stgGate == nil then return nil end
+    if gate == nil then return nil end
+    local _, gateY = gate:GetLocalPos()
+    local _, playerY = self:GetPlayerPlanePos()
+    local distance = gateY - playerY
+    if distance < -80 or distance > 430 then return nil end
+    -- 旧版表驱动的阈值门没有 StgGate 逻辑对象，也必须提前说明后果。
+    if gate.stgGate == nil then
+        local current = tonumber(self.wingmanCount) or 0
+        if gate.kind == "lock" then
+            local required = tonumber(gate.threshold) or 0
+            local enough = current >= required
+            local color = enough and Color(0.35, 1, 0.65, 1) or Color(1, 0.72, 0.3, 1)
+            return enough and "编队达标 · 可通过" or string.format("编队不足 · 还差 %d 架", required - current),
+                enough and "保持航线通过检查门" or "优先选择增援门，当前穿过将判负",
+                color, "legacy-lock:" .. tostring(required) .. ":" .. tostring(current), 820
+        end
+        local text = gate.legacyText ~= nil and tostring(gate.legacyText.text or "") or ""
+        local negative = gate.kind == "subtract" or string.find(text, "-", 1, true) ~= nil
+        local x = gate:GetLocalPos()
+        local leftSide = x < 0
+        return negative and "危险门 · 需要避开" or "数字门 · 可获得增援",
+            negative and "向另一侧移动，避免编队损失" or "保持航线通过，领取当前奖励",
+            negative and Color(1, 0.42, 0.28, 1) or Color(0.35, 0.92, 1, 1),
+            "legacy:" .. tostring(gate.kind) .. ":" .. text, nil,
+            { left = { state = negative and (leftSide and "bad" or "good") or (leftSide and "good" or "neutral"), text = negative and (leftSide and "危险" or "推荐") or (leftSide and "通过" or "观察") }, right = { state = negative and (leftSide and "good" or "bad") or (leftSide and "neutral" or "good"), text = negative and (leftSide and "推荐" or "危险") or (leftSide and "观察" or "通过") }, recommended = negative and (leftSide and "right" or "left") or (leftSide and "left" or "right") }
+    end
     local g = gate.stgGate
+    if g:IsChoiceGate() then
+        return "战术补给 · 三选一", "穿门后暂停战场，选择一项临时增益", Color(0.55, 0.82, 1, 1), "choice:" .. tostring(g.trapConfig.trapId), nil
+    end
+    if not g:IsUnlocked() then
+        local progress, required = g:GetUnlockProgress()
+        return "目标门 · 尚未解锁", string.format("%s %.0f / %.0f · 解锁后穿门领取",
+            g.unlockMode == "bucket_damage" and "目标伤害" or "敌机击破", progress, required),
+            Color(.65, .78, .95, 1), "locked:" .. tostring(g) .. ":" .. progress, nil
+    end
+    if g:IsHeroChargeGate() then
+        return "英雄技能充能", string.format("%s · 通过充能 %.0f%%", gate.chargeTargetName or "英雄", g.trapConfig.heroChargePercent),
+            Color(.8, .7, 1, 1), "hero-charge:" .. tostring(g), nil
+    end
     local TriggerEnum = require "Game.STG.Trigger.StgTriggerEnum"
     local EffectTable = TriggerEnum.EffectTable
     local function effectText(effectId)
         local meta = effectId ~= nil and EffectTable[effectId] or nil
         if meta == nil then return "待计算" end
-        if meta.type == TriggerEnum.Type.UpgradeWeapon then return "武器升级" end
-        if meta.type == TriggerEnum.Type.RepairHull then return "装甲 +" .. tostring(meta.para or 1) end
-        if meta.type == TriggerEnum.Type.MultiplyWingman then return "编队 ×" .. tostring(meta.para or 2) end
-        return meta.text or "效果"
+        local reward = GateRewardPreview.Build(meta, self:_GetGateRewardState())
+        return reward.available and (reward.title .. " " .. reward.value) or (reward.title .. " · " .. reward.button)
     end
-    local _, gateY = gate:GetLocalPos()
-    local _, playerY = self:GetPlayerPlanePos()
-    local distance = gateY - playerY
-    if distance < -80 or distance > 430 then return nil end
     if g.gateType == "gate_duet" then
-        local left = effectText(g.leftEffectId)
-        local right = effectText(g.rightEffectId)
+        local left = (g.leftValue or 0) < 0 and string.format("%+d 僚机", g.leftValue) or effectText(g.leftEffectId)
+        local right = (g.rightValue or 0) < 0 and string.format("%+d 僚机", g.rightValue) or effectText(g.rightEffectId)
         local leftColor = (g.leftValue or 0) < 0 and Color(1, 0.42, 0.28, 1) or Color(0.35, 0.92, 1, 1)
         local rightColor = (g.rightValue or 0) < 0 and Color(1, 0.42, 0.28, 1) or Color(0.35, 0.92, 1, 1)
+        local ls, rs = gate:GetStgSideState(true), gate:GetStgSideState(false)
+        local leftState = ls.negative and "bad" or "good"
+        local rightState = rs.negative and "bad" or "good"
+        local recommended = (ls.negative and not rs.negative) and "right" or ((rs.negative and not ls.negative) and "left" or "both")
         return "左右选边 · 左 " .. left .. " / 右 " .. right,
             "向左飞：" .. left .. "　向右飞：" .. right,
-            leftColor, "duet:" .. tostring(g.leftValue) .. ":" .. tostring(g.rightValue) .. ":" .. left .. ":" .. right
+            leftColor, "duet:" .. tostring(g.leftValue) .. ":" .. tostring(g.rightValue) .. ":" .. left .. ":" .. right, nil,
+            { left = { state = leftState, text = left }, right = { state = rightState, text = right }, recommended = recommended }
     end
     local text = effectText(g.effectId)
     local negative = (g.value or 0) < 0 or (EffectTable[g.effectId] ~= nil and EffectTable[g.effectId].type == TriggerEnum.Type.RemoveWingman)
     local color = negative and Color(1, 0.42, 0.28, 1) or Color(0.35, 0.92, 1, 1)
     if g.gateType == "gate_step" then
-        return "火力充能 · 当前 " .. tostring(math.floor(g.accumulatedDamage or 0)), "通过后领取：" .. text, Color(0.65, 0.72, 1, 1), "step:" .. tostring(g.accumulatedDamage) .. ":" .. text
+        return "火力充能 · 当前 " .. tostring(math.floor(g.accumulatedDamage or 0)), "通过后领取：" .. text, Color(0.65, 0.72, 1, 1), "step:" .. tostring(g.accumulatedDamage) .. ":" .. text, nil,
+            { left = { state = "neutral", text = "保持航线" }, right = { state = "neutral", text = "保持航线" }, recommended = "both" }
     end
-    return negative and "危险门 · 选择后会减员" or "数字门 · 选择奖励", "通过后领取：" .. text, color, "gate:" .. tostring(g.value) .. ":" .. text
+    local gx = gate:GetLocalPos()
+    local centered = math.abs(gx) < 40
+    local leftSide = gx < 0
+    local guide
+    if centered then
+        guide = { left = { state = negative and "bad" or "good", text = negative and "危险" or "通过" },
+            right = { state = negative and "bad" or "good", text = negative and "危险" or "通过" }, recommended = "both" }
+    elseif negative then
+        guide = { left = { state = leftSide and "bad" or "good", text = leftSide and "危险" or "推荐" },
+            right = { state = leftSide and "good" or "bad", text = leftSide and "推荐" or "危险" },
+            recommended = leftSide and "right" or "left" }
+    else
+        guide = { left = { state = leftSide and "good" or "neutral", text = leftSide and "通过" or "观察" },
+            right = { state = leftSide and "neutral" or "good", text = leftSide and "观察" or "通过" },
+            recommended = leftSide and "left" or "right" }
+    end
+    return negative and "危险门 · 选择后会减员" or "数字门 · 选择奖励", "通过后领取：" .. text, color, "gate:" .. tostring(g.value) .. ":" .. text, nil, guide
+end
+
+function UIPlaneBattleView:_GetGateRewardState()
+    local heroState = self.heroCombat and self.heroCombat.state
+    return {
+        gold = self.logic and self.logic:GetGold() or 0,
+        weaponLevel = self:_GetBattleWeaponLevel(),
+        weaponMode = self.logic and self.logic:GetWeaponMode() or "spread",
+        routeChoice = self.logic and self.logic:GetRouteChoice() or "balanced",
+        wingmanCount = self.logic and self.logic:GetWingmanCount() or #self.wingmen,
+        members = heroState and heroState.members or {},
+        hasteRemaining = math.max(self.logic and self.logic:GetBuffRemaining("haste") or 0,
+            heroState and heroState.hasteRemaining or 0),
+        freezeRemaining = self.logic and self.logic:GetBuffRemaining("freeze") or 0,
+    }
+end
+
+function UIPlaneBattleView:_ResumeGateChoice()
+    self.isChoicePaused = false
+    self.gateChoicePanel:Hide()
+    -- A bullet waiting at the plane must not cause unavoidable damage on menu dismissal.
+    for _, member in ipairs(self.heroCombat and self.heroCombat.state.members or {}) do
+        if not member.dead then member.invincible = math.max(member.invincible or 0, 0.6) end
+    end
+end
+
+function UIPlaneBattleView:_SkipGateChoice()
+    if not self.isChoicePaused or self.logic == nil or self.logic.pendingGateChoices == nil then return false end
+    local TriggerEnum = require "Game.STG.Trigger.StgTriggerEnum"
+    local state = self:_GetGateRewardState()
+    for _, id in ipairs(self.logic.pendingGateChoices) do
+        if GateRewardPreview.Build(TriggerEnum.EffectTable[id], state).available then return false end
+    end
+    if not self.logic:SkipGateChoice() then return false end
+    self:_ResumeGateChoice()
+    self.gateFeedback:ShowMessage("继续作战", "补给均无收益，本次未领取额外增益")
+    return true
+end
+
+function UIPlaneBattleView:_ApplyGateChoice(effectId)
+    if not self.isChoicePaused or self.logic == nil then return false end
+    local TriggerEnum = require "Game.STG.Trigger.StgTriggerEnum"
+    local preview = GateRewardPreview.Build(TriggerEnum.EffectTable[effectId], self:_GetGateRewardState())
+    if not preview.available then return false end
+    local before = self.logic:GetWingmanCount()
+    self.isResolvingGate = true
+    local ok = self.logic:ResolveGateChoice(effectId)
+    self.isResolvingGate = false
+    if not ok then return false end
+    self:_ResumeGateChoice()
+    local meta = TriggerEnum.EffectTable[effectId]
+    if ok and meta ~= nil and self.gateFeedback ~= nil then
+        self.gateFeedback:ShowMessage(preview.title .. " · 已部署", preview.receipt, Color(0.45, 1, 0.78, 1))
+        self:_PlayGatePulse(Color(0.45, 1, 0.78, 0.85))
+        self:_PlayGateSound("gain")
+        local after = self.logic:GetWingmanCount()
+        if after ~= before then self.gateFeedback:Show(before, after) end
+    end
+    return ok
+end
+
+function UIPlaneBattleView:_OpenGateChoice(gate)
+    local ids = gate and gate.stgGate and gate.stgGate:GetChoicePool() or {}
+    local TriggerEnum = require "Game.STG.Trigger.StgTriggerEnum"
+    if self.isChoicePaused or self.gateChoicePanel == nil or self.logic == nil then return false end
+    if not self.logic:BeginGateChoice(ids) then
+        Logger.LogError("#STG# 三选一配置无效，需要3个不同且存在的 effectId")
+        return false
+    end
+    self.isChoicePaused = self.gateChoicePanel:Show(self.logic.pendingGateChoices, TriggerEnum.EffectTable, self:_GetGateRewardState())
+    if not self.isChoicePaused then self.logic:SkipGateChoice() end
+    return self.isChoicePaused
 end
 
 function UIPlaneBattleView:_UpdateGates(dt)
@@ -1335,9 +1748,10 @@ function UIPlaneBattleView:_UpdateGates(dt)
     local previewGate, previewDistance = nil, math.huge
     while i <= #self.gates do
         local gate = self.gates[i]
+        if gate.kind == "lock" then gate:RefreshThresholdDisplay(self.wingmanCount) end
         gate:Update(dt)
 
-        if not gate.hasTriggered and gate.stgGate ~= nil then
+        if not gate.hasTriggered then
             local _, gateY = gate:GetLocalPos()
             local distance = gateY - py
             if distance >= -80 and distance < previewDistance then
@@ -1347,12 +1761,16 @@ function UIPlaneBattleView:_UpdateGates(dt)
 
         if gate:CheckTrigger(px, py) then
             local before = self.logic and self.logic:GetWingmanCount() or #self.wingmen
+            local resolved, negative = true, gate.kind == "subtract"
             self.isResolvingGate = true
             if gate.stgGate ~= nil then
                 -- ★ STG 门：逻辑实例结算（内部走 StgBattleLogic:ExecuteEffect）
-                local gateX = gate:GetLocalPos()
-                local isLeft = px <= gateX  -- 双选门以自身中心分栏，支持编辑器横向偏移。
-                gate.stgGate:OnPass(isLeft)
+                local isLeft = gate:IsLeftAt(px)
+                negative = gate:GetStgSideState(isLeft).negative
+                resolved = gate.stgGate:OnPass(isLeft)
+                if resolved == "choice" then
+                    self:_OpenGateChoice(gate)
+                end
             elseif gate.kind == "lock" then
                 -- Legacy 锁定门
                 if self.wingmanCount >= (gate.threshold or 0) then
@@ -1367,6 +1785,7 @@ function UIPlaneBattleView:_UpdateGates(dt)
                 self:_ExecuteTrigger(gate.triggerMeta)
             end
             self.isResolvingGate = false
+            if resolved and resolved ~= "choice" and gate.kind ~= "lock" then self:_PlayGateSound(negative and "loss" or "gain") end
             local after = self.logic and self.logic:GetWingmanCount() or #self.wingmen
             if after ~= before and self.gateFeedback ~= nil then
                 self.gateFeedback:Show(before, after)
@@ -1376,6 +1795,10 @@ function UIPlaneBattleView:_UpdateGates(dt)
             -- 已结算的门立即回收，避免停留在编队上遮挡收益表现。
             gate:Destroy()
             table.remove(self.gates, i)
+            if self.isChoicePaused then
+                self.gateFeedback:HidePreview()
+                return
+            end
         elseif gate:IsOutOfBounds(BOTTOM_RECYCLE_Y) then
             gate:Destroy()
             table.remove(self.gates, i)
@@ -1385,10 +1808,35 @@ function UIPlaneBattleView:_UpdateGates(dt)
     end
     if self.gateFeedback ~= nil then
         if previewGate ~= nil then
-            local title, detail, color, key = self:_GetGatePreview(previewGate)
-            if title ~= nil then self.gateFeedback:ShowPreview(title, detail, color, key) end
+            local title, detail, color, key, positionY, routeGuide = self:_GetGatePreview(previewGate)
+            if title ~= nil then self.gateFeedback:ShowPreview(title, detail, color, key, positionY, routeGuide)
+            else self.gateFeedback:HidePreview() end
         else
             self.gateFeedback:HidePreview()
+        end
+    end
+end
+
+function UIPlaneBattleView:_RecordGateTargetProgress(mode, targetId, delta)
+    if self.gateTargetProgress == nil then
+        self.gateTargetProgress = { enemy_count = { [""] = 0 }, bucket_damage = {} }
+    end
+    local bucket = self.gateTargetProgress[mode]
+    if bucket == nil then bucket = {}; self.gateTargetProgress[mode] = bucket end
+    bucket[targetId] = (bucket[targetId] or 0) + math.max(0, tonumber(delta) or 0)
+    for _, visual in ipairs(self.gates or {}) do
+        local g = visual.stgGate
+        if g ~= nil and not g:IsUnlocked() and g.unlockMode == mode then
+            if mode == "bucket_damage" then g:OnTargetBucketAttacked(targetId, bucket[targetId] or 0)
+            elseif g.unlockTargetId == "" or g.unlockTargetId == targetId then g:TryUnlock(bucket[g.unlockTargetId] or 0) end
+            visual:RefreshStgDisplay()
+            if g:IsUnlocked() then
+                visual:RefreshStgLayout()
+                visual:ShowUnlocked()
+                self:_PlayGateSound("upgrade")
+                local gx, gy = visual:GetLocalPos()
+                self:_SpawnCombatFx("shield_hit.png", gx, gy, 180, Color(0.35, 0.8, 1, 0.9), 0.45)
+            end
         end
     end
 end
@@ -1485,7 +1933,7 @@ function UIPlaneBattleView:_CheckBulletsAgainstTarget(bullets, target, onHit)
     local i = 1
     while i <= #bullets do
         local b = bullets[i]
-        if b.faction == "enemy" then
+        if b.faction == "enemy" or (b.hitTargets and b.hitTargets[target]) then
             i = i + 1
         else
             local pos = b.rt.anchoredPosition
@@ -1500,7 +1948,9 @@ function UIPlaneBattleView:_CheckBulletsAgainstTarget(bullets, target, onHit)
                     self:_SpawnCombatFx("impact.png", pos.x, pos.y, 48, Color(1, 0.88, 0.5, 0.95), 0.16)
                     target.nextImpactAt = self.battleTime + 0.08
                 end
-                self.bulletPool:Remove(b)
+                if b.hitTargets then b.hitTargets[target] = true end
+                b.remainingHits = (b.remainingHits or 1) - 1
+                if b.remainingHits <= 0 then self.bulletPool:Remove(b) else i = i + 1 end
                 if onHit ~= nil then
                     onHit(dead)
                 end
@@ -1547,13 +1997,18 @@ function UIPlaneBattleView:_TakeBattleTargetDamage(target, damage, x, y)
         end
         if damage <= 0 then return false end
     end
-    self._lastDamageApplied = damage
-    return target:TakeDamage(damage)
+    local beforeHp = math.max(0, target.hp or 0)
+    self._lastDamageApplied = math.min(beforeHp, damage)
+    local dead = target:TakeDamage(damage)
+    if target.bucketId ~= nil and target.bucketId ~= "" then
+        self:_RecordGateTargetProgress("bucket_damage", target.bucketId, math.min(beforeHp, damage))
+    end
+    return dead
 end
 
 function UIPlaneBattleView:_RecordBattleDamage(target, damage, sourceId)
     if self.battleStats == nil or (target.kind ~= "enemy" and target.kind ~= "boss") then return end
-    local amount = math.min(math.max(0,target.hp or 0),math.max(0,damage or 0))
+    local amount = math.max(0,damage or 0) -- 调用者传入命中前血量封顶的实际扣血，击杀后 HP 已为 0。
     local key = sourceId or "reinforcement"
     self.battleStats.damage[key] = (self.battleStats.damage[key] or 0) + amount
 end
@@ -1561,9 +2016,14 @@ end
 function UIPlaneBattleView:_OnEnemyDead(enemy)
     for i, e in ipairs(self.enemies) do
         if e == enemy then
+            if enemy.kind == "enemy" then
+                self:_RecordGateTargetProgress("enemy_count", "", 1)
+                if enemy.stgTemplateId ~= nil and enemy.stgTemplateId ~= "" then
+                    self:_RecordGateTargetProgress("enemy_count", enemy.stgTemplateId, 1)
+                end
+            end
             local x, y = enemy:GetLocalPos()
-            self:_SpawnCombatFx("explosion.png", x, y, enemy.kind == "boss" and 250 or 115, Color(1, 1, 1, 1))
-            self:_SpawnCombatFx("impact.png", x, y, enemy.kind == "boss" and 220 or 95, Color(1, 0.7, 0.3, 0.95))
+            self:_SpawnEnemyDefeatFx(enemy,x,y)
             self:_SpawnGoldFlyup(x, y)
             if enemy.kind == "boss" then
                 self:_HideBossAim()
@@ -1579,6 +2039,33 @@ function UIPlaneBattleView:_OnEnemyDead(enemy)
             enemy:Destroy()
             table.remove(self.enemies, i)
             return
+        end
+    end
+end
+
+function UIPlaneBattleView:_SpawnEnemyDefeatFx(enemy,x,y)
+    local profile=EnemyRolePresentation.Get(enemy.enemyRole)
+    if not profile then
+        self:_SpawnCombatFx("explosion.png",x,y,enemy.kind=="boss" and 250 or 115,Color(1,1,1,1))
+        self:_SpawnCombatFx("impact.png",x,y,enemy.kind=="boss" and 220 or 95,Color(1,.7,.3,.95))
+        return
+    end
+    local c=profile.deathColor
+    self:_PlayEnemySound(profile.deathSound)
+    self:_SpawnCombatFx("explosion.png",x,y,profile.deathSize,Color(1,c[2],c[3],1),.36)
+    if enemy.enemyRole=="armored" then
+        self:_SpawnCombatFx("shield_hit.png",x,y,210,Color(1,.65,.2,.6),.5)
+        self:_SpawnCombatFx("explosion.png",x-30,y+15,75,Color(1,.85,.5,1),.44)
+        self:_SpawnCombatFx("explosion.png",x+30,y-10,75,Color(1,.85,.5,1),.48)
+    end
+    local count=enemy.enemyRole=="armored" and 4 or 2
+    for i=1,count do
+        local fx=self:_AcquireCombatFx(FX_DIR.."energy_bolt.png",x,y,enemy.enemyRole=="swarm" and 18 or 28,Color(c[1],c[2],c[3],.9),.35,false)
+        if fx then
+            local angle=i/count*math.pi*2
+            fx.vx,fx.vy=math.cos(angle)*150,math.sin(angle)*150
+            if enemy.enemyRole=="charger" then fx.vy=160;fx.vx=(i==1 and -1 or 1)*80 end
+            fx.spin=i%2==0 and 240 or -240
         end
     end
 end
@@ -1642,6 +2129,8 @@ function UIPlaneBattleView:_AcquireCombatFx(path, x, y, size, color, lifetime, g
         fx = { go = go, rt = rt, img = img, path = path }
     end
     fx.age, fx.lifetime, fx.size = 0, lifetime, size
+    fx.vx,fx.vy,fx.spin=nil,nil,nil
+    fx.rt.localRotation=CS.UnityEngine.Quaternion.identity
     fx.color, fx.gold, fx.rise = color or Color(1, 1, 1, 1), gold, gold and 95 or 0
     fx.rt.anchoredPosition = Vector2(x, y)
     fx.rt.sizeDelta = Vector2(size, size)
@@ -1649,6 +2138,7 @@ function UIPlaneBattleView:_AcquireCombatFx(path, x, y, size, color, lifetime, g
     fx.rt:SetAsLastSibling()
     fx.go:SetActive(true)
     table.insert(self.combatFx, fx)
+    return fx
 end
 
 function UIPlaneBattleView:_SpawnCombatFx(spriteName, x, y, size, color, lifetime)
@@ -1670,6 +2160,11 @@ function UIPlaneBattleView:_UpdateCombatFx(dt)
                 fx.rt.sizeDelta = Vector2(fx.size * (1 - progress * 0.3), fx.size * (1 - progress * 0.3))
             else
                 fx.rt.sizeDelta = Vector2(fx.size * (0.55 + progress * 0.9), fx.size * (0.55 + progress * 0.9))
+            end
+            if fx.vx or fx.vy then
+                local p=fx.rt.anchoredPosition
+                fx.rt.anchoredPosition=Vector2(p.x+(fx.vx or 0)*dt,p.y+(fx.vy or 0)*dt)
+                fx.rt.localRotation=CS.UnityEngine.Quaternion.Euler(0,0,(fx.spin or 0)*fx.age)
             end
             local c = fx.color or Color(1, 1, 1, 1)
             fx.img.color = Color(c.r, c.g, c.b, (1 - progress) * c.a)
@@ -1789,6 +2284,7 @@ function UIPlaneBattleView:_SpawnByRow(row)
         table.insert(self.enemies, boss)
     elseif row.type == 5 then -- 锁定门（阈值门，横跨全屏不分左右）
         local gate = GateComponent.New(self.battleContentTf, 0, SPAWN_TOP_Y, row.para, nil, "lock")
+        gate:ConfigureThresholdGate(_RequestChineseFont, self.wingmanCount)
         table.insert(self.gates, gate)
     end
 end
@@ -1944,7 +2440,7 @@ function UIPlaneBattleView:_CreateHud()
     bossRt.anchorMin = Vector2(0.5, 1)
     bossRt.anchorMax = Vector2(0.5, 1)
     bossRt.pivot = Vector2(0.5, 1)
-    bossRt.anchoredPosition = Vector2(0, -176)
+    bossRt.anchoredPosition = Vector2(0, -216)
     bossRt.sizeDelta = Vector2(520, 44)
     local bossBg = bossGo:AddComponent(Image)
     bossBg.color = Color(0.06, 0.03, 0.08, 0.9)
@@ -1983,7 +2479,7 @@ function UIPlaneBattleView:_CreateHud()
     shieldRt.anchorMin = Vector2(0.5, 1)
     shieldRt.anchorMax = Vector2(0.5, 1)
     shieldRt.pivot = Vector2(0.5, 1)
-    shieldRt.anchoredPosition = Vector2(0, -228)
+    shieldRt.anchoredPosition = Vector2(0, -268)
     shieldRt.sizeDelta = Vector2(520, 32)
     local shieldBg = shieldGo:AddComponent(Image)
     shieldBg.color = Color(0.02, 0.12, 0.22, 0.92)
@@ -2030,6 +2526,34 @@ function UIPlaneBattleView:_CreateHud()
     self:_RequestHudFont(timeText)
     self.hudTimeText = timeText
 
+    local buffGo = GameObject("HudTimedBuff", RectTransform)
+    buffGo.transform:SetParent(self.hudContentTf, false)
+    local buffRt = buffGo:GetComponent(RectTransform)
+    buffRt.anchorMin, buffRt.anchorMax = Vector2(0.5, 1), Vector2(0.5, 1)
+    buffRt.pivot = Vector2(0.5, 1)
+    buffRt.anchoredPosition = Vector2(0, -182)
+    buffRt.sizeDelta = Vector2(650, 30)
+    local buffText = buffGo:AddComponent(TMPText)
+    buffText.fontSize, buffText.alignment = 20, TMPAlign.Center
+    buffText.enableWordWrapping = false
+    buffText.color, buffText.raycastTarget = Color(0.55, 0.92, 1, 1), false
+    self:_RequestHudFont(buffText)
+    self.hudTimedBuffText = buffText
+    buffGo:SetActive(false)
+
+    local routeGo = GameObject("HudRoute", RectTransform)
+    routeGo.transform:SetParent(self.hudContentTf, false)
+    local routeRt = routeGo:GetComponent(RectTransform)
+    routeRt.anchorMin, routeRt.anchorMax = Vector2(0.5, 1), Vector2(0.5, 1)
+    routeRt.pivot = Vector2(0.5, 1)
+    routeRt.anchoredPosition, routeRt.sizeDelta = Vector2(0, -155), Vector2(650, 24)
+    local routeText = routeGo:AddComponent(TMPText)
+    routeText.fontSize, routeText.alignment = 20, TMPAlign.Center
+    routeText.enableWordWrapping, routeText.raycastTarget = false, false
+    self:_RequestHudFont(routeText)
+    self.hudRouteText = routeText
+    routeGo:SetActive(false)
+
     -- 关卡名：顶部居中
     local nameGo = GameObject("HudLevelName", RectTransform)
     nameGo.transform:SetParent(self.hudContentTf, false)
@@ -2037,11 +2561,13 @@ function UIPlaneBattleView:_CreateHud()
     nameRt.anchorMin = Vector2(0.5, 1)
     nameRt.anchorMax = Vector2(0.5, 1)
     nameRt.pivot = Vector2(0.5, 1)
-    nameRt.anchoredPosition = Vector2(0, -42)
-    nameRt.sizeDelta = Vector2(250, 48)
+    nameRt.anchoredPosition = Vector2(30, -38)
+    nameRt.sizeDelta = Vector2(350, 48)
     local nameText = nameGo:AddComponent(TMPText)
     nameText.text = ""
-    nameText.fontSize = 32
+    nameText.fontSize = 28
+    nameText.enableWordWrapping = false
+    nameText.enableAutoSizing, nameText.fontSizeMin, nameText.fontSizeMax = true, 22, 28
     nameText.fontStyle = CS.TMPro.FontStyles.Bold
     nameText.alignment = TMPAlign.Center
     nameText.color = Color(1, 1, 1, 1)
@@ -2056,8 +2582,8 @@ function UIPlaneBattleView:_CreateHud()
     coinIconRt.anchorMin = Vector2(0, 1)
     coinIconRt.anchorMax = Vector2(0, 1)
     coinIconRt.pivot = Vector2(0, 1)
-    coinIconRt.anchoredPosition = Vector2(30, -103)
-    coinIconRt.sizeDelta = Vector2(28, 28)
+    coinIconRt.anchoredPosition = Vector2(100, -49)
+    coinIconRt.sizeDelta = Vector2(22, 22)
     local coinIconImg = coinIconGo:AddComponent(Image)
     coinIconImg.raycastTarget = false
     coinIconImg:LoadSprite(RES_DIR .. "PlaneBattle_icon_coin.png")
@@ -2068,11 +2594,14 @@ function UIPlaneBattleView:_CreateHud()
     goldRt.anchorMin = Vector2(0, 1)
     goldRt.anchorMax = Vector2(0, 1)
     goldRt.pivot = Vector2(0, 1)
-    goldRt.anchoredPosition = Vector2(66, -103)
-    goldRt.sizeDelta = Vector2(160, 42)
+    goldRt.anchoredPosition = Vector2(128, -43)
+    goldRt.sizeDelta = Vector2(90, 38)
     local goldText = goldGo:AddComponent(TMPText)
     goldText.text = "0"
-    goldText.fontSize = 28
+    goldText.fontSize = 24
+    goldText.enableWordWrapping = false
+    goldText.enableAutoSizing, goldText.fontSizeMin, goldText.fontSizeMax = true, 16, 24
+    goldText.overflowMode = CS.TMPro.TextOverflowModes.Ellipsis
     goldText.fontStyle = CS.TMPro.FontStyles.Bold
     goldText.alignment = TMPAlign.Left
     goldText.color = Color(1, 0.85, 0.2, 1)
@@ -2158,7 +2687,7 @@ function UIPlaneBattleView:_CreateHud()
     hullRt.anchorMin = Vector2(0, 1)
     hullRt.anchorMax = Vector2(0, 1)
     hullRt.pivot = Vector2(0, 1)
-    hullRt.anchoredPosition = Vector2(100, -46)
+    hullRt.anchoredPosition = Vector2(30, -103)
     hullRt.sizeDelta = Vector2(150, 38)
     local hullText = hullGo:AddComponent(TMPText)
     hullText.fontSize = 26
@@ -2451,6 +2980,21 @@ end
 --- ---------------------------------------------------------------
 
 function UIPlaneBattleView:_ClearBattleObjects()
+    for _,id in ipairs(self.enemySoundIds or {}) do CS.GameEntry.Sound:StopSound(id) end
+    self.enemySoundIds,self.enemySoundTimes=nil,nil
+    self.isChoicePaused = false
+    self.pendingGateChoices = nil
+    if self.gateChoicePanel ~= nil then self.gateChoicePanel:Hide() end
+    if self.hudTimedBuffText ~= nil and not IsNull(self.hudTimedBuffText) then
+        self.hudTimedBuffText.text = ""
+        self.hudTimedBuffText.gameObject:SetActive(false)
+    end
+    self.hudTimedBuffKey = nil
+    self.hasRouteChoices = false
+    if self.hudRouteText ~= nil and not IsNull(self.hudRouteText) then
+        self.hudRouteText.text = ""
+        self.hudRouteText.gameObject:SetActive(false)
+    end
     if self.heroCombat ~= nil then self.heroCombat:Delete(); self.heroCombat = nil end
     for _, unit in ipairs(self.heroEscorts or {}) do unit:Destroy() end
     self.heroEscorts = {}
@@ -2494,6 +3038,10 @@ function UIPlaneBattleView:_ClearBattleObjects()
         wingman:Destroy()
     end
     self.wingmen = {}
+    for _, wingman in ipairs(self.retiringWingmen or {}) do
+        if wingman ~= nil then wingman:Destroy() end
+    end
+    self.retiringWingmen = {}
 
     for _, enemy in ipairs(self.enemies or {}) do
         enemy:Destroy()
@@ -2512,6 +3060,7 @@ function UIPlaneBattleView:_ClearBattleObjects()
 
     -- STG 门是纯逻辑对象，无 GameObject，清列表即可
     self.stgGates = {}
+    self.gateTargetProgress = nil
 
     if self.bulletPool ~= nil then
         self.bulletPool:Clear()

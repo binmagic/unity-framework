@@ -9,6 +9,7 @@ local Vector2 = CS.UnityEngine.Vector2
 local Color = CS.UnityEngine.Color
 local Quaternion = CS.UnityEngine.Quaternion
 local Vector3 = CS.UnityEngine.Vector3
+local CanvasGroup = typeof(CS.UnityEngine.CanvasGroup)
 
 function FlightVisual.New(parent, size, spritePath, phase, showArmament)
     local self = setmetatable({}, FlightVisual)
@@ -21,6 +22,20 @@ function FlightVisual.New(parent, size, spritePath, phase, showArmament)
     self.rt = go:GetComponent(RectTransform)
     self.rt.sizeDelta = size
     self.go = go
+    self.group = go:AddComponent(CanvasGroup)
+    self.group.alpha = 1
+    self.group.blocksRaycasts, self.group.interactable = false, false
+
+    -- 速射光环放在机身后面，使用现有透明特效，不改变碰撞或拖动坐标。
+    local hasteGo = GameObject("HasteAura", RectTransform)
+    hasteGo.transform:SetParent(go.transform, false)
+    self.hasteRt = hasteGo:GetComponent(RectTransform)
+    self.hasteRt.sizeDelta = Vector2(size.x * 1.5, size.y * 1.3)
+    self.hasteImg = hasteGo:AddComponent(Image)
+    self.hasteImg.raycastTarget = false
+    self.hasteImg:LoadSprite("Assets/Main/Sprites/STG/CombatFx/shield_hit.png")
+    hasteGo:SetActive(false)
+    self.hasteGo, self.hasteRemaining = hasteGo, 0
 
     -- 使用项目已有的透明火焰状子弹精灵作发动机尾焰，子节点不拦输入。
     local tailGo = GameObject("EngineTrail", RectTransform)
@@ -105,26 +120,73 @@ function FlightVisual:Update(dt, x, time)
     end
     if self.joinAge ~= nil then
         self.joinAge = self.joinAge + dt
-        local progress = math.min(1, self.joinAge / 0.45)
-        local remaining = (1 - progress) * (1 - progress)
-        self.rt.anchoredPosition = Vector2(0, -65 * remaining)
-        self.rt.localScale = Vector3(1 - 0.25 * remaining, 1 - 0.25 * remaining, 1)
-        if progress >= 1 then self.joinAge = nil end
+        if self.joinAge < 0 then
+            -- 分批入场：等待前一架完成一小段飞入，避免多架叠在同一位置。
+            self.rt.anchoredPosition = Vector2(self.joinStartX or 0, -65)
+            self.rt.localScale = Vector3(0.75, 0.75, 1)
+        else
+            local progress = math.min(1, self.joinAge / (self.joinDuration or 0.45))
+            local eased = 1 - (1 - progress) * (1 - progress)
+            local overshoot = progress < 1 and math.sin(progress * math.pi) * 8 or 0
+            self.rt.anchoredPosition = Vector2((self.joinStartX or 0) * (1 - eased), -65 * (1 - eased) + overshoot)
+            local scale = 0.75 + 0.25 * (1 - (1 - progress) * (1 - progress))
+            self.rt.localScale = Vector3(scale, scale, 1)
+            if progress >= 1 then self.joinAge = nil end
+        end
+    end
+    if self.leaveAge ~= nil then
+        self.leaveAge = self.leaveAge + dt
+        if self.leaveAge >= 0 then
+            local progress = math.min(1, self.leaveAge / (self.leaveDuration or 0.38))
+            local eased = progress * progress
+            local side = self.leaveSide or 1
+            self.rt.anchoredPosition = Vector2(side * 105 * eased, -18 * eased - 72 * eased * eased)
+            local scale = 1 - 0.52 * eased
+            self.rt.localScale = Vector3(scale, scale, 1)
+            self.rt.localRotation = Quaternion.Euler(0, 0, side * 34 * eased)
+            self.group.alpha = 1 - progress
+            if progress >= 1 then self.leaveAge, self.leaveDone = nil, true end
+        end
     end
     local pulse = 1 + math.sin(time * 25 + self.phase) * 0.16
     local boost = math.min(0.35, math.abs(speed) / 1000)
-    self.tailRt.sizeDelta = Vector2(self.tailWidth, self.tailLength * (pulse + boost))
+    local hasted = self.hasteRemaining > 0
+    local visible = hasted and (self.hasteRemaining > 1 or math.sin(time * 18) > 0)
+    if self.hasteVisible ~= visible then
+        self.hasteVisible = visible
+        self.hasteGo:SetActive(visible)
+    end
+    if visible then
+        local strength = self.supportStyle and 0.5 or 1
+        self.hasteImg.color = Color(0.25, 1, 0.9, (0.28 + 0.1 * math.sin(time * 8 + self.phase)) * strength)
+    end
+    self.tailImg.color = hasted and Color(0.3, 1, 0.75, 1) or Color(0.3, 0.85, 1, 0.85)
+    self.tailRt.sizeDelta = Vector2(self.tailWidth * (hasted and 1.3 or 1),
+        self.tailLength * (pulse + boost) * (hasted and 1.45 or 1))
     if self.fireAge ~= nil then
         self.fireAge = self.fireAge + dt
         local remaining = math.max(0, 1 - self.fireAge / 0.12)
         self.bodyRt.anchoredPosition = Vector2(0, -3 * remaining)
         for _, muzzle in ipairs(self.muzzles) do
             muzzle.img.color = Color(self.fireColor.r, self.fireColor.g, self.fireColor.b, remaining)
-            muzzle.rt.sizeDelta = Vector2(self.muzzleSize * (0.6 + remaining * 0.4), self.muzzleSize)
+            local size = self.muzzleSize * (hasted and 1.3 or 1)
+            muzzle.rt.sizeDelta = Vector2(size * (0.6 + remaining * 0.4), size)
             if remaining <= 0 then muzzle.go:SetActive(false) end
         end
         if remaining <= 0 then self.fireAge = nil end
     end
+end
+
+--- 普通增援机减少尾焰和炮口面积，主机与英雄护航机保留完整反馈。
+function FlightVisual:SetSupportStyle()
+    if self.supportStyle then return end
+    self.supportStyle = true
+    self.muzzleSize = self.muzzleSize * 0.55
+    self.tailWidth, self.tailLength = self.tailWidth * 0.75, self.tailLength * 0.75
+end
+
+function FlightVisual:SetHaste(remaining)
+    self.hasteRemaining = math.max(0, remaining or 0)
 end
 
 function FlightVisual:SetAircraft(spritePath)
@@ -141,7 +203,8 @@ end
 
 function FlightVisual:PlayFire(level)
     self.fireAge = 0
-    self.fireColor = level >= 2 and Color(1, 0.75, 0.25, 1) or Color(0.5, 0.9, 1, 1)
+    self.fireColor = self.hasteRemaining > 0 and Color(0.45, 1, 0.75, 1)
+        or (level >= 2 and Color(1, 0.75, 0.25, 1) or Color(0.5, 0.9, 1, 1))
     self.bodyRt.anchoredPosition = Vector2(0, -3)
     for i, muzzle in ipairs(self.muzzles) do
         local visible = level == 0 and i == 2 or level == 1 and i ~= 2 or level >= 2
@@ -156,7 +219,12 @@ function FlightVisual:Reset(x)
     self.bank = 0
     self.lastX = x
     self.joinAge = nil
+    self.leaveAge, self.leaveDone = nil, false
+    self.group.alpha = 1
     self.fireAge = nil
+    self.hasteRemaining, self.hasteVisible = 0, false
+    self.hasteGo:SetActive(false)
+    self.tailImg.color = Color(0.3, 0.85, 1, 0.85)
     self.bodyRt.anchoredPosition = Vector2(0, 0)
     for _, muzzle in ipairs(self.muzzles) do muzzle.go:SetActive(false) end
     self.rt.localScale = Vector3.one
@@ -165,10 +233,27 @@ function FlightVisual:Reset(x)
     self.tailRt.sizeDelta = Vector2(self.tailWidth, self.tailLength)
 end
 
-function FlightVisual:PlayJoin()
-    self.joinAge = 0
-    self.rt.anchoredPosition = Vector2(0, -65)
+function FlightVisual:PlayJoin(delay, side)
+    self.leaveAge, self.leaveDone = nil, false
+    self.group.alpha = 1
+    self.joinAge = -(math.max(0, tonumber(delay) or 0))
+    self.joinDuration = 0.45
+    self.joinStartX = (tonumber(side) or 0) * 58
+    self.rt.anchoredPosition = Vector2(self.joinStartX, -65)
     self.rt.localScale = Vector3(0.75, 0.75, 1)
+end
+
+function FlightVisual:PlayLeave(delay, side)
+    self.joinAge = nil
+    self.leaveDone = false
+    self.leaveAge = -(math.max(0, tonumber(delay) or 0))
+    self.leaveDuration = 0.38
+    self.leaveSide = (tonumber(side) or 1) < 0 and -1 or 1
+    self.group.alpha = 1
+end
+
+function FlightVisual:IsLeaveDone()
+    return self.leaveDone == true
 end
 
 return FlightVisual

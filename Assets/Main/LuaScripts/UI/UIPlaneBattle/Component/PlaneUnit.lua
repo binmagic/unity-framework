@@ -7,6 +7,9 @@
 local PlaneUnit = {}
 PlaneUnit.__index = PlaneUnit
 local FlightVisual = require "UI.UIPlaneBattle.Component.FlightVisual"
+local EnemyRole = require "UI.UIPlaneBattle.Logic.EnemyRoleBehavior"
+local RolePresentation = require "UI.UIPlaneBattle.Logic.EnemyRolePresentation"
+local RoleVisual = require "UI.UIPlaneBattle.Component.EnemyRoleVisual"
 
 local GameObject    = CS.UnityEngine.GameObject
 local RectTransform = typeof(CS.UnityEngine.RectTransform)
@@ -81,6 +84,96 @@ function PlaneUnit.New(parentTransform, kind, metaId, aircraftPath)
     return self
 end
 
+-- Reuse existing aircraft art; size, silhouette marker and warning distinguish each role.
+function PlaneUnit:ConfigureBehavior(config, canvasHeight)
+    if self.kind ~= "enemy" then return end
+    self.roleState = EnemyRole.New(config)
+    local cfg = self.roleState.config
+    self.enemyRole, self.canvasHeight = cfg.role, canvasHeight
+    self.shotCount, self.spreadAngle = cfg.shotCount, cfg.spreadAngle
+    self.warningDuration = cfg.warningDuration
+    if cfg.role == "armored" then self.fireTimer = math.max(0, self.fireInterval - cfg.warningDuration) end
+    self.baseColor = Color(1,1,1,1)
+    self.img.color = self.baseColor
+    local profile = RolePresentation.Get(cfg.role)
+    if profile then
+        self.rt.sizeDelta = Vector2(profile.width,profile.height)
+        self.collideRadius = profile.radius
+        self.img.preserveAspect = true
+        self.img:LoadSprite(profile.sprite)
+        self.roleVisual = RoleVisual.New(self.go.transform,cfg.role,profile)
+    end
+end
+
+-- Lines are owned by this aircraft, so concurrent heavy enemies never alter Boss warnings.
+function PlaneUnit:ShowAttackWarning(count, spread, length, progress, charge)
+    self.warningLines = self.warningLines or {}
+    for i = 1, count do
+        local line = self.warningLines[i]
+        if not line then
+            local go = GameObject("EnemyAttackWarning" .. i, RectTransform)
+            go.transform:SetParent(self.go.transform, false)
+            local rt = go:GetComponent(RectTransform)
+            rt.pivot = Vector2(.5, 1)
+            local img = go:AddComponent(Image)
+            img.raycastTarget = false
+            line = {go = go, rt = rt, img = img}
+            self.warningLines[i] = line
+        end
+        local ratio = count == 1 and 0 or ((i - 1) / (count - 1) - .5)
+        local angle = ratio * spread
+        line.rt.anchoredPosition = Vector2(0, charge and -self.rt.sizeDelta.y * .5 or -28)
+        line.rt.sizeDelta = Vector2(charge and self.collideRadius * 2 or 3, math.max(1, length) / math.cos(angle * math.pi / 180))
+        line.rt.localRotation = CS.UnityEngine.Quaternion.Euler(0, 0, angle)
+        line.img.color = charge and Color(1, .22, .12, .025 + .035 * progress) or Color(1, .65, .18, .25 + .28 * progress)
+        line.go:SetActive(true)
+    end
+    for i = count + 1, #self.warningLines do self.warningLines[i].go:SetActive(false) end
+    if charge then self:_ShowChargeLane(length,progress) end
+end
+function PlaneUnit:HideAttackWarning()
+    for _, line in ipairs(self.warningLines or {}) do line.go:SetActive(false) end
+    for _, part in ipairs(self.laneParts or {}) do part.go:SetActive(false) end
+end
+
+-- Border rails and moving chevrons make direction legible without an opaque red curtain.
+function PlaneUnit:_ShowChargeLane(length,progress)
+    if not self.laneParts then
+        self.laneParts={}
+        for i=1,14 do
+            local go=GameObject("ChargeLanePart"..i,RectTransform)
+            go.transform:SetParent(self.go.transform,false)
+            local rt=go:GetComponent(RectTransform)
+            local img=go:AddComponent(Image);img.raycastTarget=false
+            self.laneParts[i]={go=go,rt=rt,img=img}
+        end
+    end
+    local width=self.collideRadius*2
+    local top=-self.rt.sizeDelta.y*.5
+    for i,part in ipairs(self.laneParts) do
+        local x,y,w,h,angle
+        if i<=2 then
+            x,y,w,h,angle=(i==1 and -1 or 1)*width*.5,top-length*.5,2,length,0
+        else
+            local index=math.floor((i-3)/2)
+            local side=i%2==1 and -1 or 1
+            x,y,w,h,angle=side*6,top-50-index*140-progress*85,3,18,-side*40
+        end
+        part.rt.anchoredPosition,part.rt.sizeDelta=Vector2(x,y),Vector2(w,h)
+        part.rt.localRotation=CS.UnityEngine.Quaternion.Euler(0,0,angle)
+        part.img.color=Color(1,.36,.18,.4+.35*progress)
+        part.go:SetActive(i<=2 or y>top-length+10)
+    end
+end
+
+function PlaneUnit:UpdateRoleVisual(dt)
+    if not self.roleVisual then return end
+    local phase=self.roleState and self.roleState.phase or "approach"
+    local pending=self.pendingShot
+    local progress=pending and 1-pending.remaining/pending.duration or nil
+    self.roleVisual:Update(dt,phase,progress)
+end
+
 function PlaneUnit:SetLocalPos(x, y)
     if self.rt == nil or IsNull(self.rt) then
         return
@@ -103,7 +196,7 @@ function PlaneUnit:Update(dt)
     end
     self.flightTime = (self.flightTime or 0) + dt
     self.hitFlashTime = math.max(0, self.hitFlashTime - dt)
-    self.img.color = self.hitFlashTime > 0 and Color(1, 0.4, 0.25, 1) or Color(1, 1, 1, 1)
+    self.img.color = self.hitFlashTime > 0 and Color(1, 0.4, 0.25, 1) or self.baseColor or Color(1, 1, 1, 1)
     if self.healthBarGo ~= nil then
         self.healthBarTime = math.max(0, self.healthBarTime - dt)
         self.healthBarGo:SetActive(self.healthBarTime > 0)
@@ -120,11 +213,47 @@ function PlaneUnit:Update(dt)
         end
         self:SetLocalPos(stationX, stationY)
     elseif self.speed and self.speed ~= 0 then
-        if self.swayAmplitude and self.swayAmplitude > 0 then
+        if self.swayAmplitude and self.swayAmplitude > 0 and (not self.roleState or self.roleState.phase == "approach") then
             x = (self.spawnX or x) + math.sin(self.flightTime * (self.swayFrequency or 1.5) + (self.swayPhase or 0)) * self.swayAmplitude
         end
-        self:SetLocalPos(x, y - self.speed * dt)
+        local distance = self.speed * dt
+        if self.roleState then
+            distance = EnemyRole.Step(self.roleState, y, self.canvasHeight, self.speed, dt)
+            if self.roleState.phase == "warning" then
+                self:ShowAttackWarning(1, 0, y - self.rt.sizeDelta.y * .5, 1 - self.roleState.remaining / self.warningDuration, true)
+            elseif self.enemyRole == "charger" then
+                self:HideAttackWarning()
+            end
+        end
+        self:SetLocalPos(x, y - distance)
     end
+end
+
+--- 冻结表现单独更新，冻结期间不推进飞行和射击计时；最后一秒闪烁预告解冻。
+function PlaneUnit:UpdateFreezeVisual(remaining, time)
+    local frozen = remaining > 0
+    if frozen and self.freezeGo == nil then
+        local go = GameObject("FreezeShell", RectTransform)
+        go.transform:SetParent(self.go.transform, false)
+        local rt = go:GetComponent(RectTransform)
+        rt.sizeDelta = self.rt.sizeDelta * 1.3
+        self.freezeImg = go:AddComponent(Image)
+        self.freezeImg.raycastTarget = false
+        self.freezeImg:LoadSprite("Assets/Main/Sprites/STG/CombatFx/shield_hit.png")
+        self.freezeGo = go
+    end
+    local visible = frozen and (remaining > 1 or math.sin(time * 18) > 0)
+    if self.freezeGo ~= nil and visible ~= self.freezeVisible then
+        self.freezeGo:SetActive(visible)
+    end
+    self.freezeVisible = visible
+    if frozen then
+        self.img.color = visible and Color(0.4, 0.82, 1, 1) or Color(0.8, 0.94, 1, 1)
+        self.freezeImg.color = Color(0.3, 0.78, 1, 0.45)
+    elseif self.wasFrozen then
+        self.img.color = self.hitFlashTime > 0 and Color(1, 0.4, 0.25, 1) or self.baseColor or Color(1, 1, 1, 1)
+    end
+    self.wasFrozen = frozen
 end
 
 --- 扣血，返回是否死亡
@@ -152,7 +281,7 @@ function PlaneUnit:_ShowHealthBar()
         go.transform:SetParent(self.go.transform, false)
         local rt = go:GetComponent(RectTransform)
         rt.sizeDelta = Vector2(48, 6)
-        rt.anchoredPosition = Vector2(0, self.rt.sizeDelta.y * 0.5 + 10)
+        rt.anchoredPosition = Vector2(0, -self.rt.sizeDelta.y * 0.5 - 10)
         local bg = go:AddComponent(Image)
         bg.color = Color(0.03, 0.06, 0.09, 0.9)
         bg.raycastTarget = false
@@ -185,6 +314,8 @@ function PlaneUnit:Destroy()
     self.healthBarGo = nil
     self.healthBarFillRt = nil
     self.healthBarTime = nil
+    self.freezeGo, self.freezeImg = nil, nil
+    self.roleState, self.warningLines, self.roleVisual, self.laneParts = nil, nil, nil, nil
 end
 
 return PlaneUnit

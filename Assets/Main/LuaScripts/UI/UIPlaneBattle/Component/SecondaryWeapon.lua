@@ -57,6 +57,7 @@ function SecondaryWeapon:__delete()
 end
 
 function SecondaryWeapon:Reset()
+    self.resetVersion = (self.resetVersion or 0) + 1
     for i = #self.missiles, 1, -1 do self:_Recycle(i) end
     self.missileTimer, self.laserTimer, self.laserRemaining = 0, 0, 0
     self.level = 0
@@ -150,6 +151,7 @@ function SecondaryWeapon:Update(dt, level, x, y, enemies, onHit)
         self:Reset()
         self.level = level
     end
+    local resetVersion = self.resetVersion
     local nearest = level >= 1 and self:_FindTarget(enemies, x, y, y + 60) or nil
     if level >= 1 then
         self.missileTimer = math.min(MISSILE_INTERVAL, self.missileTimer + dt)
@@ -190,7 +192,8 @@ function SecondaryWeapon:Update(dt, level, x, y, enemies, onHit)
         end
         if hit then
             self:_Recycle(i)
-            if onHit(target, 10, nx, ny) then return end
+            local stop = onHit(target, 10, nx, ny)
+            if stop or self.resetVersion ~= resetVersion then return end
         elseif m.age >= 3.5 or ny > self.topY + 80 or ny < 0 or math.abs(nx) > 480 then
             self:_Recycle(i)
         end

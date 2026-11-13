@@ -28,7 +28,11 @@ function StgBattleLogic.New()
     self.result = Const.BattleResult.None
     self.wingmanCount = 0
     self.weaponLevel = 0
+    self.weaponMode = "spread"
+    self.routeChoice = "balanced"
     self.gold = 0
+    self.timedBuffs = {}
+    self.pendingGateChoices = nil
     self.elapsed = 0
     self.activeBossCount = 0
     self.timelineFinished = false
@@ -72,6 +76,9 @@ end
 function StgBattleLogic:_BuildRunnerCallbacks()
     local cb = self.callbacks
     local runnerCb = {}
+    runnerCb.ShouldDispatchEvent = function(routeChoice)
+        return routeChoice == nil or routeChoice == "" or routeChoice == self.routeChoice
+    end
 
     -- 波次：交给 WaveSpawner 算编队，不再直接透传 templateId
     runnerCb.OnSpawnEnemyWave = function(templateId, offsetX)
@@ -127,12 +134,86 @@ function StgBattleLogic:StartLevel(levelId)
     self.fsm:Switch(Const.BattleStage.Init, levelId)
 end
 
+function StgBattleLogic:ChargeHeroSkill(slot, percent)
+    local callback = self.callbacks.OnHeroSkillCharge
+    return callback ~= nil and callback(slot, percent) == true
+end
+
 function StgBattleLogic:Update(dt)
-    if self.fsm == nil then
+    if self.fsm == nil or self.pendingGateChoices ~= nil then
         return
     end
+    self:_UpdateTimedBuffs(dt)
     -- Play Stage 内部驱动 runner / waveSpawner，这里只推 FSM
     self.fsm:Update(dt)
+end
+
+--- 只有本次补给列出的三种效果可领取；先消耗请求，再执行奖励以防重入。
+function StgBattleLogic:BeginGateChoice(effectIds)
+    if self.pendingGateChoices ~= nil or self.result ~= Const.BattleResult.None
+        or type(effectIds) ~= "table" or #effectIds ~= 3 then return false end
+    local seen, choices = {}, {}
+    for _, id in ipairs(effectIds) do
+        if StgTriggerEnum.EffectTable[id] == nil or seen[id] then return false end
+        seen[id] = true
+        choices[#choices + 1] = id
+    end
+    self.pendingGateChoices = choices
+    return true
+end
+
+function StgBattleLogic:ResolveGateChoice(effectId)
+    for _, id in ipairs(self.pendingGateChoices or {}) do
+        if id == effectId then
+            self.pendingGateChoices = nil
+            return self:ExecuteEffect(id, "choice")
+        end
+    end
+    return false
+end
+
+-- UI permits this only when every offered reward has no effect on the current team.
+function StgBattleLogic:SkipGateChoice()
+    if self.pendingGateChoices == nil then return false end
+    self.pendingGateChoices = nil
+    return true
+end
+
+function StgBattleLogic:GetFireRateMultiplier()
+    local buff = self.timedBuffs.haste
+    return buff and buff.remaining > 0 and buff.value or 1
+end
+
+function StgBattleLogic:ApplyTimedBuff(buffId, duration, value)
+    buffId = tostring(buffId or "")
+    duration = math.max(0, tonumber(duration) or 0)
+    if (buffId ~= "haste" and buffId ~= "freeze") or duration ~= duration
+        or duration == math.huge or duration <= 0 then return false end
+    local buff = self.timedBuffs[buffId] or { remaining = 0, value = value }
+    buff.remaining = math.max(buff.remaining or 0, duration)
+    buff.value = value
+    self.timedBuffs[buffId] = buff
+    if self.callbacks.OnTimedBuffChanged then self.callbacks.OnTimedBuffChanged(buffId, buff.remaining, value) end
+    return true
+end
+
+function StgBattleLogic:_UpdateTimedBuffs(dt)
+    dt = math.max(0, tonumber(dt) or 0)
+    if dt <= 0 then return end
+    for buffId, buff in pairs(self.timedBuffs) do
+        buff.remaining = math.max(0, (buff.remaining or 0) - dt)
+        if self.callbacks.OnTimedBuffChanged then self.callbacks.OnTimedBuffChanged(buffId, buff.remaining, buff.value) end
+        if buff.remaining <= 0 then self.timedBuffs[buffId] = nil end
+    end
+end
+
+function StgBattleLogic:GetBuffRemaining(buffId)
+    local buff = self.timedBuffs[tostring(buffId or "")]
+    return buff and math.max(0, buff.remaining or 0) or 0
+end
+
+function StgBattleLogic:IsEnemyFrozen()
+    return self:GetBuffRemaining("freeze") > 0
 end
 
 --- ---------- 战斗数值（供门/机关触发） ----------
@@ -161,6 +242,29 @@ function StgBattleLogic:UpgradeWeapon(count)
     if self.callbacks.OnWeaponChanged then self.callbacks.OnWeaponChanged(self.weaponLevel, before) end
 end
 
+function StgBattleLogic:SetWeaponMode(mode)
+    if mode ~= "spread" and mode ~= "pierce" and mode ~= "homing" then return false end
+    local before = self.weaponMode
+    self.weaponMode = mode
+    if self.callbacks.OnWeaponModeChanged then self.callbacks.OnWeaponModeChanged(mode, before) end
+    return true
+end
+
+function StgBattleLogic:SetRouteChoice(route)
+    if route ~= "mass" and route ~= "pierce" and route ~= "homing" then return false end
+    local before = self.routeChoice
+    self.routeChoice = route
+    if route == "mass" then
+        self:MultiplyWingman(2)
+    elseif route == "pierce" then
+        self:SetWeaponMode("pierce")
+    else
+        self:SetWeaponMode("homing")
+    end
+    if self.callbacks.OnRouteChoiceChanged then self.callbacks.OnRouteChoiceChanged(route, before) end
+    return true
+end
+
 function StgBattleLogic:AddGold(count)
     self.gold = self.gold + (tonumber(count) or 0)
     if self.callbacks.OnGoldChanged then
@@ -169,17 +273,24 @@ function StgBattleLogic:AddGold(count)
 end
 
 --- 门/机关命中时按 effectId 执行效果
-function StgBattleLogic:ExecuteEffect(effectId)
-    return StgTriggerEnum.Execute(effectId, {
+function StgBattleLogic:ExecuteEffect(effectId, source)
+    local before = self.callbacks.OnEffectStarted and self.callbacks.OnEffectStarted()
+    local ok = StgTriggerEnum.Execute(effectId, {
         AddWingman      = function(n) self:AddWingman(n) end,
         RemoveWingman   = function(n) self:RemoveWingman(n) end,
         AddGold         = function(n) self:AddGold(n) end,
         MultiplyWingman = function(k) self:MultiplyWingman(k) end,
         UpgradeWeapon  = function(n) self:UpgradeWeapon(n) end,
+        SetWeaponMode  = function(mode) self:SetWeaponMode(mode) end,
+        SetRouteChoice = function(route) self:SetRouteChoice(route) end,
         RepairHull     = function(n)
             if self.callbacks.OnRepairHull then self.callbacks.OnRepairHull(n) end
         end,
+        TimedHaste     = function(n) self:ApplyTimedBuff("haste", n, 1.6) end,
+        FreezeEnemy    = function(n) self:ApplyTimedBuff("freeze", n, 0) end,
     })
+    if ok and self.callbacks.OnEffectExecuted then self.callbacks.OnEffectExecuted(effectId, before, source or "gate") end
+    return ok
 end
 
 --- ---------- 结算 ----------
@@ -209,6 +320,7 @@ function StgBattleLogic:_Finish(result, cb)
         return
     end
     self.result = result
+    self.pendingGateChoices = nil
     self.fsm:Switch(Const.BattleStage.Result, result)
     Logger.Log('#STG# 战斗结束 result=' .. tostring(result) .. ' levelId=' .. tostring(self.levelId))
     if cb then
@@ -220,6 +332,8 @@ end
 
 function StgBattleLogic:GetWingmanCount() return self.wingmanCount end
 function StgBattleLogic:GetWeaponLevel() return self.weaponLevel end
+function StgBattleLogic:GetWeaponMode() return self.weaponMode or "spread" end
+function StgBattleLogic:GetRouteChoice() return self.routeChoice or "balanced" end
 function StgBattleLogic:GetGold() return self.gold end
 function StgBattleLogic:GetConfig() return self.cfg end
 function StgBattleLogic:GetLevelId() return self.levelId end
@@ -248,6 +362,10 @@ function StgBattleLogic:Destroy()
     self.activeBossCount = nil
     self.timelineFinished = nil
     self.weaponLevel = nil
+    self.weaponMode = nil
+    self.routeChoice = nil
+    self.timedBuffs = nil
+    self.pendingGateChoices = nil
 end
 
 return StgBattleLogic

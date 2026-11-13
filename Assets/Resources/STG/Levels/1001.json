@@ -2,7 +2,7 @@
   "version": "1.0",
   "levelId": "1001",
   "levelName": "第1关 · 星云突围",
-  "description": "太空数字门：射击升档、双路选择、武器/护盾补给，85秒首领入场。保留战机与英雄加成。",
+  "description": "首关完整节奏：增援选路教学、目标解锁、三选一战术补给、火力与英雄充能、精英压迫和首领战；全部由关卡编辑器时间轴配置。",
   "seed": 0,
   "basicScroll": {
     "baseSpeed": 300,
@@ -12,8 +12,8 @@
   },
   "playerRules": {
     "initialWingman": 3,
-    "heroArmorMultiplier": 1.0,
-    "heroSkillCooldownMultiplier": 1.0
+    "heroArmorMultiplier": 1,
+    "heroSkillCooldownMultiplier": 1
   },
   "backgroundLayers": [
     {
@@ -119,10 +119,10 @@
       },
       "behavior": {
         "type": "straight_down",
-        "fireInterval": 1.5,
+        "fireInterval": 1.25,
         "bulletType": ""
       },
-      "hp": 150,
+      "hp": 220,
       "score": 150,
       "dropTableId": ""
     },
@@ -172,6 +172,89 @@
       },
       "hp": 100,
       "score": 100,
+      "dropTableId": ""
+    },
+    {
+      "templateId": "w_intro_swarm",
+      "templateName": "轻型·四机集群",
+      "enemyType": "8001",
+      "count": 4,
+      "formation": {
+        "type": "row",
+        "spacing": 130,
+        "rowDelay": 0
+      },
+      "entryPath": {
+        "type": "from_top_straight",
+        "speed": 200,
+        "amplitude": 0
+      },
+      "behavior": {
+        "type": "straight_down",
+        "fireInterval": 3.4,
+        "bulletType": "",
+        "role": "swarm",
+        "shotCount": 1,
+        "spreadAngle": 0
+      },
+      "hp": 50,
+      "score": 50,
+      "dropTableId": ""
+    },
+    {
+      "templateId": "w_intro_armored",
+      "templateName": "重装·预警三连射",
+      "enemyType": "8002",
+      "count": 1,
+      "formation": {
+        "type": "row",
+        "spacing": 0,
+        "rowDelay": 0
+      },
+      "entryPath": {
+        "type": "from_top_straight",
+        "speed": 125,
+        "amplitude": 0
+      },
+      "behavior": {
+        "type": "straight_down",
+        "fireInterval": 2.4,
+        "bulletType": "",
+        "role": "armored",
+        "shotCount": 3,
+        "spreadAngle": 32,
+        "warningDuration": 0.85
+      },
+      "hp": 720,
+      "score": 300,
+      "dropTableId": ""
+    },
+    {
+      "templateId": "w_intro_charger",
+      "templateName": "冲锋·双航道突袭",
+      "enemyType": "8002",
+      "count": 2,
+      "formation": {
+        "type": "row",
+        "spacing": 400,
+        "rowDelay": 0
+      },
+      "entryPath": {
+        "type": "from_top_straight",
+        "speed": 220,
+        "amplitude": 0
+      },
+      "behavior": {
+        "type": "straight_down",
+        "fireInterval": 0,
+        "bulletType": "",
+        "role": "charger",
+        "warningDuration": 1.15,
+        "chargeTriggerRatio": 0.74,
+        "chargeSpeedMultiplier": 2.1
+      },
+      "hp": 280,
+      "score": 120,
       "dropTableId": ""
     }
   ],
@@ -241,7 +324,7 @@
       },
       "params": {
         "gateType": "gate_counter",
-        "paraTable": "-100|5|eff_plus1;5|10|eff_plus2;10|9999|eff_plus5",
+        "paraTable": "-100|5|eff_plus1;5|10|eff_plus2;10|9999|eff_plus2",
         "initialValue": 0,
         "effectTableRef": "20001"
       },
@@ -281,7 +364,7 @@
       },
       "params": {
         "gateType": "gate_step",
-        "paraTable": "0|eff_plus1;50|eff_plus2;120|eff_plus5;240|eff_double",
+        "paraTable": "0|eff_plus1;50|eff_plus2;120|eff_weapon;240|eff_haste",
         "initialValue": 0,
         "effectTableRef": ""
       },
@@ -292,7 +375,7 @@
     },
     {
       "trapId": "gate_choice_double",
-      "trapName": "双路选择·加5或乘2",
+      "trapName": "击破5架解锁·增援或武器",
       "type": "digital_gate",
       "prefabPath": "",
       "position": {
@@ -301,10 +384,13 @@
       },
       "params": {
         "gateType": "gate_duet",
-        "paraTable": "-100|9999|eff_plus5",
-        "paraTableRight": "-100|9999|eff_double",
+        "paraTable": "-100|9999|eff_plus2",
+        "paraTableRight": "-100|9999|eff_weapon",
         "initialValue": 0,
-        "effectTableRef": ""
+        "effectTableRef": "",
+        "unlockMode": "enemy_count",
+        "unlockTargetId": "",
+        "unlockRequired": 5
       },
       "hp": 9999,
       "destroyable": false,
@@ -333,6 +419,70 @@
       "isReusableGateTemplate": true
     },
     {
+      "trapId": "gate_target_bonus",
+      "trapName": "摧毁补给目标·解锁增援",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": {
+        "x": 0,
+        "y": 1250
+      },
+      "params": {
+        "gateType": "gate_counter",
+        "initialValue": 0,
+        "paraTable": "-100|9999|eff_plus2",
+        "unlockMode": "bucket_damage",
+        "unlockTargetId": "barrel_hp15",
+        "unlockRequired": 15
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": false
+    },
+    {
+      "trapId": "gate_tactical_choice",
+      "trapName": "战术补给·三选一",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": {
+        "x": 0,
+        "y": 1250
+      },
+      "params": {
+        "gateType": "gate_counter",
+        "initialValue": 0,
+        "paraTable": "",
+        "choiceMode": "three",
+        "choicePool": "eff_haste,eff_freeze,eff_weapon"
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": false
+    },
+    {
+      "trapId": "gate_hero_charge",
+      "trapName": "全队英雄技能充能35%",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": {
+        "x": 0,
+        "y": 1250
+      },
+      "params": {
+        "gateType": "gate_counter",
+        "initialValue": 0,
+        "paraTable": "",
+        "heroChargeSlot": 0,
+        "heroChargePercent": 35
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": false
+    },
+    {
       "trapId": "barrel_hp15",
       "trapName": "油桶",
       "type": "destructible",
@@ -345,64 +495,74 @@
       "hp": 15,
       "destroyable": true,
       "dropTableId": ""
+    },
+    {
+      "trapId": "gate_intro_supply",
+      "trapName": "首轮战术补给·速射/冻结/武器",
+      "type": "digital_gate",
+      "prefabPath": "",
+      "position": {
+        "x": 0,
+        "y": 1250
+      },
+      "params": {
+        "gateType": "gate_counter",
+        "initialValue": 0,
+        "paraTable": "",
+        "choiceMode": "three",
+        "choicePool": "eff_haste,eff_freeze,eff_weapon"
+      },
+      "hp": 9999,
+      "destroyable": false,
+      "dropTableId": "",
+      "isReusableGateTemplate": false
     }
   ],
   "timeline": {
     "duration": 90,
     "events": [
       {
-        "time": 7,
-        "type": "spawn_enemy_wave",
-        "templateId": "w_scout_column",
-        "offsetX": -0.42
+        "time": 0,
+        "type": "show_banner",
+        "text": "拖动战机选择航线 · 蓝门增援，红门减员",
+        "duration": 2.8
       },
       {
         "time": 3,
         "type": "spawn_enemy_wave",
-        "templateId": "w_enemy_pair",
+        "templateId": "w_intro_swarm",
         "offsetX": 0
       },
       {
-        "time": 10,
+        "time": 7,
         "type": "spawn_trap",
         "trapId": "gate_plus2_left"
       },
       {
-        "time": 10,
+        "time": 7,
         "type": "spawn_trap",
         "trapId": "gate_minus1_right"
       },
       {
-        "time": 13,
+        "time": 12,
         "type": "spawn_enemy_wave",
-        "templateId": "w_enemy_pair",
+        "templateId": "w_scout_column",
         "offsetX": 0.42
       },
       {
         "time": 17,
         "type": "spawn_enemy_wave",
-        "templateId": "w_scout_column",
-        "offsetX": -0.48
+        "templateId": "w_intro_armored",
+        "offsetX": -0.34
       },
       {
-        "time": 19,
-        "type": "spawn_trap",
-        "trapId": "gate_weapon_repair"
+        "time": 20,
+        "type": "show_banner",
+        "text": "击破补给目标 · 解锁前方增援门",
+        "duration": 2.4
       },
       {
-        "time": 22,
-        "type": "spawn_enemy_wave",
-        "templateId": "w_scout_column",
-        "offsetX": 0.48
-      },
-      {
-        "time": 27,
-        "type": "spawn_enemy_wave",
-        "templateId": "w_scout_v",
-        "offsetX": 0
-      },
-      {
-        "time": 28,
+        "time": 21,
         "type": "spawn_trap",
         "trapId": "barrel_hp15",
         "position": {
@@ -411,87 +571,82 @@
         }
       },
       {
-        "time": 32,
+        "time": 24,
+        "type": "spawn_trap",
+        "trapId": "gate_target_bonus"
+      },
+      {
+        "time": 28,
         "type": "spawn_enemy_wave",
         "templateId": "w_enemy_trio",
         "offsetX": 0
       },
       {
-        "time": 36,
-        "type": "spawn_enemy_wave",
-        "templateId": "w_scout_v",
-        "offsetX": -0.34
+        "time": 32,
+        "type": "show_banner",
+        "text": "战术补给 · 三选一强化当前编队",
+        "duration": 2.4
       },
       {
-        "time": 40,
+        "time": 34,
+        "type": "spawn_trap",
+        "trapId": "gate_tactical_choice"
+      },
+      {
+        "time": 39,
+        "type": "spawn_enemy_wave",
+        "templateId": "w_intro_charger",
+        "offsetX": 0
+      },
+      {
+        "time": 45,
         "type": "spawn_trap",
         "trapId": "gate_charge_center"
       },
       {
-        "time": 46,
-        "type": "spawn_enemy_wave",
-        "templateId": "w_scout_column",
-        "offsetX": -0.48
+        "time": 50,
+        "type": "spawn_trap",
+        "trapId": "gate_hero_charge"
       },
       {
-        "time": 49,
+        "time": 54,
         "type": "spawn_enemy_wave",
-        "templateId": "w_enemy_pair",
-        "offsetX": 0.34
+        "templateId": "w_scout_v",
+        "offsetX": -0.3
       },
       {
-        "time": 51,
+        "time": 59,
+        "type": "spawn_trap",
+        "trapId": "gate_choice_double"
+      },
+      {
+        "time": 64,
         "type": "spawn_enemy_wave",
         "templateId": "w_enemy_advanced_pair",
         "offsetX": 0
       },
       {
-        "time": 53,
+        "time": 69,
         "type": "spawn_trap",
         "trapId": "gate_weapon_repair"
       },
       {
-        "time": 56,
+        "time": 74,
         "type": "spawn_enemy_wave",
         "templateId": "w_scout_column",
-        "offsetX": 0.48
+        "offsetX": 0.42
       },
       {
-        "time": 58,
-        "type": "spawn_trap",
-        "trapId": "gate_plus2_left"
-      },
-      {
-        "time": 60,
-        "type": "spawn_trap",
-        "trapId": "barrel_hp15",
-        "position": {
-          "x": 0,
-          "y": 900
-        }
-      },
-      {
-        "time": 62,
-        "type": "spawn_enemy_wave",
-        "templateId": "w_scout_v",
-        "offsetX": 0
-      },
-      {
-        "time": 67,
+        "time": 78,
         "type": "spawn_enemy_wave",
         "templateId": "w_enemy_advanced_pair",
-        "offsetX": 0
+        "offsetX": -0.22
       },
       {
-        "time": 72,
-        "type": "spawn_enemy_wave",
-        "templateId": "w_scout_column",
-        "offsetX": -0.4
-      },
-      {
-        "time": 75,
-        "type": "spawn_trap",
-        "trapId": "gate_choice_double"
+        "time": 82,
+        "type": "show_banner",
+        "text": "首领接近 · 保持火力，准备英雄技能",
+        "duration": 2.5
       },
       {
         "time": 85,

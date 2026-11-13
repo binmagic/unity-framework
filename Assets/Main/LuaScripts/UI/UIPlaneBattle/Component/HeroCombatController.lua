@@ -17,9 +17,7 @@ function HeroCombatController:__init(view,requestFont)
     self.go,self.rt=self:Node(view.hudContentTf,"HeroSkills",0,0,750,0)
     self.rt.anchorMin,self.rt.anchorMax=Vector2(0,0),Vector2(1,0)
     self.rt.sizeDelta=Vector2(0,0)
-    local plate,plateRt=self:Node(self.go.transform,"SkillPlate",0,95,0,190)
-    plateRt.anchorMin,plateRt.anchorMax=Vector2(0,0),Vector2(1,0)
-    self:Image(plate,Color(.06,.14,.24,.96))
+    -- 只保留实际出战英雄的技能卡，星空继续铺到底部，不再绘制全宽实心底板。
     local statusGo,statusRt=self:Node(view.hudContentTf,"HeroSkillNotice",0,-315,660,96)
     statusRt.anchorMin,statusRt.anchorMax=Vector2(.5,1),Vector2(.5,1)
     self.statusGo=statusGo
@@ -28,7 +26,7 @@ function HeroCombatController:__init(view,requestFont)
     self.status.enableWordWrapping=true
     statusGo:SetActive(false)
     local count=#self.state.members
-    local width=math.min(260,708/math.max(1,count)-8)
+    local width=math.min(208,708/math.max(1,count)-8)
     for i,s in ipairs(self.state.members) do
         local id=s.hero.id
         if s.hero.slot==1 then
@@ -49,6 +47,7 @@ function HeroCombatController:__init(view,requestFont)
         s.bubble=bubble
         local card=self:Node(self.go.transform,"Skill_"..id,(i-(count+1)/2)*(width+8),73,width,126)
         local bg=self:Image(card,Color(.12,.33,.49,1),true)
+        bg:LoadSprite("Assets/Main/Sprites/HeroUI/HeroUI_card_round.png")
         local avatar=self:Node(card.transform,"Avatar",-width/2+33,32,50,50)
         avatar:AddComponent(typeof(CS.UnityEngine.UI.RectMask2D))
         local art=self:Node(avatar.transform,"Art",0,-6.25,50,62.5)
@@ -56,8 +55,8 @@ function HeroCombatController:__init(view,requestFont)
         local portrait=tonumber(id)==1002 and "Assets/Main/Sprites/HeroUI/HeroUI_formation_nurse.png"
             or (cfg and cfg.card or s.hero.avatar)
         self:Image(art,Color(1,1,1,1)):LoadSprite(portrait)
-        self:Text(card.transform,"Name",s.hero.name,0,-7,width-12,34,22)
-        local hp=self:Text(card.transform,"HP","",27,32,width-66,60,20)
+        self:Text(card.transform,"Name",s.hero.name,0,-9,width-12,26,22)
+        local hp=self:Text(card.transform,"HP","",27,32,width-66,44,20)
         local cd=self:Text(card.transform,"Cooldown","",0,-42,width-8,34,22)
         local hpTrack=self:Node(card.transform,"ArmorTrack",0,-25,width-14,5)
         self:Image(hpTrack,Color(.03,.09,.15,1))
@@ -188,7 +187,7 @@ end
 
 function HeroCombatController:Cast(heroId)
     local v=self.view
-    if v.isBattleOver or v.isInLevelSelect or v.bossDefeat~=nil or CS.UnityEngine.Time.timeScale<=0 then return false end
+    if v.isBattleOver or v.isInLevelSelect or v.isChoicePaused or v.bossDefeat~=nil or CS.UnityEngine.Time.timeScale<=0 then return false end
     local s=self.state.byId[heroId]
     if s==nil or s.dead then return false end
     self:Notice(s.hero.activeDescription.." · 冷却"..s.hero.activeCooldown.."秒")
@@ -298,6 +297,23 @@ function HeroCombatController:Repair(amount)
     for _,s in ipairs(self.state.members) do self.state:Repair(s.hero.id,amount) end
     self.view.playerHull=self.state.byId[self.view.battleHero.id].hp
     self.view:_RefreshHudHull();self:Refresh()
+end
+
+function HeroCombatController:ChargeSlot(slot, percent)
+    local seconds, count = self.state:ChargeSlot(slot, percent)
+    if count > 0 then
+        for _, s in ipairs(self.state.members) do
+            if not s.dead and (slot == 0 or s.hero.slot == slot) then
+                local p = s.rt.anchoredPosition
+                self.view:_SpawnCombatFx("shield_hit.png", p.x, p.y, 125, Color(.65, .55, 1, .9), .5)
+            end
+        end
+        self:Notice(string.format("%d位英雄技能充能 · 共缩短 %.1f 秒", count, seconds))
+        self:Refresh()
+    else
+        self:Notice("技能充能 · 当前无可充能英雄（空位、已就绪或已阵亡）")
+    end
+    return count > 0
 end
 
 function HeroCombatController:CancelPending()

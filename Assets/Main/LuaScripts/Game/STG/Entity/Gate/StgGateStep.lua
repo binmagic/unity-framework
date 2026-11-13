@@ -28,12 +28,14 @@ function StgGateStep:RecalcEffect()
 end
 
 function StgGateStep:OnHit(damage)
+    if not self:TryAcceptHit(damage) then return false end
     damage = tonumber(damage) or 0
     if damage <= 0 then
-        return
+        return false
     end
     self.accumulatedDamage = self.accumulatedDamage + damage
     self:RecalcEffect()
+    return true
 end
 
 --- UI 显示：当前累计伤害 / 下一档阈值

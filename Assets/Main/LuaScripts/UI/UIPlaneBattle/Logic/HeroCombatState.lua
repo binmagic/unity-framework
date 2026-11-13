@@ -52,6 +52,23 @@ function HeroCombatState:CanCast(heroId)
     return s~=nil and not s.dead and s.cooldown<=0
 end
 
+--- 按本场阵容位置充能，返回实际减少的总秒数与人数；不提交技能、不改养成存档。
+function HeroCombatState:ChargeSlot(slot, percent)
+    slot = tonumber(slot) or 0
+    percent = math.max(0, math.min(100, tonumber(percent) or 0))
+    local seconds, count = 0, 0
+    for _, s in ipairs(self.members) do
+        if not s.dead and (slot == 0 or s.hero.slot == slot) then
+            local reduced = math.min(s.cooldown, s.hero.activeCooldown * percent / 100)
+            if reduced > 0 then
+                s.cooldown = s.cooldown - reduced
+                seconds, count = seconds + reduced, count + 1
+            end
+        end
+    end
+    return seconds, count
+end
+
 function HeroCombatState:CommitCast(heroId)
     if not self:CanCast(heroId) then return false end
     local s=self.byId[heroId]
