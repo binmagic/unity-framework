@@ -836,6 +836,11 @@ SettingKeys =
 
 SoundAssets =
 {
+    STG_EnemyLightDown = "Assets/Main/Sound/Effect/STGGate/enemy_light_down.mp3", -- 轻型敌机击毁
+    STG_EnemyHeavyDown = "Assets/Main/Sound/Effect/STGGate/enemy_heavy_down.mp3", -- 重装击毁
+    STG_EnemyChargeDown = "Assets/Main/Sound/Effect/STGGate/enemy_charge_down.mp3", -- 冲锋机击毁
+    STG_EnemyLock = "Assets/Main/Sound/Effect/STGGate/enemy_lock.mp3", -- 重装/冲锋锁定
+    STG_EnemyCharge = "Assets/Main/Sound/Effect/STGGate/enemy_charge.mp3", -- 冲锋启动
     SU_OpenBuildList = "building/sounds_builder_open_plan",
     SU_BuildUpgrade = "building/sounds_builder_upgrade",
 

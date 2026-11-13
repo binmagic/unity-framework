@@ -238,7 +238,9 @@ public sealed partial class SoundComponent
         string soundAssetName;
         if (!m_nameToPath.TryGetValue(name, out soundAssetName))
         {
-            soundAssetName = string.Format("Assets/Main/Sound/Effect/{0}.ogg", name);
+            // Full asset paths also support imported mp3/wav effects; short names retain the legacy ogg convention.
+            soundAssetName = name.StartsWith("Assets/", StringComparison.Ordinal)
+                ? name : string.Format("Assets/Main/Sound/Effect/{0}.ogg", name);
             m_nameToPath[name] = soundAssetName;
         }
 
