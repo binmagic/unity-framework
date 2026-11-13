@@ -10,6 +10,19 @@ using System.Text;
 // 实施前务必用旧仓库真实数据跑一遍编解码往返测试，确认分隔符/字段顺序与运行时解析一致。
 public static class StgGateParaTableUtil
 {
+    // 与 Lua StgGateDuet 的限幅规则一致，用于编辑器试射和场景预览。
+    public static float ClampDuetRatio(StgTrapConfig config, float ratio)
+    {
+        float min = System.Math.Max(0.2f, System.Math.Min(0.5f, config.minSideRatio));
+        return System.Math.Max(min, System.Math.Min(1f - min, ratio));
+    }
+
+    public static float HitDuetRatio(StgTrapConfig config, float ratio, bool isLeft)
+    {
+        float change = System.Math.Max(0f, System.Math.Min(0.2f, config.ratioChangePerHit));
+        return ClampDuetRatio(config, ratio + (isLeft ? change : -change));
+    }
+
     public struct StepEntry
     {
         public float hpThreshold;

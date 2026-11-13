@@ -11,6 +11,7 @@ public class StgLevelEditorModel
     public string levelName = "";
     public string description = "";
     public int seed = 0;
+    public bool bossCounterplay = false;
 
     public StgBasicScroll basicScroll = new StgBasicScroll();
     // 关卡对玩家战机的数值规则；不指定英雄，战前阵容仍由玩家选择。
@@ -60,6 +61,8 @@ public class StgBackgroundLayer
 
     // ---- 视差滚动 ----
     public float speedCoefficient = 1.0f;
+    // 贴图尚未加载或导入异常时的高度兜底；<=0 时运行时按 Sprite 原生高度处理。
+    public float tileWorldHeight = 0f;
     // 循环贴图带：多张图按列表顺序首尾相接拼成无限带，滚完最后一张接回第一张
     // （单张图的情况就是列表里只放一条，效果等价于原来的 tileSpritePath）
     public List<string> tileSpritePaths = new List<string>();
@@ -158,6 +161,12 @@ public class StgWaveTemplate
     public string behaviorType = "straight_down";
     public float behaviorFireInterval = 2.0f;
     public string behaviorBulletType = "";
+    public string behaviorRole = "standard";
+    public int behaviorShotCount = 1;
+    public float behaviorSpreadAngle = 0f;
+    public float behaviorWarningDuration = .75f;
+    public float behaviorChargeTriggerRatio = .58f;
+    public float behaviorChargeSpeedMultiplier = 2.4f;
 
     public int hp = 100;
     public int score = 100;
@@ -243,8 +252,24 @@ public class StgTrapConfig
     public string paraTable = "";
     public string paraTableRight = "";
     public int initialValue = 0;
+    public float hitCooldown = 0.05f; // 整门共享的有效命中间隔（秒）
+    public float initialLeftRatio = 0.5f;
+    public float minSideRatio = 0.2f;
+    public float ratioChangePerHit = 0.02f;
     public string effectTableRef = "";
     public bool isReusableGateTemplate = false; // 供③时间轴 drop_digital_gate 事件引用
+    // 可选解锁条件：none / enemy_count / bucket_damage
+    public string unlockMode = "none";
+    public string unlockTargetId = "";
+    public float unlockRequired = 0f;
+    public int heroChargeSlot = 0; // 当前玩家阵容位置；0=全队，1～5=指定位置
+    public float heroChargePercent = 0f; // >0 替代普通门奖励，按完整技能冷却的百分比补充
+    // LastWar 风格三选一奖励门：three 时使用逗号分隔的 effectId 池。
+    public string choiceMode = "none"; // none / three
+    public string choicePool = "";
+    public string moveMode = "none";
+    public float moveAmplitude = 0f;
+    public float moveFrequency = 0.8f;
 }
 
 public class StgTimeline
@@ -261,6 +286,7 @@ public class StgTimelineEvent
 
     public string templateId = "";
     public float offsetX = 0f;
+    public string routeChoice = "";
 
     public string bossId = "";
 

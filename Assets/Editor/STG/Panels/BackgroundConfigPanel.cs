@@ -349,6 +349,15 @@ public class BackgroundConfigPanel : IStgPanel
         var useTileLoop = new Toggle("循环铺贴 useTileLoop") { value = layer.useTileLoop };
         host.Add(useTileLoop);
 
+        var tileWorldHeight = new FloatField("高度兜底 tileWorldHeight（<=0 按贴图原生高度）") { value = layer.tileWorldHeight };
+        tileWorldHeight.tooltip = "贴图暂时未加载或导入异常时使用；通常保持 0 即可。保存后会写入运行时 JSON。";
+        tileWorldHeight.RegisterValueChangedCallback(evt =>
+        {
+            layer.tileWorldHeight = Mathf.Max(0f, evt.newValue);
+            m_Context.MarkDirty();
+        });
+        host.Add(tileWorldHeight);
+
         var tileFields = new VisualElement();
         host.Add(tileFields);
         tileFields.style.display = layer.useTileLoop ? DisplayStyle.Flex : DisplayStyle.None;

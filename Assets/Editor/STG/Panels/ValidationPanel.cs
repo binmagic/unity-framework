@@ -111,6 +111,16 @@ public class ValidationPanel : IStgPanel
 
         // 必填字段
         if (string.IsNullOrEmpty(m.levelId)) issues.Add(new Issue { Severity = Severity.Error, Message = "levelId 未填写" });
+        if (m.timeline == null || m.timeline.duration <= 0f || float.IsNaN(m.timeline.duration) || float.IsInfinity(m.timeline.duration))
+            issues.Add(new Issue { Severity = Severity.Error, Message = "关卡时长必须是有限的正数" });
+
+        // 运行时按 ID 建立字典；重复 ID 会导致后一个定义静默覆盖前一个。
+        AddDuplicateIdIssues(m.enemyWaveTemplates.Select(x => x.templateId), "波次模板");
+        AddDuplicateIdIssues(m.bossConfigs.Select(x => x.bossId), "Boss");
+        AddDuplicateIdIssues(m.trapConfigs.Select(x => x.trapId), "机关");
+        AddDuplicateIdIssues(m.spawnAreaConfigs.Select(x => x.spawnAreaId), "刷怪区域");
+        AddDuplicateIdIssues(m.itemConfigs.Select(x => x.itemId), "物品");
+        AddDuplicateIdIssues(m.globalDropTables.Select(x => x.dropTableId), "掉落表");
 
         var playerRules = m.playerRules ?? new StgPlayerBattleRules();
         if (!playerRules.useLegacyInitialWingman && playerRules.initialWingman < 0)
@@ -127,6 +137,19 @@ public class ValidationPanel : IStgPanel
         {
             if (!string.IsNullOrEmpty(t.dropTableId) && !dropTableIds.Contains(t.dropTableId))
                 issues.Add(new Issue { Severity = Severity.Error, Message = $"波次模板「{t.templateId}」引用了不存在的掉落表 dropTableId「{t.dropTableId}」" });
+            if (t.behaviorRole != "standard" && t.behaviorRole != "swarm" && t.behaviorRole != "armored" && t.behaviorRole != "charger")
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"波次「{t.templateId}」未知敌机分工 {t.behaviorRole}" });
+            void CheckBehavior(float value, float min, float max, string field)
+            {
+                if (float.IsNaN(value) || float.IsInfinity(value) || value < min || value > max)
+                    issues.Add(new Issue { Severity = Severity.Error, Message = $"波次「{t.templateId}」{field} 必须在 [{min},{max}] 内" });
+            }
+            CheckBehavior(t.behaviorFireInterval, 0, 60, "射击间隔");
+            CheckBehavior(t.behaviorShotCount, 1, 7, "弹数");
+            CheckBehavior(t.behaviorSpreadAngle, 0, 90, "散射角");
+            CheckBehavior(t.behaviorWarningDuration, .3f, 2, "预警时长");
+            CheckBehavior(t.behaviorChargeTriggerRatio, .35f, .8f, "冲锋高度比例");
+            CheckBehavior(t.behaviorChargeSpeedMultiplier, 1, 4, "冲锋速度倍率");
             if (t.hp <= 0) issues.Add(new Issue { Severity = Severity.Warning, Message = $"波次模板「{t.templateId}」血量 hp 为 {t.hp}，非正数" });
         }
 
@@ -175,6 +198,9 @@ public class ValidationPanel : IStgPanel
             if (e.time < 0f) issues.Add(new Issue { Severity = Severity.Error, Message = $"时间轴事件「{e.type}」的 time={e.time} 为负数" });
             if (e.time > m.timeline.duration) issues.Add(new Issue { Severity = Severity.Warning, Message = $"时间轴事件「{e.type}」的 time={e.time} 超出关卡时长 {m.timeline.duration}" });
 
+            if (!string.IsNullOrEmpty(e.routeChoice) && e.routeChoice != "balanced" && e.routeChoice != "mass"
+                && e.routeChoice != "pierce" && e.routeChoice != "homing")
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"时间轴事件@{e.time}s 路线条件「{e.routeChoice}」无效" });
             switch (e.type)
             {
                 case "spawn_enemy_wave":
@@ -217,7 +243,54 @@ public class ValidationPanel : IStgPanel
         // 数字门区间表连续性
         foreach (var t in m.trapConfigs.Where(t => t.type == "digital_gate"))
         {
-            if (t.gateType == "gate_counter" || t.gateType == "gate_duet")
+            if (float.IsNaN(t.hitCooldown) || float.IsInfinity(t.hitCooldown) || t.hitCooldown < 0f)
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」有效命中间隔必须是有限非负数" });
+            if (t.unlockMode != "none" && t.unlockMode != "enemy_count" && t.unlockMode != "bucket_damage")
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」解锁方式必须是 none、enemy_count 或 bucket_damage" });
+            if (t.unlockMode != "none" && (float.IsNaN(t.unlockRequired) || float.IsInfinity(t.unlockRequired) || t.unlockRequired <= 0f))
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」解锁阈值必须大于 0" });
+            if (t.unlockMode == "bucket_damage" && string.IsNullOrWhiteSpace(t.unlockTargetId))
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」的油桶伤害解锁必须填写目标ID" });
+            if (t.unlockMode == "enemy_count" && t.unlockRequired != Mathf.Floor(t.unlockRequired))
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」击破数量必须是整数" });
+            if (t.unlockMode == "enemy_count" && !string.IsNullOrEmpty(t.unlockTargetId)
+                && !m.enemyWaveTemplates.Any(w => w.templateId == t.unlockTargetId))
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」引用的敌机波次「{t.unlockTargetId}」不存在" });
+            if (t.unlockMode == "bucket_damage" && !m.trapConfigs.Any(b => b.trapId == t.unlockTargetId && b.type == "destructible"))
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」引用的可破坏目标「{t.unlockTargetId}」不存在或不是 destructible" });
+            if (t.heroChargeSlot < 0 || t.heroChargeSlot > 5)
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」英雄出战位置须为 0～5" });
+            if (float.IsNaN(t.heroChargePercent) || float.IsInfinity(t.heroChargePercent) || t.heroChargePercent < 0f || t.heroChargePercent > 100f)
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」英雄充能百分比须为 0～100 的有限数" });
+            if (t.heroChargePercent > 0f && t.gateType == "gate_duet")
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」英雄充能请使用单门，避免双侧奖励含义不明确" });
+            if (t.choiceMode != "none" && t.choiceMode != "three")
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」奖励模式必须是 none 或 three" });
+            if (t.choiceMode == "three")
+            {
+                var choices = (t.choicePool ?? "").Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
+                if (choices.Count != 3 || choices.Distinct().Count() != 3)
+                    issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」三选一必须配置恰好 3 个不同的 effectId" });
+                var supportedEffects = new HashSet<string> {
+                    "eff_zero", "eff_plus1", "eff_plus2", "eff_plus5", "eff_double", "eff_weapon", "eff_repair",
+                    "eff_minus1", "eff_minus2", "eff_haste", "eff_freeze", "eff_pierce", "eff_homing", "eff_route_mass", "eff_route_pierce", "20001", "20002", "20003", "20004", "20005"
+                }; // 与 StgTriggerEnum.EffectTable 同步。
+                foreach (var id in choices.Where(id => !supportedEffects.Contains(id)))
+                    issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」三选一效果「{id}」不存在" });
+                if (t.gateType == "gate_duet" || t.heroChargePercent > 0f)
+                    issues.Add(new Issue { Severity = Severity.Error, Message = $"数字门「{t.trapId}」三选一请使用普通单门，不能与双生门/英雄充能门叠加" });
+            }
+            if (t.gateType == "gate_duet")
+            {
+                bool validMin = !float.IsNaN(t.minSideRatio) && t.minSideRatio >= 0.2f && t.minSideRatio <= 0.5f;
+                if (!validMin || float.IsNaN(t.initialLeftRatio) || t.initialLeftRatio < t.minSideRatio || t.initialLeftRatio > 1f - t.minSideRatio)
+                    issues.Add(new Issue { Severity = Severity.Error, Message = $"双生门「{t.trapId}」最小占比须在 0.2～0.5，初始左侧占比须在最小占比与其互补值之间" });
+                if (float.IsNaN(t.ratioChangePerHit) || t.ratioChangePerHit < 0f || t.ratioChangePerHit > 0.2f)
+                    issues.Add(new Issue { Severity = Severity.Error, Message = $"双生门「{t.trapId}」每次命中扩大占比须在 0～0.2，0 表示固定宽度" });
+            }
+            // 英雄充能门通过时只执行技能冷却缩短，不使用数字区间表。
+            // 这类门允许 paraTable 为空，避免在编辑器保存时产生误导性的警告。
+            if (t.heroChargePercent <= 0f && t.choiceMode != "three" && (t.gateType == "gate_counter" || t.gateType == "gate_duet"))
             {
                 var entries = StgGateParaTableUtil.DecodeCounter(t.paraTable);
                 var problem = StgGateParaTableUtil.CheckCounterContinuity(entries);
@@ -233,6 +306,12 @@ public class ValidationPanel : IStgPanel
         }
 
         return issues;
+
+        void AddDuplicateIdIssues(IEnumerable<string> ids, string label)
+        {
+            foreach (var group in ids.Where(id => !string.IsNullOrEmpty(id)).GroupBy(id => id).Where(g => g.Count() > 1))
+                issues.Add(new Issue { Severity = Severity.Error, Message = $"{label} ID「{group.Key}」重复定义 {group.Count()} 次，运行时索引会覆盖" });
+        }
     }
 
     public void Rebuild()

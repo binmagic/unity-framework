@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 // 持有当前编辑中的关卡数据、文件路径、脏标记，并提供跨面板引用查询（模板ID/掉落表ID/BossID等）
 // 面板不直接互相引用，统一通过本 Context 查询，避免耦合（详见关卡编辑器设计文档 4.3 节）
@@ -39,8 +41,26 @@ public class StgLevelEditorContext
     public void SaveToFile(string path)
     {
         StgLevelJsonIO.SaveToFile(Model, path);
+        // 运行时通过 Resources.Load 读取关卡 JSON。保存到 Assets 下时立即刷新导入，
+        // 避免编辑器里已保存、但下一次运行仍拿到旧 TextAsset 的情况。
+        if (!string.IsNullOrEmpty(path) && path.StartsWith(Application.dataPath, System.StringComparison.OrdinalIgnoreCase))
+        {
+            AssetDatabase.ImportAsset("Assets" + path.Substring(Application.dataPath.Length).Replace('\\', '/'), ImportAssetOptions.ForceUpdate);
+        }
         CurrentFilePath = path;
         IsDirty = false;
+    }
+
+    public bool IsRuntimeResourceFile
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(CurrentFilePath)) return false;
+            string normalized = CurrentFilePath.Replace('\\', '/');
+            string resourcesRoot = Application.dataPath.Replace('\\', '/') + "/Resources/STG/Levels/";
+            return normalized.StartsWith(resourcesRoot, System.StringComparison.OrdinalIgnoreCase)
+                && normalized.EndsWith(".json", System.StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     public void MarkDirty()

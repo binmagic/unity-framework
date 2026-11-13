@@ -158,6 +158,24 @@ public class TimelineEditorPanel : IStgPanel
         { text = "按最后事件自动计算时长" };
         toolbar.Add(autoDurationButton);
 
+        var firstLevelPresetButton = new Button(ApplyFirstLevelRhythmPreset)
+        { text = "应用首关完整节奏预设" };
+        firstLevelPresetButton.tooltip = "只重排时间轴，不覆盖背景、波次、数字门、英雄或 Boss 参数";
+        toolbar.Add(firstLevelPresetButton);
+
+        var previewRoute = new PopupField<string>("预览路线", new List<string> { "balanced", "mass", "pierce", "homing" }, StgPreviewRuntime.PreviewRouteChoice);
+        previewRoute.tooltip = "balanced=未选路，mass=编队翻倍，pierce=穿透，homing=追踪；只影响编辑态预览";
+        previewRoute.RegisterValueChangedCallback(evt =>
+        {
+            StgPreviewRuntime.SetPreviewRouteChoice(evt.newValue);
+            if (StgPreviewRuntime.IsPlaying)
+            {
+                AttachPreviewCallbacks();
+                OnPreviewFrameRendered();
+            }
+        });
+        Root.Add(previewRoute);
+
         // 主体分两列：左列是时间轴+详情检查器（原有内容），右列是内嵌的模拟画面视口
         var bodyRow = new VisualElement();
         bodyRow.style.flexDirection = FlexDirection.Row;
@@ -394,6 +412,76 @@ public class TimelineEditorPanel : IStgPanel
         RebuildTimeline();
     }
 
+    // 首关只替换时间轴，所有可复用内容仍来自④～⑥面板，避免预设与关卡编辑器脱节。
+    void ApplyFirstLevelRhythmPreset()
+    {
+        var model = m_Context.Model;
+        string[] waves = { "w_intro_swarm", "w_scout_column", "w_intro_armored", "w_enemy_trio",
+            "w_intro_charger", "w_scout_v", "w_enemy_advanced_pair" };
+        string[] traps = { "gate_plus2_left", "gate_minus1_right", "barrel_hp15", "gate_target_bonus",
+            "gate_tactical_choice", "gate_charge_center", "gate_hero_charge", "gate_choice_double", "gate_weapon_repair" };
+        string[] bosses = { "boss_9001" };
+        var missing = new List<string>();
+        var waveIds = new HashSet<string>(model.enemyWaveTemplates.Select(x => x.templateId));
+        var trapIds = new HashSet<string>(model.trapConfigs.Select(x => x.trapId));
+        var bossIds = new HashSet<string>(model.bossConfigs.Select(x => x.bossId));
+        foreach (string id in waves) if (!waveIds.Contains(id)) missing.Add("波次 " + id);
+        foreach (string id in traps) if (!trapIds.Contains(id)) missing.Add("机关 " + id);
+        foreach (string id in bosses) if (!bossIds.Contains(id)) missing.Add("Boss " + id);
+        if (missing.Count > 0)
+        {
+            EditorUtility.DisplayDialog("无法应用首关节奏预设", "当前关卡缺少：\n" + string.Join("\n", missing), "确定");
+            return;
+        }
+        if (model.timeline.events.Count > 0 && !EditorUtility.DisplayDialog("应用首关完整节奏预设",
+            "将替换当前时间轴事件，但保留背景、波次模板、数字门、英雄和 Boss 参数。是否继续？", "替换时间轴", "取消")) return;
+
+        model.timeline.duration = 90f;
+        model.timeline.events = new List<StgTimelineEvent>
+        {
+            Banner(0f, "拖动战机选择航线 · 蓝门增援，红门减员", 2.8f),
+            Wave(3f, "w_intro_swarm", 0f),
+            Trap(7f, "gate_plus2_left"), Trap(7f, "gate_minus1_right"),
+            Wave(12f, "w_scout_column", .42f),
+
+            Wave(17f, "w_intro_armored", -.34f),
+            Banner(20f, "击破补给目标 · 解锁前方增援门", 2.4f),
+            Trap(21f, "barrel_hp15", 0f, 900f), Trap(24f, "gate_target_bonus"),
+            Wave(28f, "w_enemy_trio", 0f),
+
+            Banner(32f, "战术补给 · 三选一强化当前编队", 2.4f),
+            Trap(34f, "gate_tactical_choice"),
+            Wave(39f, "w_intro_charger", 0f),
+            Trap(45f, "gate_charge_center"),
+            Trap(50f, "gate_hero_charge"),
+
+            Wave(54f, "w_scout_v", -.3f),
+            Trap(59f, "gate_choice_double"),
+            Wave(64f, "w_enemy_advanced_pair", 0f),
+            Trap(69f, "gate_weapon_repair"),
+            Wave(74f, "w_scout_column", .42f),
+            Wave(78f, "w_enemy_advanced_pair", -.22f),
+
+            Banner(82f, "首领接近 · 保持火力，准备英雄技能", 2.5f),
+            Boss(85f, "boss_9001")
+        };
+        model.description = "首关完整节奏：增援选路教学、目标解锁、三选一战术补给、火力与英雄充能、精英压迫和首领战；全部由关卡编辑器时间轴配置。";
+        m_Context.MarkDirty();
+        m_MultiSelected.Clear();
+        m_SingleSelected = null;
+        m_PreviewTime = 0f;
+        RebuildTimeline();
+    }
+
+    static StgTimelineEvent Wave(float time, string id, float offsetX) =>
+        new StgTimelineEvent { time = time, type = "spawn_enemy_wave", templateId = id, offsetX = offsetX };
+    static StgTimelineEvent Trap(float time, string id, float x = 0f, float y = 0f) =>
+        new StgTimelineEvent { time = time, type = "spawn_trap", trapId = id, positionX = x, positionY = y };
+    static StgTimelineEvent Banner(float time, string text, float duration) =>
+        new StgTimelineEvent { time = time, type = "show_banner", text = text, duration = duration };
+    static StgTimelineEvent Boss(float time, string id) =>
+        new StgTimelineEvent { time = time, type = "spawn_boss", bossId = id };
+
     void OnWheel(WheelEvent evt)
     {
         if (!m_TimelineContent.worldBound.Contains(evt.mousePosition)) return;
@@ -428,6 +516,20 @@ public class TimelineEditorPanel : IStgPanel
         {
             DetachPreviewCallbacks();
             SetViewportPlaying(false);
+        }
+    }
+
+    // 供⑨导入导出面板调用的一键入口；仍复用手动“播放预览”的完整校验和生命周期。
+    public void StartPreview()
+    {
+        // 保存后重建预览对象，不能沿用保存前的 ConfigRef 和已触发事件集合。
+        if (StgPreviewRuntime.IsPlaying) StgPreviewRuntime.Stop();
+        StgPreviewRuntime.Start(m_Context, m_PreviewTime);
+        RefreshPlayButtonText();
+        if (StgPreviewRuntime.IsPlaying)
+        {
+            AttachPreviewCallbacks();
+            OnPreviewFrameRendered();
         }
     }
 
@@ -970,7 +1072,7 @@ public class TimelineEditorPanel : IStgPanel
     {
         return new StgTimelineEvent
         {
-            time = e.time, type = e.type, templateId = e.templateId, offsetX = e.offsetX, bossId = e.bossId,
+            time = e.time, type = e.type, templateId = e.templateId, offsetX = e.offsetX, routeChoice = e.routeChoice, bossId = e.bossId,
             trapId = e.trapId, positionX = e.positionX, positionY = e.positionY, spawnAreaId = e.spawnAreaId,
             startTime = e.startTime, endTime = e.endTime, itemId = e.itemId, pattern = e.pattern, count = e.count,
             spacing = e.spacing, speed = e.speed, text = e.text, duration = e.duration, bgmId = e.bgmId,
@@ -1067,6 +1169,17 @@ public class TimelineEditorPanel : IStgPanel
     VisualElement BuildEventTypeFields(StgTimelineEvent e)
     {
         var box = new VisualElement();
+        var routeChoices = new List<string> { "(全部路线)", "balanced", "mass", "pierce", "homing" };
+        string currentRoute = string.IsNullOrEmpty(e.routeChoice) ? "(全部路线)" : e.routeChoice;
+        int routeIndex = Mathf.Max(0, routeChoices.IndexOf(currentRoute));
+        var routePopup = new PopupField<string>("路线条件 routeChoice", routeChoices, routeIndex);
+        routePopup.RegisterValueChangedCallback(evt =>
+        {
+            e.routeChoice = evt.newValue == "(全部路线)" ? "" : evt.newValue;
+            m_Context.MarkDirty();
+            RebuildTimeline();
+        });
+        box.Add(routePopup);
 
         switch (e.type)
         {

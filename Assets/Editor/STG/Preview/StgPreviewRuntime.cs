@@ -36,6 +36,21 @@ public static class StgPreviewRuntime
     public static bool IsPaused { get; private set; }
 
     public static float PreviewTime { get; private set; }
+    // 编辑态没有玩家穿门，使用显式选路预览，避免互斥分支同时生成。
+    public static string PreviewRouteChoice { get; private set; } = "balanced";
+
+    public static void SetPreviewRouteChoice(string route)
+    {
+        if (route != "balanced" && route != "mass" && route != "pierce" && route != "homing") return;
+        if (PreviewRouteChoice == route) return;
+        PreviewRouteChoice = route;
+        if (!IsPlaying) return;
+        var context = s_Context;
+        float time = PreviewTime;
+        bool paused = IsPaused;
+        Stop();
+        Start(context, time, paused, true);
+    }
 
     static StgLevelEditorContext s_Context;
     static GameObject s_Root;
@@ -417,6 +432,7 @@ public static class StgPreviewRuntime
 
     static void DispatchEvent(StgTimelineEvent e)
     {
+        if (!string.IsNullOrEmpty(e.routeChoice) && e.routeChoice != PreviewRouteChoice) return;
         var model = s_Context.Model;
         switch (e.type)
         {

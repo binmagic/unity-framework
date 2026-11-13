@@ -32,6 +32,7 @@ public static class StgLevelJsonIO
         root["levelName"] = model.levelName;
         root["description"] = model.description;
         root["seed"] = model.seed;
+        root["bossCounterplay"] = model.bossCounterplay;
 
         root["basicScroll"] = BasicScrollToJson(model.basicScroll);
         root["playerRules"] = PlayerBattleRulesToJson(model.playerRules);
@@ -92,6 +93,8 @@ public static class StgLevelJsonIO
 
         j["speedCoefficient"] = l.speedCoefficient;
         j["useTileLoop"] = l.useTileLoop;
+        // 可选的运行时高度兜底：正常情况下按 Sprite 原生高度接带，资源尚未加载时由运行时使用此值。
+        j["tileWorldHeight"] = l.tileWorldHeight;
         // 循环贴图带：数组顺序即拼接顺序，滚完最后一张接回第一张
         var tilePaths = StgJsonValue.NewArray();
         foreach (var path in l.tileSpritePaths) tilePaths.Add(path);
@@ -218,6 +221,12 @@ public static class StgLevelJsonIO
         behavior["type"] = t.behaviorType;
         behavior["fireInterval"] = t.behaviorFireInterval;
         behavior["bulletType"] = t.behaviorBulletType;
+        behavior["role"] = t.behaviorRole;
+        behavior["shotCount"] = t.behaviorShotCount;
+        behavior["spreadAngle"] = t.behaviorSpreadAngle;
+        behavior["warningDuration"] = t.behaviorWarningDuration;
+        behavior["chargeTriggerRatio"] = t.behaviorChargeTriggerRatio;
+        behavior["chargeSpeedMultiplier"] = t.behaviorChargeSpeedMultiplier;
         j["behavior"] = behavior;
 
         j["hp"] = t.hp;
@@ -329,9 +338,23 @@ public static class StgLevelJsonIO
                 if (t.gateType == "gate_duet")
                 {
                     p["paraTableRight"] = t.paraTableRight;
+                    p["initialLeftRatio"] = t.initialLeftRatio;
+                    p["minSideRatio"] = t.minSideRatio;
+                    p["ratioChangePerHit"] = t.ratioChangePerHit;
                 }
+                p["hitCooldown"] = t.hitCooldown;
                 p["initialValue"] = t.initialValue;
                 p["effectTableRef"] = t.effectTableRef;
+                p["unlockMode"] = t.unlockMode;
+                p["unlockTargetId"] = t.unlockTargetId;
+                p["unlockRequired"] = t.unlockRequired;
+                p["heroChargeSlot"] = t.heroChargeSlot;
+                p["heroChargePercent"] = t.heroChargePercent;
+                p["choiceMode"] = t.choiceMode;
+                p["choicePool"] = t.choicePool;
+                p["moveMode"] = t.moveMode;
+                p["moveAmplitude"] = t.moveAmplitude;
+                p["moveFrequency"] = t.moveFrequency;
                 break;
         }
         j["params"] = p;
@@ -359,6 +382,7 @@ public static class StgLevelJsonIO
         var j = new JsonData();
         j["time"] = e.time;
         j["type"] = e.type;
+        if (!string.IsNullOrEmpty(e.routeChoice)) j["routeChoice"] = e.routeChoice;
 
         switch (e.type)
         {
@@ -448,6 +472,7 @@ public static class StgLevelJsonIO
         model.levelName = GetString(root, "levelName", "");
         model.description = GetString(root, "description", "");
         model.seed = GetInt(root, "seed", 0);
+        model.bossCounterplay = GetBool(root, "bossCounterplay", false);
 
         if (root.ContainsKey("basicScroll")) model.basicScroll = BasicScrollFromJson(root["basicScroll"]);
         if (root.ContainsKey("playerRules")) model.playerRules = PlayerBattleRulesFromJson(root["playerRules"]);
@@ -537,6 +562,7 @@ public static class StgLevelJsonIO
 
         l.speedCoefficient = GetFloat(j, "speedCoefficient", 1.0f);
         l.useTileLoop = GetBool(j, "useTileLoop", false);
+        l.tileWorldHeight = GetFloat(j, "tileWorldHeight", 0f);
         l.tileSpritePaths = new List<string>();
         if (j.ContainsKey("tileSpritePaths") && j["tileSpritePaths"].IsArray)
         {
@@ -674,6 +700,12 @@ public static class StgLevelJsonIO
             t.behaviorType = GetString(j["behavior"], "type", "straight_down");
             t.behaviorFireInterval = GetFloat(j["behavior"], "fireInterval", 2.0f);
             t.behaviorBulletType = GetString(j["behavior"], "bulletType", "");
+            t.behaviorRole = GetString(j["behavior"], "role", "standard");
+            t.behaviorShotCount = GetInt(j["behavior"], "shotCount", 1);
+            t.behaviorSpreadAngle = GetFloat(j["behavior"], "spreadAngle", 0f);
+            t.behaviorWarningDuration = GetFloat(j["behavior"], "warningDuration", .75f);
+            t.behaviorChargeTriggerRatio = GetFloat(j["behavior"], "chargeTriggerRatio", .58f);
+            t.behaviorChargeSpeedMultiplier = GetFloat(j["behavior"], "chargeSpeedMultiplier", 2.4f);
         }
 
         t.hp = GetInt(j, "hp", 100);
@@ -769,7 +801,21 @@ public static class StgLevelJsonIO
             t.paraTable = GetString(p, "paraTable", "");
             t.paraTableRight = GetString(p, "paraTableRight", "");
             t.initialValue = GetInt(p, "initialValue", 0);
+            t.hitCooldown = GetFloat(p, "hitCooldown", 0.05f);
+            t.initialLeftRatio = GetFloat(p, "initialLeftRatio", 0.5f);
+            t.minSideRatio = GetFloat(p, "minSideRatio", 0.2f);
+            t.ratioChangePerHit = GetFloat(p, "ratioChangePerHit", 0.02f);
             t.effectTableRef = GetString(p, "effectTableRef", "");
+            t.unlockMode = GetString(p, "unlockMode", "none");
+            t.unlockTargetId = GetString(p, "unlockTargetId", "");
+            t.unlockRequired = GetFloat(p, "unlockRequired", 0f);
+            t.heroChargeSlot = GetInt(p, "heroChargeSlot", 0);
+            t.heroChargePercent = GetFloat(p, "heroChargePercent", 0f);
+            t.choiceMode = GetString(p, "choiceMode", "none");
+            t.choicePool = GetString(p, "choicePool", "");
+            t.moveMode = GetString(p, "moveMode", "none");
+            t.moveAmplitude = GetFloat(p, "moveAmplitude", 0f);
+            t.moveFrequency = GetFloat(p, "moveFrequency", 0.8f);
         }
 
         t.hp = GetInt(j, "hp", 9999);
@@ -795,6 +841,7 @@ public static class StgLevelJsonIO
 
         e.templateId = GetString(j, "templateId", "");
         e.offsetX = GetFloat(j, "offsetX", 0f);
+        e.routeChoice = GetString(j, "routeChoice", "");
         e.bossId = GetString(j, "bossId", "");
         e.trapId = GetString(j, "trapId", "");
         e.spawnAreaId = GetString(j, "spawnAreaId", "");

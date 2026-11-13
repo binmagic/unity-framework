@@ -216,6 +216,35 @@ public class TrapConfigPanel : IStgPanel
         effectTableRef.RegisterValueChangedCallback(evt => { t.effectTableRef = evt.newValue; m_Context.MarkDirty(); });
         box.Add(effectTableRef);
 
+        var unlockMode = new PopupField<string>("解锁方式", new List<string> { "none", "enemy_count", "bucket_damage" },
+            Mathf.Max(0, new List<string> { "none", "enemy_count", "bucket_damage" }.IndexOf(t.unlockMode)));
+        unlockMode.RegisterValueChangedCallback(evt => { t.unlockMode = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(unlockMode);
+        var unlockTarget = new TextField("解锁目标ID（bucket_damage 时填油桶 trapId）") { value = t.unlockTargetId };
+        unlockTarget.RegisterValueChangedCallback(evt => { t.unlockTargetId = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(unlockTarget);
+        var unlockRequired = new FloatField("解锁所需击破数/累计伤害") { value = t.unlockRequired };
+        unlockRequired.RegisterValueChangedCallback(evt => { t.unlockRequired = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(unlockRequired);
+        box.Add(StgUiUtil.HintLabel("none：无锁；enemy_count：本关击破敌机数，目标ID留空统计全部，填写则只统计对应波次 templateId；bucket_damage：指定 destructible 机关的本关累计实际扣血。同一ID重复生成会累计，门出现之前的进度也保留。锁定门不拦截子弹；未解锁穿门无奖励。"));
+
+        box.Add(StgUiUtil.SectionLabel("英雄技能充能（可选）"));
+        var chargeSlot = new IntegerField("充能出战位置（0=全队，1～5=位置）") { value = t.heroChargeSlot };
+        chargeSlot.RegisterValueChangedCallback(evt => { t.heroChargeSlot = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(chargeSlot);
+        AddFloatField(box, "技能充能百分比（0=普通奖励门）", t.heroChargePercent, v => t.heroChargePercent = v);
+        box.Add(StgUiUtil.HintLabel("百分比大于0时改为充能门，替代普通区间奖励；通过时按英雄完整技能冷却减少相应时间，不自动释放、不复活阵亡机。空位或技能已就绪不产生充能。仅支持单门。"));
+
+        box.Add(StgUiUtil.SectionLabel("LastWar 风格奖励选择（可选）"));
+        var choiceMode = new PopupField<string>("奖励模式", new List<string> { "none", "three" },
+            Mathf.Max(0, new List<string> { "none", "three" }.IndexOf(t.choiceMode)));
+        choiceMode.RegisterValueChangedCallback(evt => { t.choiceMode = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(choiceMode);
+        var choicePool = new TextField("三选一效果池（逗号分隔 effectId）") { value = t.choicePool };
+        choicePool.RegisterValueChangedCallback(evt => { t.choicePool = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(choicePool);
+        box.Add(StgUiUtil.HintLabel("three：配置恰好3个不同的效果ID，穿门暂停战斗，选择一次后恢复。例 eff_haste,eff_freeze,eff_weapon；速射+60%持续5秒，敌机冻结3秒（已发射敌弹仍会飞行）。增益再次领取刷新时长，不叠倍率；不与英雄速射叠加。局内战斗增益离场清除。"));
+
         var isReusable = new Toggle("可复用模板（供③时间轴 drop_digital_gate 引用）") { value = t.isReusableGateTemplate };
         isReusable.RegisterValueChangedCallback(evt => { t.isReusableGateTemplate = evt.newValue; m_Context.MarkDirty(); m_Context.NotifyCrossReferencesChanged(); });
         box.Add(isReusable);
@@ -229,17 +258,24 @@ public class TrapConfigPanel : IStgPanel
             switch (t.gateType)
             {
                 case "gate_step":
+                    AddFloatField(dynamicHost, "有效命中间隔（秒，0 为不限制）", t.hitCooldown, v => t.hitCooldown = v);
                     dynamicHost.Add(BuildStepTable(t, isRight: false));
                     break;
                 case "gate_counter":
+                    AddFloatField(dynamicHost, "有效命中间隔（秒，0 为不限制）", t.hitCooldown, v => t.hitCooldown = v);
                     dynamicHost.Add(BuildCounterTable(t, isRight: false));
                     break;
                 case "gate_duet":
+                    AddFloatField(dynamicHost, "有效命中间隔（秒，0 为不限制）", t.hitCooldown, v => t.hitCooldown = v);
+                    AddFloatField(dynamicHost, "初始左侧占比（0～1）", t.initialLeftRatio, v => t.initialLeftRatio = v);
+                    AddFloatField(dynamicHost, "单侧最小占比（0.2～0.5）", t.minSideRatio, v => t.minSideRatio = v);
+                    AddFloatField(dynamicHost, "每次命中扩大占比（0～0.2）", t.ratioChangePerHit, v => t.ratioChangePerHit = v);
+                    dynamicHost.Add(BuildDuetPreview(t));
                     dynamicHost.Add(StgUiUtil.SectionLabel("左侧区间表 (paraTable)"));
                     dynamicHost.Add(BuildCounterTable(t, isRight: false));
                     dynamicHost.Add(StgUiUtil.SectionLabel("右侧区间表 (paraTableRight)"));
                     dynamicHost.Add(BuildCounterTable(t, isRight: true));
-                    dynamicHost.Add(StgUiUtil.HintLabel("门体宽度按左右命中比例实时形变，本编辑器仅编辑区间表数据，形变表现由运行时计算。"));
+                    dynamicHost.Add(StgUiUtil.HintLabel("射击哪侧就扩大哪侧。门体、子弹与穿门选边共用移动分隔线；试射不修改关卡数据，修改参数后点重置查看。"));
                     break;
             }
         }
@@ -252,6 +288,63 @@ public class TrapConfigPanel : IStgPanel
         });
         RebuildGateTypeFields();
 
+        return box;
+    }
+
+    VisualElement BuildDuetPreview(StgTrapConfig config)
+    {
+        var box = new VisualElement();
+        var bar = new VisualElement();
+        bar.style.flexDirection = FlexDirection.Row;
+        bar.style.height = 54;
+        var left = new Label();
+        var right = new Label();
+        foreach (var side in new[] { left, right })
+        {
+            side.style.flexBasis = 0;
+            side.style.unityTextAlign = UnityEngine.TextAnchor.MiddleCenter;
+            side.style.color = UnityEngine.Color.white;
+            bar.Add(side);
+        }
+        box.Add(bar);
+        var status = new Label();
+        box.Add(status);
+        float ratio = 0.5f;
+        int leftValue = 0, rightValue = 0;
+        double nextHitTime = 0;
+        void Refresh()
+        {
+            left.style.flexGrow = ratio;
+            right.style.flexGrow = 1f - ratio;
+            left.style.backgroundColor = leftValue < 0 ? new UnityEngine.Color(0.65f, 0.12f, 0.1f) : new UnityEngine.Color(0.02f, 0.46f, 0.65f);
+            right.style.backgroundColor = rightValue < 0 ? new UnityEngine.Color(0.65f, 0.12f, 0.1f) : new UnityEngine.Color(0.02f, 0.46f, 0.65f);
+            left.text = $"左 {leftValue:+0;-0;0}\n{ratio:P0}";
+            right.text = $"右 {rightValue:+0;-0;0}\n{1f - ratio:P0}";
+            status.text = $"分隔线距门左端 {ratio:P0} · 通过时按该分隔线结算";
+        }
+        void Reset()
+        {
+            ratio = StgGateParaTableUtil.ClampDuetRatio(config, config.initialLeftRatio);
+            leftValue = rightValue = config.initialValue;
+            nextHitTime = 0;
+            Refresh();
+        }
+        void Hit(bool isLeft)
+        {
+            double now = UnityEditor.EditorApplication.timeSinceStartup;
+            if (now < nextHitTime) return;
+            nextHitTime = now + System.Math.Max(0f, config.hitCooldown);
+            ratio = StgGateParaTableUtil.HitDuetRatio(config, ratio, isLeft);
+            if (isLeft) leftValue++; else rightValue++;
+            Refresh();
+        }
+        var buttons = new VisualElement();
+        buttons.style.flexDirection = FlexDirection.Row;
+        buttons.Add(new Button(() => Hit(true)) { text = "试射左侧" });
+        buttons.Add(new Button(() => Hit(false)) { text = "试射右侧" });
+        buttons.Add(new Button(Reset) { text = "重置预览" });
+        box.Add(buttons);
+        Reset();
         return box;
     }
 

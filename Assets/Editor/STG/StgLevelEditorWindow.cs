@@ -15,6 +15,7 @@ public class StgLevelEditorWindow : EditorWindow
     VisualElement m_ContentRoot;
     readonly List<Button> m_TabButtons = new List<Button>();
     int m_SelectedIndex = 0;
+    [SerializeField] string m_RuntimeReturnPath;
 
     [MenuItem("Window/STG/关卡编辑器")]
     public static void ShowWindow()
@@ -29,6 +30,15 @@ public class StgLevelEditorWindow : EditorWindow
         m_Context = new StgLevelEditorContext();
         BuildPanels();
         BuildLayout();
+        // 一键实战会经历 Play Mode 的域重载，回到编辑器后仍显示发起验证的关卡。
+        if (!string.IsNullOrEmpty(m_RuntimeReturnPath) && System.IO.File.Exists(m_RuntimeReturnPath))
+        {
+            m_Context.LoadFromFile(m_RuntimeReturnPath);
+            OnModelReloaded();
+            SelectTab(8);
+            if (!EditorApplication.isPlayingOrWillChangePlaymode && !StgRuntimeBattleVerifier.IsPending)
+                m_RuntimeReturnPath = null;
+        }
     }
 
     // 关闭窗口时必须停止预览：否则 EditorApplication.update 挂接和 __StgPreviewRoot__ 预览对象会常驻，
@@ -45,7 +55,7 @@ public class StgLevelEditorWindow : EditorWindow
     {
         m_Panels.Clear();
 
-        var importExportPanel = new ImportExportPanel(m_Context, OnModelReloaded);
+        var importExportPanel = new ImportExportPanel(m_Context, OnModelReloaded, StartCurrentLevelPreview, StartCurrentLevelRuntimeVerification);
         var levelInfoPanel = new LevelInfoPanel(m_Context);
         var backgroundPanel = new BackgroundConfigPanel(m_Context);
         var timelinePanel = new TimelineEditorPanel(m_Context);
@@ -147,5 +157,25 @@ public class StgLevelEditorWindow : EditorWindow
                 ? new Color(0.24f, 0.37f, 0.58f)
                 : new StyleColor(StyleKeyword.Null);
         }
+    }
+
+    // ⑨ 面板“保存并预览当前关卡”使用：先切到时间轴，让内嵌视口可见，再启动同一套预览运行时。
+    void StartCurrentLevelPreview()
+    {
+        const int timelinePanelIndex = 2;
+        SelectTab(timelinePanelIndex);
+        var timeline = m_Panels[timelinePanelIndex] as TimelineEditorPanel;
+        if (timeline != null) timeline.StartPreview();
+    }
+
+    void StartCurrentLevelRuntimeVerification()
+    {
+        if (!m_Context.IsRuntimeResourceFile)
+        {
+            EditorUtility.DisplayDialog("无法启动真实验证", "当前文件不在 Assets/Resources/STG/Levels 下，运行时不会读取它。", "确定");
+            return;
+        }
+        if (StgRuntimeBattleVerifier.Start(m_Context.CurrentFilePath, m_Context.Model.levelId))
+            m_RuntimeReturnPath = m_Context.CurrentFilePath;
     }
 }

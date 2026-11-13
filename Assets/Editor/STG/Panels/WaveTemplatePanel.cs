@@ -9,7 +9,7 @@ public class WaveTemplatePanel : IStgPanel
     public string TabTitle => "④ 小怪波次模板库";
     public VisualElement Root { get; }
 
-    static readonly string[] FormationTypes = { "single", "line_horizontal", "line_vertical", "v_shape", "circle", "arrow", "random" };
+    static readonly string[] FormationTypes = { "single", "row", "column", "line_horizontal", "line_vertical", "v_shape", "circle", "arrow", "random" };
     static readonly string[] EntryPathTypes = { "from_top_straight", "from_left_curve", "from_right_curve", "from_top_sine", "teleport" };
     static readonly string[] BehaviorTypes = { "straight_down", "sine_move", "track_player", "circle_strafe", "kamikaze", "stationary" };
     static readonly string[] SpawnAreaTypes = { "fix_point", "range", "round" };
@@ -125,7 +125,8 @@ public class WaveTemplatePanel : IStgPanel
 
     VisualElement BuildWaveTemplateDetail(StgWaveTemplate t, ListView ownerListView)
     {
-        var box = new VisualElement();
+        var box = new UnityEngine.UIElements.ScrollView();
+        box.style.flexGrow = 1;
 
         var templateId = new TextField("模板ID") { value = t.templateId };
         templateId.RegisterValueChangedCallback(evt => { t.templateId = evt.newValue; m_Context.MarkDirty(); m_Context.NotifyCrossReferencesChanged(); });
@@ -175,6 +176,29 @@ public class WaveTemplatePanel : IStgPanel
         var bulletType = new TextField("子弹类型 bulletType") { value = t.behaviorBulletType };
         bulletType.RegisterValueChangedCallback(evt => { t.behaviorBulletType = evt.newValue; m_Context.MarkDirty(); });
         box.Add(bulletType);
+        box.Add(SectionLabel("敌机分工（运行时生效）"));
+        var roles = new List<string> { "standard", "swarm", "armored", "charger" };
+        var role = new PopupField<string>("分工 role", roles, Mathf.Max(0, roles.IndexOf(t.behaviorRole)));
+        role.RegisterValueChangedCallback(evt => { t.behaviorRole = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(role);
+        var hint = new Label("swarm 轻型集群；armored 重装预警散射；charger 锁定航道、预警后加速。重装耐久由 hp 配置。射击间隔=0 表示不开火。");
+        hint.style.whiteSpace = WhiteSpace.Normal;
+        box.Add(hint);
+        var shots = new IntegerField("弹数 shotCount [1,7]") { value = t.behaviorShotCount };
+        shots.RegisterValueChangedCallback(evt => { t.behaviorShotCount = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(shots);
+        var spread = new FloatField("散射角 spreadAngle [0,90]") { value = t.behaviorSpreadAngle };
+        spread.RegisterValueChangedCallback(evt => { t.behaviorSpreadAngle = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(spread);
+        var warning = new FloatField("预警秒数 [0.3,2]") { value = t.behaviorWarningDuration };
+        warning.RegisterValueChangedCallback(evt => { t.behaviorWarningDuration = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(warning);
+        var trigger = new FloatField("冲锋高度比例 [0.35,0.8]") { value = t.behaviorChargeTriggerRatio };
+        trigger.RegisterValueChangedCallback(evt => { t.behaviorChargeTriggerRatio = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(trigger);
+        var multiplier = new FloatField("冲锋速度倍率 [1,4]") { value = t.behaviorChargeSpeedMultiplier };
+        multiplier.RegisterValueChangedCallback(evt => { t.behaviorChargeSpeedMultiplier = evt.newValue; m_Context.MarkDirty(); });
+        box.Add(multiplier);
 
         box.Add(SectionLabel("数值"));
         var hp = new IntegerField("血量 hp") { value = t.hp };

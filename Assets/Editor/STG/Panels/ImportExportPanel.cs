@@ -11,13 +11,17 @@ public class ImportExportPanel : IStgPanel
 
     readonly StgLevelEditorContext m_Context;
     readonly System.Action m_OnModelReloaded;
+    readonly System.Action m_OnPreviewCurrentLevel;
+    readonly System.Action m_OnRuntimeVerifyCurrentLevel;
     Label m_PathLabel;
     Label m_DirtyLabel;
 
-    public ImportExportPanel(StgLevelEditorContext context, System.Action onModelReloaded)
+    public ImportExportPanel(StgLevelEditorContext context, System.Action onModelReloaded, System.Action onPreviewCurrentLevel, System.Action onRuntimeVerifyCurrentLevel)
     {
         m_Context = context;
         m_OnModelReloaded = onModelReloaded;
+        m_OnPreviewCurrentLevel = onPreviewCurrentLevel;
+        m_OnRuntimeVerifyCurrentLevel = onRuntimeVerifyCurrentLevel;
         Root = new VisualElement();
         Root.style.paddingLeft = 8;
         Root.style.paddingRight = 8;
@@ -32,18 +36,47 @@ public class ImportExportPanel : IStgPanel
 
         var fileRow = new VisualElement();
         fileRow.style.flexDirection = FlexDirection.Row;
+        fileRow.style.flexWrap = Wrap.Wrap;
         fileRow.style.marginBottom = 4;
 
         var newButton = new Button(OnNewLevel) { text = "新建关卡" };
         var openButton = new Button(OnOpen) { text = "打开关卡 JSON..." };
         var saveButton = new Button(OnSave) { text = "保存" };
         var saveAsButton = new Button(OnSaveAs) { text = "另存为..." };
+        var saveRuntimeButton = new Button(OnSaveAndRefreshRuntime) { text = "保存并刷新运行时" };
+        var previewButton = new Button(OnSaveAndPreview) { text = "保存并预览当前关卡" };
+        var runtimeVerifyButton = new Button(OnSaveAndRuntimeVerify) { text = "保存并实战验证" };
 
         fileRow.Add(newButton);
         fileRow.Add(openButton);
         fileRow.Add(saveButton);
         fileRow.Add(saveAsButton);
+        fileRow.Add(saveRuntimeButton);
+        fileRow.Add(previewButton);
         Root.Add(fileRow);
+
+        var verifyRow = new VisualElement();
+        verifyRow.style.flexDirection = FlexDirection.Row;
+        verifyRow.style.flexWrap = Wrap.Wrap;
+        runtimeVerifyButton.name = "stg-runtime-verify";
+        verifyRow.Add(runtimeVerifyButton);
+        verifyRow.Add(new Button(() =>
+        {
+            string report = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.dataPath), StgRuntimeBattleVerifier.ReportRelativePath);
+            if (System.IO.File.Exists(report)) EditorUtility.RevealInFinder(report);
+        }) { text = "查看实战验证报告" });
+        Root.Add(verifyRow);
+        var choiceBranch = new DropdownField("三选一验证分支", new List<string> { "第一项", "第二项", "第三项" }, StgRuntimeBattleVerifier.ChoiceIndex - 1);
+        choiceBranch.RegisterValueChangedCallback(e => StgRuntimeBattleVerifier.ChoiceIndex = choiceBranch.index + 1);
+        Root.Add(choiceBranch);
+        var routeBranch = new DropdownField("路线门验证分支", new List<string> { "自动", "左侧路线", "右侧路线" }, StgRuntimeBattleVerifier.RouteSide);
+        routeBranch.RegisterValueChangedCallback(e => StgRuntimeBattleVerifier.RouteSide = routeBranch.index);
+        Root.Add(routeBranch);
+        Root.Add(StgUiUtil.HintLabel("实战验证将进入 Play Mode，使用当前英雄阵容自动拖动，并选择指定的三选一分支。该项无收益时改选可用项，实际选择记录在报告中；全部无收益则继续作战。不写入金币与通关存档，结束后自动退出。需从 launcher 场景启动。"));
+        var verifyStatus = new Label(StgRuntimeBattleVerifier.Status);
+        verifyStatus.style.whiteSpace = WhiteSpace.Normal;
+        Root.Add(verifyStatus);
+        verifyStatus.schedule.Execute(() => verifyStatus.text = StgRuntimeBattleVerifier.Status).Every(500);
 
         m_PathLabel = new Label();
         m_PathLabel.style.whiteSpace = WhiteSpace.Normal;
@@ -284,7 +317,7 @@ public class ImportExportPanel : IStgPanel
             return;
         }
         if (!ConfirmSaveAfterValidation()) return;
-        m_Context.SaveToFile(m_Context.CurrentFilePath);
+        SaveCurrentFile(m_Context.CurrentFilePath);
         RefreshStatus();
     }
 
@@ -296,8 +329,65 @@ public class ImportExportPanel : IStgPanel
         string path = EditorUtility.SaveFilePanel("另存为关卡 JSON", Application.dataPath, defaultName, "json");
         if (string.IsNullOrEmpty(path)) return;
 
-        m_Context.SaveToFile(path);
+        SaveCurrentFile(path);
         RefreshStatus();
+    }
+
+    void OnSaveAndRefreshRuntime()
+    {
+        if (string.IsNullOrEmpty(m_Context.CurrentFilePath))
+        {
+            OnSaveAs();
+            return;
+        }
+        if (!ConfirmSaveAfterValidation()) return;
+        SaveCurrentFile(m_Context.CurrentFilePath);
+        RefreshStatus();
+        EditorUtility.DisplayDialog(
+            "运行时配置已刷新",
+            m_Context.IsRuntimeResourceFile
+                ? "已保存并刷新 Resources/STG/Levels 下的 JSON。进入战斗时会清除关卡缓存并重新读取。"
+                : "文件已保存，但当前路径不在 Assets/Resources/STG/Levels 下；运行时不会通过 Resources.Load 读取它。",
+            "确定");
+    }
+
+    void OnSaveAndPreview()
+    {
+        if (string.IsNullOrEmpty(m_Context.CurrentFilePath))
+        {
+            EditorUtility.DisplayDialog("无法预览", "请先打开一个关卡 JSON，或使用“另存为...”建立文件。", "确定");
+            return;
+        }
+        if (!ConfirmSaveAfterValidation()) return;
+
+        SaveCurrentFile(m_Context.CurrentFilePath);
+        RefreshStatus();
+        m_OnPreviewCurrentLevel?.Invoke();
+    }
+
+    void OnSaveAndRuntimeVerify()
+    {
+        if (string.IsNullOrEmpty(m_Context.CurrentFilePath))
+        {
+            EditorUtility.DisplayDialog("无法验证", "请先打开一个关卡 JSON，或使用“另存为...”建立文件。", "确定");
+            return;
+        }
+        // 实战验证不能忽略错误，否则会把不完整覆盖误报为验证完成。
+        var errors = ValidationPanel.RunValidation(m_Context.Model).FindAll(i => i.Severity == ValidationPanel.Severity.Error);
+        if (errors.Count > 0)
+        {
+            EditorUtility.DisplayDialog("无法实战验证", $"发现 {errors.Count} 个错误，请先在⑧校验与统计中修复。", "确定");
+            return;
+        }
+        SaveCurrentFile(m_Context.CurrentFilePath);
+        RefreshStatus();
+        m_OnRuntimeVerifyCurrentLevel?.Invoke();
+    }
+
+    void SaveCurrentFile(string path)
+    {
+        m_Context.SaveToFile(path);
+        AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
     }
 
     // 保存前自动校验（详见关卡编辑器设计文档 5.2 节）：存在错误级别问题时弹窗提示，可选择强制忽略继续保存
@@ -324,6 +414,7 @@ public class ImportExportPanel : IStgPanel
             : $"当前文件：{m_Context.CurrentFilePath}";
         m_DirtyLabel.text = m_Context.IsDirty ? "有未保存的修改" : "已保存";
         m_DirtyLabel.style.color = m_Context.IsDirty ? new Color(0.9f, 0.6f, 0.1f) : new Color(0.5f, 0.8f, 0.5f);
+        m_DirtyLabel.text += m_Context.IsRuntimeResourceFile ? " · 运行时路径有效" : " · 非运行时 Resources 路径";
     }
 
     public void Rebuild()
